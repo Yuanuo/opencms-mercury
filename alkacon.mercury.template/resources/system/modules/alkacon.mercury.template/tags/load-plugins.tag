@@ -35,5 +35,8 @@
         <c:when test="${type eq 'js-async'}">
             <script async src="${plugin.link}"></script><mercury:nl />
         </c:when>
+        <c:when test="${type eq 'js-sync'}">
+            <script src="${plugin.link}"></script><mercury:nl />
+        </c:when>
     </c:choose>
 </c:forEach>

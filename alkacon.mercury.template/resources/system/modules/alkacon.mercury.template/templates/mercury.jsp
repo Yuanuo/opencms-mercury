@@ -44,6 +44,7 @@
 <cms:enable-ade />
 
 <mercury:load-plugins group="css" />
+<mercury:load-plugins group="js-sync" />
 <mercury:load-plugins group="js-async" />
 <mercury:load-plugins group="js-defer" />
 <mercury:load-plugins group="template-head-includes" type="jsp-nocache" />
