@@ -2,12 +2,15 @@
 
     <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/image.xsd"/>
+    <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/link.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/paragraph.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/teaser-data.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/meta-info-detail.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/address-choice.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/booking.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/note.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/availability.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/costs.xsd" />
 
     <xsd:element name="EventData" type="OpenCmsEventData" />
 
@@ -28,8 +31,11 @@
             <xsd:element name="Image" type="OpenCmsNestedImage" minOccurs="0" />
             <xsd:element name="Paragraph" type="OpenCmsParagraph" maxOccurs="100" />
             <xsd:element name="AddressChoice" type="OpenCmsAddressChoice" minOccurs="0" />
+            <xsd:element name="VirtualLocation" type="OpenCmsNestedLink" minOccurs="0" />
             <xsd:element name="LocationNote" type="OpenCmsHtml" minOccurs="0" />
             <xsd:element name="Booking" type="OpenCmsBooking" minOccurs="0" />
+            <xsd:element name="Costs" type="OpenCmsCosts" minOccurs="0" maxOccurs="10" />
+            <xsd:element name="Note" type="OpenCmsNote" minOccurs="0" maxOccurs="20" />
             <xsd:element name="TeaserData" type="OpenCmsTeaserData" minOccurs="0" />
             <xsd:element name="MetaInfo" type="OpenCmsDetailMetaInfo" minOccurs="0" />
             <xsd:element name="Category" type="OpenCmsDynamicCategory" />
@@ -50,6 +56,9 @@
                 <tab element="Intro" collapse="false" name="%(key.tab.Event)" />
                 <tab element="AddressChoice" collapse="false" name="%(key.tab.Location)" />
                 <tab element="Booking" collapse="false" name="%(key.tab.Booking)" />
+                <tab element="Note" collapse="false" name="%(key.tab.Notes)">
+                    <description><![CDATA[%(key.tab.Notes.description)]]></description>
+                </tab>
                 <tab element="TeaserData" collapse="false" name="%(key.tab.MetaData)" />
                 <tab element="Category" collapse="false" name="%(key.tab.Availability)" />
             </tabs>
@@ -60,6 +69,12 @@
             <searchsettings containerPageOnly="false">
                 <searchsetting element="Type">
                     <solrfield targetfield="event-type" sourcefield="*_s" />
+                    <solrfield targetfield="event-kind" sourcefield="*_s">
+                        <mapping type="dynamic" class="org.opencms.search.fields.CmsMacroSearchFieldMapping">%(stringtemplate:eventKind)</mapping>
+                    </solrfield>
+                    <solrfield targetfield="bookable" sourcefield="*_b">
+                        <mapping type="dynamic" class="org.opencms.search.fields.CmsMacroSearchFieldMapping">%(stringtemplate:bookable)</mapping>
+                    </solrfield>
                 </searchsetting>
             </searchsettings>
             <edithandler class="org.opencms.workplace.editors.directedit.CmsDateSeriesEditHandler" />
@@ -79,6 +94,22 @@
                         !% (%content.value.("Dates").toDateSeries.first.startInstance.format.("dd.MM.yy")%)%!
                     !%%endif%%!
                     !%%if (content.value.("Type").isSet)%, %content.value.("Type")%%endif%%!
+                !%]]></param>
+                <param name="eventKind"><![CDATA[%!
+                    !%%if (content.value.("VirtualLocation").isSet && content.value.("VirtualLocation").value.("URI").isSet && content.value.("AddressChoice").isSet)%%!
+                        !%mixed%!
+                    !%%elseif (content.value.("VirtualLocation").isSet && content.value.("VirtualLocation").value.("URI").isSet)%%!
+                        !%online%!
+                    !%%else%%!
+                        !%presence%!
+                    !%%endif%%!
+                !%]]></param>
+                <param name="bookable"><![CDATA[%!
+                    !%%if (content.value.("Booking").isSet && content.value.("Booking").value.("Webform").isSet)%%!
+                        !%true%!
+                    !%%else%%!
+                        !%false%!
+                    !%%endif%%!
                 !%]]></param>
                 <param name="detailPageUrl"><![CDATA[%!
                     !%%if (content.value.("Title").isSet)%%content.value.("Title")%%endif%%!
@@ -105,18 +136,6 @@
                     <Search>listtitle</Search>
                 </Setting>
                 <Setting>
-                    <PropertyName>Preface</PropertyName>
-                    <DisplayName><![CDATA[%(key.label.Preface)]]></DisplayName>
-                    <Description><![CDATA[%(key.label.Preface.help)]]></Description>
-                    <Widget>textarea</Widget>
-                    <WidgetConfig>3|proportional</WidgetConfig>
-                </Setting>
-                <Setting>
-                    <PropertyName>Image</PropertyName>
-                    <DisplayName><![CDATA[%(key.label.Image)]]></DisplayName>
-                    <Description><![CDATA[%(key.label.Image.help)]]></Description>
-                </Setting>
-                <Setting>
                     <PropertyName>Dates</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Event.Dates)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Event.Dates.help)]]></Description>
@@ -137,18 +156,40 @@
                     <Widget>string</Widget>
                 </Setting>
                 <Setting>
+                    <PropertyName>Preface</PropertyName>
+                    <DisplayName><![CDATA[%(key.label.Preface)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.Preface.help)]]></Description>
+                    <Widget>textarea</Widget>
+                    <WidgetConfig>3|proportional</WidgetConfig>
+                </Setting>
+                <Setting>
+                    <PropertyName>Image</PropertyName>
+                    <DisplayName><![CDATA[%(key.label.Image)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.Image.help)]]></Description>
+                </Setting>
+                <Setting>
                     <PropertyName>Paragraph</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Paragraph)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Paragraph.help)]]></Description>
                 </Setting>
                 <Setting>
+                    <PropertyName>Costs</PropertyName>
+                    <DisplayName><![CDATA[%(key.label.Costs)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.Costs.help)]]></Description>
+                </Setting>
+                <Setting>
                     <PropertyName>AddressChoice</PropertyName>
-                    <DisplayName><![CDATA[%(key.label.AddressChoice)]]></DisplayName>
-                    <Description><![CDATA[%(key.label.AddressChoice.help)]]></Description>
+                    <DisplayName><![CDATA[%(key.label.Event.AddressChoice)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.Event.AddressChoice.help)]]></Description>
                 </Setting>
                 <Setting>
                     <PropertyName>AddressChoice/Address/Coord</PropertyName>
                     <Visibility>hidden</Visibility>
+                </Setting>
+                <Setting>
+                    <PropertyName>VirtualLocation</PropertyName>
+                    <DisplayName><![CDATA[%(key.label.Event.VirtualLocation)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.Event.VirtualLocation.help)]]></Description>
                 </Setting>
                 <Setting>
                     <PropertyName>LocationNote</PropertyName>
@@ -183,6 +224,11 @@
                 <Setting>
                     <PropertyName>Booking</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Booking)]]></DisplayName>
+                </Setting>
+                <Setting>
+                    <PropertyName>Note</PropertyName>
+                    <DisplayName><![CDATA[%(key.label.Note)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.Note.help)]]></Description>
                 </Setting>
                 <Setting>
                     <PropertyName>Order</PropertyName>

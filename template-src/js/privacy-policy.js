@@ -19,6 +19,8 @@
 
 import jsCookies from 'js-cookie';
 
+import Modal from 'bootstrap/js/dist/modal';
+
 // the global objects that must be passed to this module
 var jQ;
 var DEBUG;
@@ -40,6 +42,7 @@ m_bannerData.togglesInitialized = false;
 
 var m_policy = {};
 m_policy.loaded = false;
+m_policy.unavailable = false;
 
 
 function initBannerData() {
@@ -56,6 +59,9 @@ function initBannerData() {
                 m_bannerData.$bannerElement = $privacyBanner;
                 m_bannerData.initialized = true;
                 m_bannerData.togglesInitialized = false;
+                if (m_bannerData.fallback) {
+                    m_bannerData.fallback = window.atob(m_bannerData.fallback)
+                }
             }
         }
     }
@@ -81,15 +87,17 @@ function loadPolicy(callback) {
         if (DEBUG) console.info("PrivacyPolicy: Loading policy data from " + policyLink);
 
         jQ.get(policyLink, function(ajaxResult) {
-
             m_policy = ajaxResult;
             m_policy.loaded = true;
 
             if (callback) {
                 callback();
             }
-
-        }, "json");
+        }, "json").fail(function() {
+            if (DEBUG) console.info("PrivacyPolicy: Failed to load policy data!");
+            m_policy.unavailable = true;
+            initExternalElements(true);
+        });
     }
 }
 
@@ -105,6 +113,10 @@ function displayBanner() {
         var onTop = m_bannerData.onTop;
 
         // add click handlers to buttons on banner
+        $banner.find(".btn-close").on('click', function(e) {
+            $banner.slideUp();
+            $bannerElement.slideUp();
+        });
         $banner.find(".btn-accept").on('click', function(e) {
             $banner.find("#use-statistical").prop('checked', true);
             $banner.find("#use-external").prop('checked', true);
@@ -204,7 +216,7 @@ function replaceLinkMacros(text) {
 
 function resetTemplateScript(forceInit) {
 
-    forceInit = forceInit || (jQ(".external-cookie-notice.force-init").length > 0);
+    forceInit = forceInit || (jQ(".external-cookie-notice.force-init").length > 0) || (jQ("[data-force-init]").length > 0);
     if (DEBUG) console.info("PrivacyPolicy: Resetting template script, force=" + forceInit);
     if (forceInit) {
         location.reload();
@@ -260,6 +272,7 @@ function initPrivacyToggle() {
                     var checked = jQ(this).prop('checked');
                     if (DEBUG) console.info("PrivacyPolicy: Statistical cookie toggle changed to value=" + checked);
                     setPrivacyCookiesStatistical(checked);
+                    initMatomoJstControl();
                     resetTemplateScript();
                 });
             }
@@ -267,6 +280,54 @@ function initPrivacyToggle() {
     });
 
     m_bannerData.togglesInitialized = true;
+}
+
+
+function setMatomoOptOutText(jstCheckbox, data) {
+    _paq.push([function() {
+          jstCheckbox.checked = this.isUserOptedOut();
+          document.querySelector('#pp-matomo-jst label[for=pp-matomo-optout] span').innerText = (jstCheckbox.checked ? data.jstoff : data.jston);
+          if (DEBUG) console.info("PrivacyPolicy: Matomo JS tracking opt-out checkbox set to value=" + jstCheckbox.checked);
+    }]);
+}
+
+function initMatomoJstControl() {
+    var $matomoJstControl = jQ("#pp-matomo-jst").first();
+    if ($matomoJstControl.length) {
+        if (! cookiesAcceptedStatistical()) {
+            $matomoJstControl.show();
+            var jstData = $matomoJstControl.data("jst");
+            var showDntText = false;
+            if (jstData.dnttext) {
+                // see: https://www.cogmentis.com/848/how-to-properly-check-for-do-not-track-with-javascript/
+                var dnt = (typeof navigator.doNotTrack !== 'undefined')   ? navigator.doNotTrack
+                    : (typeof window.doNotTrack !== 'undefined')      ? window.doNotTrack
+                    : (typeof navigator.msDoNotTrack !== 'undefined') ? navigator.msDoNotTrack
+                    : null;
+                showDntText = (1 === parseInt(dnt) || 'yes' == dnt);
+            }
+            // see: https://developer.matomo.org/guides/tracking-javascript-guide#asking-for-consent
+            if (showDntText) {
+                jQ("#pp-matomo-jst .jst-msg").html(jstData.dnttext);
+                jQ("#pp-matomo-jst .jst-btn").remove();
+            } else {
+                jQ("#pp-matomo-jst .jst-msg").html(jstData.jsttext);
+                var jstCheckbox = document.getElementById("pp-matomo-optout");
+                jstCheckbox.addEventListener("click", function() {
+                    if (jstCheckbox.checked) {
+                        _paq.push(['optUserOut']);
+                    } else {
+                        _paq.push(['forgetUserOptOut']);
+                    }
+                    setMatomoOptOutText(jstCheckbox, jstData);
+                });
+                setMatomoOptOutText(jstCheckbox, jstData);
+            }
+        } else {
+             $matomoJstControl.hide();
+             if (DEBUG) console.info("PrivacyPolicy: Matomo JS tracking options not displayed, cookies are accepted.");
+        }
+    }
 }
 
 function setPrivacyCookies(allowTechnical, allowExternal, allowStatistical) {
@@ -336,19 +397,21 @@ function createExternalElementToggle(heading, message, footer, isModal) {
 
     var cookieHtml =
         '<div class=\"cookie-content\">' +
-            '<div class=\"cookie-header\" tabindex=\"0\">' + heading + '</div>' +
+            (typeof heading !== "undefined" ? '<div class=\"cookie-header\" tabindex=\"0\">' + heading + '</div>' : '') +
             '<div class=\"cookie-message\">' + message + '</div>' +
-            '<div class=\"cookie-switch pp-toggle pp-toggle-external animated\">' +
-                '<input id=\"' + toggleId + '\" type=\"checkbox\" class=\"toggle-check\"' + (isModal ? ' disabled' : '') + '>' +
-                '<label for=\"' + toggleId + '\" class=\"toggle-label\">' +
-                    '<span class=\"toggle-box\">' +
-                        '<span class=\"toggle-inner\" data-checked=\"' + m_policy.togOn + '\" data-unchecked=\"' + m_policy.togOff + '\"></span>' +
-                        '<span class=\"toggle-slider\"></span>' +
-                    '</span>' +
-                '</label>' +
-                '<div class=\"toggle-text\">' + m_policy.togLEx + '</div>' +
-            '</div>' +
-            '<div class=\"cookie-footer\">' + footer + '</div>' +
+            (typeof m_policy.togLEx !== "undefined" ?
+                '<div class=\"cookie-switch pp-toggle pp-toggle-external animated\">' +
+                    '<input id=\"' + toggleId + '\" type=\"checkbox\" class=\"toggle-check\"' + (isModal ? ' disabled' : '') + '>' +
+                    '<label for=\"' + toggleId + '\" class=\"toggle-label\">' +
+                        '<span class=\"toggle-box\">' +
+                            '<span class=\"toggle-inner\" data-checked=\"' + m_policy.togOn + '\" data-unchecked=\"' + m_policy.togOff + '\"></span>' +
+                            '<span class=\"toggle-slider\"></span>' +
+                        '</span>' +
+                    '</label>' +
+                    '<div class=\"toggle-text\">' + m_policy.togLEx + '</div>' +
+                '</div>'
+            : '' ) +
+            (typeof footer !== "undefined" ? '<div class=\"cookie-footer\">' + footer + '</div>' : '') +
         '</div>';
 
     return replaceLinkMacros(cookieHtml);
@@ -394,6 +457,10 @@ function initExternalElements(showMessage) {
                             if ((toggleHeight / parentHeight) < 1.5) {
                                 // toggle is not 1.5 times higher than the presized original - enlarge parent and show toggle directly
                                 $presizedParent.addClass("enlarged");
+                            } else if (policyIsUnavailable()) {
+                                // no policy no available, add special CSS class, do not add modal
+                                $presizedParent.addClass("enlarged");
+                                $element.addClass("cookie-tiny-font");
                             } else {
                                 // toggle is much higher than the presized original - keep parent size, show notice and add modal dialog to element
                                 addModal = true;
@@ -416,14 +483,20 @@ function initExternalElements(showMessage) {
                     }
 
                     if (! addModal) {
-                        var $toggleCheckbox = jQ(".toggle-check", $element);
-                        // only allow element activation in case technical cookies have already been accepted
-                        $toggleCheckbox.prop('checked', false);
-                        $toggleCheckbox.change(function() {
-                            enableExternalElements();
-                        });
-                        if (!cookiesAcceptedTechnical()) {
-                            $toggleCheckbox.prop('disabled', true);
+                        if (policyIsUnavailable()) {
+                            $element.on("click", function() {
+                                checkRedirectToPolicyPage();
+                            });
+                        } else {
+                            var $toggleCheckbox = jQ(".toggle-check", $element);
+                            // only allow element activation in case technical cookies have already been accepted
+                            $toggleCheckbox.prop('checked', false);
+                            $toggleCheckbox.change(function() {
+                                enableExternalElements();
+                            });
+                            if (!cookiesAcceptedTechnical()) {
+                                $toggleCheckbox.prop('disabled', true);
+                            }
                         }
                     }
 
@@ -437,12 +510,25 @@ function initExternalElements(showMessage) {
     }
 }
 
+function policyIsUnavailable() {
+    return m_policy.unavailable;
+}
+
+function checkRedirectToPolicyPage() {
+    if (policyIsUnavailable()) {
+        if ((typeof m_bannerData !== "undefined") && (typeof m_bannerData.fallback !== "undefined"))  {
+            window.location.href = m_bannerData.fallback;
+        }
+    }
+}
+
 /****** Exported functions ******/
 
 export function createExternalElementModal(heading, message, footer, callbackAccept) {
 
     if (! cookiesAcceptedTechnical()) {
         // if the banner has not been confirmed do NOT add the modal dialog on click
+        checkRedirectToPolicyPage();
         return;
     }
 
@@ -463,8 +549,8 @@ export function createExternalElementModal(heading, message, footer, callbackAcc
                             createExternalElementToggle(heading, message, footer, true) +
                     '</div>' +
                     '<div class=\"modal-footer\">' +
-                        '<button type=\"button\" class=\"btn btn-sm btn-dismiss\" data-dismiss=\"modal\">' + m_policy.btDis + '</button>' +
-                        '<button type=\"button\" class=\"btn btn-sm btn-accept\" data-dismiss=\"modal\">' + m_policy.btAcc + '</button>' +
+                        '<button type=\"button\" class=\"btn btn-sm btn-dismiss\" data-bs-dismiss=\"modal\">' + m_policy.btDis + '</button>' +
+                        '<button type=\"button\" class=\"btn btn-sm btn-accept\" data-bs-dismiss=\"modal\">' + m_policy.btAcc + '</button>' +
                     '</div>'
                 '</div>' +
             '</div>' +
@@ -481,22 +567,18 @@ export function createExternalElementModal(heading, message, footer, callbackAcc
         var $btnAccept = jQ(".btn-accept", $modalHolder);
         var $toggleCheckbox = jQ(".toggle-check", $modalHolder);
 
+        const myModal = new Modal("#" + modalId, {
+            backdrop: 'static',
+            focus: true,
+            keyboard: true
+        });
+
         $btnAccept.on("click", function() {
             setPrivacyCookiesExternal(true);
             callbackAccept();
         });
-        $toggleCheckbox.change(function() {
-            setPrivacyCookiesExternal(true);
-            callbackAccept();
-            jQ("#" + modalId).modal('hide');
-        });
 
-        jQ("#" + modalId).modal({
-            backdrop: 'static',
-            show: true,
-            focus: true,
-            keyboard: true
-        });
+        myModal.show();
     }
 }
 
@@ -558,4 +640,5 @@ export function init(jQuery, debug) {
     initBannerData();
     initPrivacyBanner();
     initPrivacyToggle();
+    initMatomoJstControl();
 }

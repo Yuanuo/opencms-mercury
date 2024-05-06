@@ -73,7 +73,7 @@
 <c:set var="role"           value="${empty role ? (not empty value.Role ? value.Role.toString() : null) : role}" />
 <c:set var="css"            value="${empty css ? (not empty value.Css ? value.Css.toString() : null) : css}" />
 <c:set var="tag"            value="${empty tag ? (not empty value.Tag ? value.Tag.toString() : null) : tag}" />
-<c:set var="maxElements"    value="${empty maxElements ? (not empty value.Count and not empty value.Count.toString() ? value.Count.toString() : '100') : maxElements}" />
+<c:set var="maxElements"    value="${empty maxElements ? (not empty value.Count and not empty value.Count.toString() ? value.Count.toString() : '1000') : maxElements}" />
 <c:set var="preMarkup"      value="${not empty value.PreMarkup ? value.PreMarkup.toString() : null}" />
 <c:set var="postMarkup"     value="${not empty value.PostMarkup ? value.PostMarkup.toString() : null}" />
 <c:set var="parameters"     value="${empty parameters ? (not empty value.Parameters ? value.Parameters : null) : parameters}" />
@@ -85,24 +85,6 @@
 <c:if test="${not empty preMarkup}">${preMarkup}</c:if>
 
 <c:choose>
-
-    <c:when test="${showDetailOnly}">
-        <%--
-            If the container is shown only on detail pages, the container tag later would
-            not generate any output on a page that is not a detail page.
-            Therefore we insert a placeholder in this case.
-        --%>
-        <div class="${css}"><%----%>
-            <mercury:container-box
-                label="${title}${not hideName and not empty name ? ' - '.concat(name) : ''}"
-                boxType="detail-placeholder"
-                cssWrapper="attachment"
-                type="${type}"
-                emptyHeading="${emptyHeading}"
-                hideParentType="${hideParentType}"
-            />
-        </div>
-    </c:when>
 
     <c:when test="${maxElements != '0'}">
         <%--
@@ -128,9 +110,14 @@
             <c:set var="gridParam" value="${parameters['cssgrid']}" />
             <%-- Merge CSS of container with manually passed cssgrid parameter --%>
             <c:if test="${not empty gridParam}">
-                <c:set var="cssGrid" value="${cssGrid}${' '}${gridParam}" />
+                <c:set var="cssGrid" value="${cssGrid}${empty cssGrid ? '' : ' '}${gridParam}" />
             </c:if>
         </c:if>
+
+        <c:set var="type" value="${
+            detailView and ((type eq 'element') or (type eq 'm-element')) and cms.sitemapConfig.attribute['template.detailview.element.container'].isSetNotNone
+            ? cms.sitemapConfig.attribute['template.detailview.element.container']
+            : type}" />
 
         <cms:container
             name="${name}"
@@ -146,7 +133,9 @@
             param="${role}">
 
             <c:forEach var="entry" items="${parameters}">
-                <cms:param name="${entry.key}"  value="${entry.value}" />
+                <c:if test="${entry.key ne 'cssgrid'}">
+                    <cms:param name="${entry.key}"  value="${entry.value}" />
+                </c:if>
             </c:forEach>
             <%-- Overwrite cssgrid after the loop with merged value --%>
             <cms:param name="cssgrid"  value="${cssGrid}" />

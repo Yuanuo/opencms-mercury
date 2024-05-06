@@ -83,6 +83,14 @@ $oct-edit-infos:
     > .head, > h1, > h2, > h3, > h4 {
         font-size: 22px !important;
     }
+
+    .text {
+        font-size: 14px !important;
+    }
+
+    .small {
+        font-size: 12.5px !important;
+    }
 }
 
 
@@ -235,13 +243,13 @@ $oct-edit-infos:
 
 // Noise overlay for containers and markers
 
-.oct-meta::after,
-.oct-meta-info::after,
-.container-box::after,
-.oct-alert::after {
-    @include noise-image;
-    content: ' ';
-}
+// .oct-meta::after,
+// .oct-meta-info::after,
+// .container-box::after,
+// .oct-alert::after {
+//     @include noise-image;
+//     content: ' ';
+// }
 
 // Model group marker
 
@@ -292,10 +300,17 @@ $oct-edit-infos:
 
 // Container / editor elements background
 @mixin oct-meta-bg {
+    --#{$prefix}link-color: #{$con-text-col-light};
+    --#{$prefix}link-hover-color: #{$con-text-col-light};
+    --#{$prefix}link-color-rgb: #{to-rgb($con-text-col-light)};
+    --#{$prefix}link-hover-color-rgb: #{to-rgb($con-text-col-light)};
     border-radius: 4px !important;
     color: $con-text-col-light !important;
     background-color: $con-col-orange !important;
     background: linear-gradient(166deg, lighten($con-col-orange, 5%) 0%, darken($con-col-orange, 5%) 100%) !important;
+    a:hover {
+        text-decoration: underline;
+    }
 }
 
 .oct-meta-info {
@@ -306,6 +321,11 @@ $oct-edit-infos:
     &.severe {
         background-color: $con-col-red !important;
         background: linear-gradient(166deg, lighten($con-col-red, 5%) 0%, darken($con-col-red, 5%) 100%) !important;
+    }
+
+    &.padded {
+        margin-top: 10px;
+        padding: 10px;
     }
 }
 
@@ -337,7 +357,7 @@ $oct-edit-infos:
     align-self: flex-start;
 
     &.element {
-        margin-bottom: $default-margin;
+        margin-bottom: var(--#{$prefix}element-margin);
     }
 
     > .marker {
@@ -345,9 +365,9 @@ $oct-edit-infos:
         font-family: $font-family-gui !important;
         padding: 4px 8px !important;
         display: inline-block;
-
+        > .ico,
         > .fa {
-            margin-right: 5px;
+            margin-right: var(--#{$prefix}ws-margin);
         }
     }
 }
@@ -356,15 +376,14 @@ $oct-edit-infos:
     background-color: $online-warn-color;
     color: get-text-color($online-warn-color);
     overflow: hidden;
-    padding: $default-margin-small;
-    @include round-corners($default-border-radius);
+    padding: var(--#{$prefix}box-padding);
+    border-radius: var(--#{$prefix}border-radius);
 
-    > .head {
-        font-family: $font-family-headings;
-        font-weight: $font-weight-headings;
-        font-size: $h4-font-size;
-        + .text {
-            margin-top: $default-margin-small;
+    .warn-head {
+        margin-bottom: 0;
+
+        + .warn-text {
+            margin-top: var(--#{$prefix}headings-margin-bottom);
         }
     }
 }
@@ -373,7 +392,7 @@ $oct-edit-infos:
     .online-warn {
         position: absolute;
         top: 0;
-        left: $default-margin-small;
+        left: var(--#{$prefix}box-padding);
     }
 }
 

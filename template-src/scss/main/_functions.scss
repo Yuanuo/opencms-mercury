@@ -15,85 +15,102 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-@function lookup-text-color($bg-color, $text-color) {
-    $colors: map-get($match-text-bg-colors, $bg-color);
-    @if ($colors != null) {
-        // @debug "Matching #{$text-color} on #{$bg-color} to #{$colors}";
-        @if (index($colors, $text-color) != null) {
-            // @debug "Found #{$text-color} in #{$colors}";
-            @return $text-color;
-        }
+@use 'sass:math';
+
+// Returns the key from a map, or null in case either the map or the key is not defined
+@function map-get-safe($map, $key) {
+    @if (($map != null) and ($key != null)) {
+        @return map-get($map, $key);
     }
     @return null;
 }
 
-@function get-link-colors($bg-color, $text-color: $text-dark, $l-color: $link-color, $lh-color: $link-hover-color, $contrast-threshold: 2.5) {
-    @if (($bg-color == transparent) or ($bg-color == none)) {
-        // if no background color is set, no need to set any color
-        @return ($l-color, $lh-color);
-    } @else if (map-get($match-text-bg-colors, $bg-color) != null) {
-        // if we have a predefined color match, use this
-        $colors: map-get($match-text-bg-colors, $bg-color);
-        $li-color: nth($colors, conditional-value(length($colors) > 1, 2, 1));
-        $lih-color: nth($colors, conditional-value(length($colors) > 2, 3, 1));
-        @return ($li-color, $lih-color);
-    } @else {
-        $lid-color: get-accent-color($text-color, 20%);
-        $contrast-l: contrast($bg-color, $l-color);
-        $contrast-lh: contrast($bg-color, $lh-color);
-        $li-color: conditional-value($contrast-l > $contrast-threshold, $l-color, $lid-color);
-        $lih-color:  conditional-value($li-color == $lid-color, $text-color, conditional-value($contrast-lh > $contrast-threshold, $lh-color, $text-color));
-        @return ($li-color, $lih-color);
+// Checks if a map is not null and has a value for the given key
+@function map-has-key-safe($map, $key) {
+    @return map-get-safe($map, $key) != null;
+}
+
+// Returns a color from the background color map in case a match is found
+// In case no match is found, it will return the provideed $default
+// In case the map is not null but no match is found and the $default is null, it will return a CSS variable with the color name
+@function get-color($color-name, $default, $bg-map) {
+    @if ($bg-map != null) {
+        $value: map-get($bg-map, $color-name);
+        @if ($value != null) {
+            @return $value;
+        }
+        @if ($default != null) {
+            @return $default;
+        }
+        @return var(--#{$prefix}#{$color-name});
     }
+    @return $default;
 }
 
 // Calculates the best color for text based on the background.
-// This should be used if the text color is NOT configurable by a variable, but the background color is.
-@function get-text-color($bg-color, $text-color: $text-dark, $dark-color: $text-dark, $light-color: $text-light) {
-    @if (($bg-color == transparent) or ($bg-color == none)) {
-        // if no background color is set, just use the body text color
-        @return $body-color;
-    } @else if (map-get($match-text-bg-colors, $bg-color) != null) {
-        // if we have a predefined color match, use this
-        $colors: map-get($match-text-bg-colors, $bg-color);
-        @return nth($colors, 1);
-    } @else {
-        // check the lightness of the background and return either light or dark text
-        @if (lightness($bg-color) > $text-lightness-threshold) {
-            @return $dark-color; // light background, dark text
-        } @else {
-            @return $light-color; // dark background, light text
-        }
+// The secound parameter is required only in case the prefered text color a "special" color, not the configured default or light or dark text
+// The result MUST NOT be a CSS variable
+@function get-text-color($bg-color, $text-color: null) {
+    @if ($bg-color == null) {
+        @return null;
     }
-}
-
-// Checks if a text color is suitable for a given background color.
-// This should be used where BOTH the text color and the background color are configurable by a variable,
-// to ensure that the text color is visible on the background.
-@function check-text-color($bg-color, $text-color: $body-color, $default-bg-color: $body-bg, $contrast-threshold: $text-contrast-threshold, $dark-color: $text-dark, $light-color: $text-light) {
+    $color-map: map-get($theme-matched-colors-merged, $bg-color);
     @if (($bg-color == transparent) or ($bg-color == none)) {
-        // if no background color is set, assume background $default-bg-color
-        @return get-text-color($default-bg-color, $text-color, $dark-color, $light-color);
-    } @else {
-        // check the contrast of the background and the text
-        $contrast: contrast($bg-color, $text-color);
-        @if ($contrast > $contrast-threshold) {
-            // contrast is ok, return text color
+        // Check 1: if no background color is set, use the default body text color
+        @return get-color("body-color", $body-color, $color-map); // note: result can NOT be CSS varaible since the default $body-color will not be null
+    }
+    @if ($text-color != null) {
+        // Check 2: if a text color preference is given, check the contrast against the background
+        @if (check-contrast($bg-color, $text-color)) {
             @return $text-color;
         }
-        // contrast not ok, return a matching text color
-        @return get-text-color($bg-color, $text-color, $dark-color, $light-color); // not enough difference in contrast, use default
+    }
+    @if (map-has-key-safe($color-map, "body-color")) {
+        // Check 3: if we have a predefined color match, use this
+        @return map-get($color-map, "body-color");
+    }
+    // Check 4: return either light or dark text depending on the background
+    @if ($text-use-wcag-contrast) {
+        @if (check-contrast($bg-color, $text-light)) {
+            @return $text-light;
+        }
+        @if (check-contrast($bg-color, $text-dark)) {
+            @return $text-dark;
+        }
+        @if (($text-light != $white) and check-contrast($bg-color, $white)) {
+            @return $white;
+        }
+        @if (($text-dark != $black) and check-contrast($bg-color, $black)) {
+            @return $black;
+        }
+        // no text color with sufficient contrast avaiable
+        $contrastWhite: contrast($bg-color, $white);
+        $contrastBlack: contrast($bg-color, $black);
+        $result: $white;
+        $resultContast: $contrastWhite;
+        @if ($contrastBlack > $contrastWhite) {
+            $result: $black;
+            $resultContast: $contrastBlack;
+        }
+        @warn "get-text-color(#{$bg-color}, #{$text-color}): Unable to find text color with contrast ratio #{$text-contrast-threshold} - using #{$result} with contrast ratio #{$resultContast}!";
+        @return $result;
+    } @else {
+        @if (lightness($bg-color) > $text-lightness-threshold) {
+            @return $text-dark; // light background, dark text
+        }
+        @return $text-light; // dark background, light text
     }
 }
 
 // Calculates an accent color for the given base color
-// In case the base color is  dark, a lighter color is returned, otherwise a darker color
+// In case the base color is dark, a lighter color is returned, otherwise a darker color
 @function get-accent-color($color, $percentage: 25%) {
-    $highlight-color: lighten($color, $percentage);
-    @if (lightness($highlight-color) > 95) {
-        $highlight-color: darken($color, $percentage);
+
+    $accent-color: scale-color($color, $lightness: $percentage);
+    @if (lightness($accent-color) > 95) {
+        $accent-color: scale-color($color, $lightness: -1 * $percentage);
     }
-    @return $highlight-color;
+    @return $accent-color;
 }
 
 // Appends a string to a JSON fragment
@@ -104,7 +121,7 @@
 // Generates a JSON from a color array
 @function get-json($color-array) {
     $json: '';
-    @each $color-name, $color-val, $highlight-color in $color-array {
+    @each $color-name, $color-val, $hl-color in $color-array {
         $json: $json + '{' +
             '"name": "' + $color-name + '",' +
             '"value": "' + $color-val + '"' +
@@ -114,11 +131,15 @@
 }
 
 // Returns the usable width of a container
-@function container-useable-width($size) {
+@function container-useable-width($size, $calc: false) {
     @if ($size == "xs") {
         @return 100%;
     } @else {
-        @return map-get($container-max-widths, $size) - $grid-gutter-width;
+        @if ($calc) {
+            @return calc(#{map-get($container-max-widths, $size)} - var(--#{$prefix}gutter-x));
+        } @else {
+            @return map-get($container-max-widths, $size) - $grid-gutter-width;
+        }
     }
 }
 
@@ -126,24 +147,87 @@
 // see https://css-tricks.com/snippets/sass/strip-unit-function/
 @function strip-unit($number) {
     @if type-of($number) == 'number' and not unitless($number) {
-        @return $number / ($number * 0 + 1);
+        @return math.div($number, $number * 0 + 1);
     }
 
     @return $number;
 }
 
-// Can be used to set a value based on a condition
-@function conditional-value($condition, $trueval, $falseval) {
-    @if ($condition) {
-        @return $trueval;
+@function ensure-px($number, $rem-base: $font-rem-base-mobile-size) {
+    @if unit($number) == rem {
+        @return strip-unit($number) * $rem-base;
+    }
+
+    @return $number;
+}
+
+// responsive font sizing
+// adapted from https://css-tricks.com/snippets/css/fluid-typography/
+@function fluid-size($size-large, $size-small, $max-vw, $min-vw: 375px, $rem-base: $font-rem-base-mobile-size) {
+    // $min-vw default 375px is iPhone SE size
+
+    $size-small: ensure-px($size-small, $rem-base);
+    $size-large: ensure-px($size-large, $rem-base);
+
+    @return calc(
+        #{$size-small}
+        + #{strip-unit($size-large - $size-small)}
+        * ((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)})
+    );
+}
+
+// fluid size directly with clamp applied
+@function fluid-size-clamp($size-large, $size-small, $max-vw, $min-vw: 375px, $rem-base: $font-rem-base-mobile-size) {
+
+    @return #{clamp(
+        $size-small,
+        fluid-size($size-large, $size-small, $max-vw, $min-vw, $rem-base),
+        $size-large
+    )};
+}
+
+// fluid size based on BS grid breakpoints
+@function fluid-size-bp($size-large, $size-small, $bp-large: xs, $bp-small: none) {
+
+    $min-vw: if($bp-small == none, 375px, map-get($grid-breakpoints, $bp-small)); // default 375px is iPhone SE size
+    $max-vw: map-get($grid-breakpoints, $bp-large);
+
+    @return fluid-size($size-large, $size-small, $max-vw, $min-vw);
+}
+
+// responsive font sizing based on the container size
+// IMPORTANT: The parent container must have containt: inline-size set!
+// Also make sure to fall back to a static size in case the calculation goes bad
+@function fluid-size-container($size-large, $size-small, $max-px, $min-px: 0, $rem-base: $font-rem-base-mobile-size, $container-width: 100cqw) {
+
+    $size-small: ensure-px($size-small, $rem-base);
+    $size-large: ensure-px($size-large, $rem-base);
+    @if $min-px == 0 {
+        $min-px: $max-px - 0.1px;
+    }
+
+    $fsc-box-factor: clamp(0px, calc((#{$container-width} - #{$min-px}) / #{strip-unit($max-px - $min-px)}), 1px);
+    @return calc(#{$size-small} + #{strip-unit($size-large - $size-small)} * #{$fsc-box-factor});
+}
+
+// add two values directly if comparable, or with calc otherwiese
+@function add-values($value1, $value2) {
+    @if comparable($value1, $value2) {
+        @return $value1 + $value2;
     } @else {
-        @return $falseval;
+        @return calc(#{$value1} + #{$value2});
     }
 }
 
+// check if default buttons are using outline borders
+@function button-use-outline-border() {
+    @return ($btn-border != none) and (($btn-bg == $body-bg) or ($btn-bg == transparent));
+}
 
 // Functions to calculate the contrast difference of two colors
-// See https://medium.com/dev-channel/using-sass-to-automatically-pick-text-colors-4ba7645d2796
+// See https://css-tricks.com/programming-sass-to-create-accessible-color-combinations/
+// See https://medium.com/dev-channel/using-sass-to-automatically-pick-text-colors-4ba7645d2796 (link broken)
+// See https://sgom.es/posts/2016-12-21-using-sass-to-automatically-pick-text-colors/
 
 // Precomputed linear color channel values, for use in contrast calculations.
 // See https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
@@ -413,8 +497,9 @@ $linear-channel-values:
   .9911020971138298
   1;
 
-
+// Functions to calculate the contrast difference of two colors (see above)
 // Calculate the luminance for a color.
+// See https://www.w3.org/TR/WCAG/#dfn-relative-luminance
 @function luminance($color) {
   $red: nth($linear-channel-values, red($color) + 1);
   $green: nth($linear-channel-values, green($color) + 1);
@@ -423,12 +508,25 @@ $linear-channel-values:
   @return .2126 * $red + .7152 * $green + .0722 * $blue;
 }
 
+// Functions to calculate the contrast difference of two colors (see above)
 // Calculate the contrast ratio between two colors.
-@function contrast($back, $front) {
-  $backLum: luminance($back) + .05;
-  $foreLum: luminance($front) + .05;
+// See https://www.w3.org/TR/WCAG/#dfn-contrast-ratio
+@function contrast($bg-color, $fg-color) {
+  $bg-lum: luminance($bg-color) + .05;
+  $fg-lum: luminance($fg-color) + .05;
 
-  @return divide(max($backLum, $foreLum), min($backLum, $foreLum));
+  @return math.div(max($bg-lum, $fg-lum), min($bg-lum, $fg-lum));
+}
+
+// Check if there is sufficient contrast ratio between two colors according to the W3C WCAG rules.
+// See https://www.w3.org/TR/WCAG/#dfn-relative-luminance
+// See https://www.w3.org/TR/WCAG/#dfn-contrast-ratio
+// See https://www.w3.org/WAI/WCAG21/Understanding/conformance#conformance-requirements
+// See https://css-tricks.com/programming-sass-to-create-accessible-color-combinations/
+@function check-contrast($bg-color, $fg-color) {
+    $colorContrast: contrast($bg-color, $fg-color);
+    // @debug "check-contrast() bg: #{$bg-color} fg: #{$fg-color} contrast: #{$colorContrast} threshold: #{$text-contrast-threshold} check result: #{$colorContrast >= $text-contrast-threshold}";
+    @return $colorContrast >= $text-contrast-threshold;
 }
 
 // Optimized encoding an SVG for use in a data uri
@@ -452,48 +550,6 @@ $linear-channel-values:
         $svg: $svg + $char;
     }
     @return $svg;
-}
-
-@function divide($dividend, $divisor, $precision: 10) {
-    $sign: if($dividend > 0 and $divisor > 0 or $dividend < 0 and $divisor < 0, 1, -1);
-    $dividend: abs($dividend);
-    $divisor: abs($divisor);
-    @if $dividend == 0 {
-        @return 0;
-    }
-    @if $divisor == 0 {
-        @error "Cannot divide by 0";
-    }
-    $remainder: $dividend;
-    $result: 0;
-    $factor: 10;
-    @while ($remainder > 0 and $precision >= 0) {
-        $quotient: 0;
-        @while ($remainder >= $divisor) {
-            $remainder: $remainder - $divisor;
-            $quotient: $quotient + 1;
-        }
-        $result: $result * 10 + $quotient;
-        $factor: $factor * .1;
-        $remainder: $remainder * 10;
-        $precision: $precision - 1;
-        @if ($precision < 0 and $remainder >= $divisor * 5) {
-        $result: $result + 1;
-        }
-    }
-    $result: $result * $factor * $sign;
-    $dividend-unit: unit($dividend);
-    $divisor-unit: unit($divisor);
-    $unit-map: (
-        "px": 1px,
-        "rem": 1rem,
-        "em": 1em,
-        "%": 1%
-    );
-    @if ($dividend-unit != $divisor-unit and map-has-key($unit-map, $dividend-unit)) {
-        $result: $result * map-get($unit-map, $dividend-unit);
-    }
-    @return $result;
 }
 
 // Name of the previous breakpoint, or null for the first breakpoint.

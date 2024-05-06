@@ -24,7 +24,7 @@
 <c:set var="isFlexible" value="${value.MediaContent.value.Flexible.isSet}" />
 
 <mercury:teaser-piece
-    cssWrapper="type-media${isAudio ? ' audio ' : ' '}${setCssWrapper}${setEffect}"
+    cssWrapper="type-media${isAudio ? ' audio ' : ' '}${setCssWrapperAll}"
     intro="${setShowIntro ? intro : null}"
     headline="${title}"
     preface="${preface}"
@@ -38,9 +38,11 @@
     teaserType="${displayType}"
     link="${linkToDetail}"
     linkOption="${setLinkOption}"
+    linkNewWin="${setLinkNewWin}"
     hsize="${setHsize}"
     dateFormat="${setDateFormat}"
     textLength="${value['TeaserData/TeaserPreface'].isSet ? -1 : setTextLength}"
+    headingInBody="${setHeadingInBody}"
     buttonText="${setButtonText}">
 
     <jsp:attribute name="markupVisual">

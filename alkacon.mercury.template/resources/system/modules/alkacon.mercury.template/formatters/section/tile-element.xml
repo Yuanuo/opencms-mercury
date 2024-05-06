@@ -2,7 +2,7 @@
 
 <NewFormatters xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="opencms://system/modules/org.opencms.ade.config/schemas/formatters/new_formatter.xsd">
   <NewFormatter language="en">
-    <NiceName><![CDATA[%(key.type.m-section.formatter.tile)]]></NiceName>
+    <NiceName><![CDATA[%(key.type.m-section.formatter.tile-element)]]></NiceName>
     <Type><![CDATA[m-section]]></Type>
     <Key><![CDATA[m/section/tile-element]]></Key>
     <Jsp>
@@ -11,11 +11,13 @@
         <uuid>198ae09a-a0af-47b9-832b-8ed1bc7c4c9f</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-section.description.formatter) %(key.type.m-section.description.formatter.tile-element)]]></Description>
     <Rank><![CDATA[19010]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[tile-element]]></ContainerType>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
       </Types>
     </Match>
     <AutoEnabled>false</AutoEnabled>
@@ -29,6 +31,12 @@
     </IncludeSettings>
     <Setting>
       <IncludeName><![CDATA[cssWrapper.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[cssWrapper2.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[cssWrapper3.default]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[hsize.element.2]]></IncludeName>
@@ -52,7 +60,7 @@
       <IncludeName><![CDATA[cssVisibility.default]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[fullOverlay.false]]></IncludeName>
+      <IncludeName><![CDATA[fullOverlay.tile]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showImageCopyright.default]]></IncludeName>

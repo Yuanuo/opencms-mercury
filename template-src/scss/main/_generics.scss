@@ -21,47 +21,123 @@
 
 // Colored backgrounds
 
-.box {
-    $color: check-text-color($highlight-color);
-    $color-headings: check-text-color($highlight-color, $headings-color);
+.box,
+.box-high {
+    @include set-box-colors($highlight-color, true, true);
+}
 
-    background-color: $highlight-color;
-    color: $color;
+.box-colors {
+    @include set-box-colors($body-bg, true, true);
+}
+
+.box-oct-warning {
+    @include set-box-colors($con-col-orange);
+}
+
+.box-oct-error {
+    @include set-box-colors($con-col-red-light);
+}
+
+.box-oct-info {
+    @include set-box-colors($con-col-cyan);
+}
+
+.box-body {
+    @extend .box-body-base;
+}
+
+.box-theme {
+    @include set-box-colors($main-theme);
+}
+
+.box-dark {
+    @include set-box-colors($darkbg-color);
+}
+
+
+.box-inner {
+    --#{$prefix}body-bg:                            var(--#{$prefix}highlight-color);
+    --#{$prefix}body-color:                         var(--#{$prefix}highlight-fg-color);
+    --#{$prefix}body-bg-rgb:                        var(--#{$prefix}highlight-color-rgb);
+}
+
+.box,
+.box-inner,
+.box-colors {
+    color: var(--#{$prefix}body-color);
+    background-color: var(--#{$prefix}body-bg);
+}
+
+.box,
+.box-inner {
+    padding: var(--#{$prefix}box-padding);
+
+    &.fully-linked {
+        // for boxed elements that are linked ffully, link icon-box or link-box, we want the complete colored space to be clickable
+        padding: 0;
+        > a {
+            padding: var(--#{$prefix}box-padding);
+        }
+    }
+
+    border-radius: var(--#{$prefix}border-radius);
     overflow: hidden;
-    padding: $box-padding;
-
-    @include round-corners($default-border-radius);
 
     &.oc-drag-element {
         // in edit mode allow overflow, otherwise edit points may not be visible (e.g. for lists)
         overflow: visible;
     }
 
-    h1, h2, h3, h4, h5, h6 {
-        // required in order to override colors set in headings
-        color: $color-headings;
+    &.type-tab .tab-content {
+        padding-bottom: 0;
     }
 }
 
-@each $color-name, $bg-color, $highlight-color in $box-colors {
+.box {
+    &.box-ratio-1-1 {
+        min-height: 100cqw;
+    }
+    &.box-ration-4-3 {
+        min-height: #{100cqw * divide(3, 4, $divide-precision)};
+    }
+    &.box-ratio-3-2 {
+        min-height: #{100cqw * divide(2, 3, $divide-precision)};
+    }
+    &.box-ratio-16-9 {
+        min-height: #{100cqw * divide(9, 16, $divide-precision)};
+    }
+    &.box-ratio-35-45 {
+        min-height: #{100cqw * divide(45, 35, $divide-precision)};
+    }
+    &.box-ratio-2-3 {
+        min-height: #{100cqw * divide(3, 2, $divide-precision)};
+    }
+}
 
-    .box-#{""+$color-name} {
+@each $color, $value in $theme-colors {
 
-        @include box-color($bg-color);
+    .box-#{""+$color} {
+        @if (("high" != ""+$color) and ("body" != ""+$color) and ("theme" != ""+$color) and ("dark" != ""+$color)) {
+            // special case: these are already defind by default (see above)
+            @include set-box-colors($value);
+        }
 
         &.transparent {
-            background-color: rgba($bg-color, 0.7);
-            background-image: none;
+            background-color: rgb(var(--#{$prefix}body-bg-rgb), 0.7);
         }
     }
 
-    .bc-#{""+$color-name} {
-        background-color: $bg-color;
+    .bc-#{""+$color} {
+        --#{$prefix}body-bg: #{$value};
+        background-color: var(--#{$prefix}body-bg);
 
         &.transparent {
-            background-color: rgba($bg-color, 0.7);
-            background-image: none;
+            background-color: rgb(var(--#{$prefix}body-bg-rgb), 0.7);
         }
+    }
+
+    .color-#{""+$color}:not(.imageflip) {
+        @include change-colors($value);
     }
 }
 
@@ -70,8 +146,11 @@
 @each $color-name, $text-color in $text-colors {
 
     .text-#{""+$color-name} {
-        @if (""+$color-name != "default") {
-            @include set-text-color($text-color);
+        @if ($color-name != "default") {
+            color: $text-color;
+            *:not(a):not(span) {
+                color: $text-color;
+            }
         } @else {
             @extend .text-dark;
         }
@@ -83,7 +162,7 @@
 @each $color-name, $text-color, $hover-color in $link-colors {
 
     .links-#{""+$color-name} {
-        @if (""+$color-name != "default") {
+        @if ($color-name != "default") {
             @include colored-a($text-color, $hover-color);
         } @else {
             @extend .links-theme;
@@ -104,10 +183,10 @@
 
 @each $line-size in $border-sizes {
 
-    .bo-#{""+$line-size}  {
+    .bo-#{$line-size}  {
         border: #{$line-size}px solid $border-default-color;
         padding: calc(#{$box-padding} - #{$line-size}px);
-        @include round-corners($default-border-radius);
+        border-radius: var(--#{$prefix}border-radius);
     }
 }
 
@@ -115,7 +194,7 @@
 
 @each $radius-name, $radius in $border-radiuses {
 
-    .bo-radius-#{""+$radius-name} {
+    .bo-radius-#{$radius-name} {
         border: 0 solid;
         border-radius: $radius;
     }
@@ -123,10 +202,10 @@
 
 // Colored borders
 
-@each $color-name, $bg-color, $highlight-color in $border-colors {
+@each $color, $value in $theme-colors {
 
-    .bo-#{""+$color-name}  {
-        border-color: $bg-color;
+    .bo-#{""+$color}  {
+        border-color: $value;
     }
 }
 
@@ -134,7 +213,7 @@
 
 @each $border-style in $border-styles {
 
-    .bo-#{""+$border-style}  {
+    .bo-#{$border-style}  {
         border-style: $border-style;
     }
 }
@@ -149,22 +228,15 @@
 
     @each $line-size in $border-sizes {
 
-        .bo-#{""+$position}-#{""+$line-size}  {
+        .bo-#{$position}-#{$line-size}  {
             border-#{$position}: #{$line-size}px solid $border-default-color;
             padding: 20px;
         }
     }
 
-    @each $color-name, $bg-color, $highlight-color in $border-colors {
-
-        .bo-#{""+$position}-#{""+$color-name}  {
-            border-#{$position}-color: $bg-color;
-        }
-    }
-
     @each $border-style in $border-styles {
 
-        .bo-#{""+$position}-#{""+$border-style}  {
+        .bo-#{$position}-#{$border-style}  {
             border-#{$position}-style: $border-style;
         }
     }
@@ -237,6 +309,78 @@
     .mv-neg-#{$space},
     .mb-neg-#{$space} {
         margin-bottom: -#{$rem-space} !important;
+    }
+}
+
+.mt-sm {
+    margin-top: var(--#{$prefix}default-margin-small) !important;
+}
+.mb-sm {
+    margin-bottom: var(--#{$prefix}default-margin-small) !important;
+}
+.mt-md {
+    margin-top: var(--#{$prefix}default-margin) !important;
+}
+.mb-md {
+    margin-bottom: var(--#{$prefix}default-margin) !important;
+}
+
+// Custom spacers (for function element)
+
+.type-spacer {
+    &[class^="box-"],
+    &[class*=" box-"] {
+        // only set a background color in case a box color has been selectd, so the default is 'transparent'
+        background-color: var(--#{$prefix}body-bg);
+    }
+
+    &.space-xs {
+        padding-bottom: var(--#{$prefix}default-margin-verysmall);
+    }
+    &.space-sm {
+        padding-bottom: var(--#{$prefix}default-margin-small);
+    }
+    &.space-md {
+        padding-bottom: var(--#{$prefix}default-margin);
+    }
+    &.space-lg {
+        padding-bottom: calc(2 * var(--#{$prefix}default-margin));
+    }
+    &.space-xl {
+        padding-bottom: calc(4 * var(--#{$prefix}default-margin));
+    }
+    &.space-xxl {
+        padding-bottom: calc(8 * var(--#{$prefix}default-margin));
+    }
+
+    @include media-breakpoint-up(lg) {
+        &.space-lg-none {
+            padding-bottom: 0;
+        }
+        &.space-lg-xs {
+            padding-bottom: var(--#{$prefix}default-margin-verysmall);
+        }
+        &.space-lg-sm {
+            padding-bottom: var(--#{$prefix}default-margin-small);
+        }
+        &.space-lg-md {
+            padding-bottom: var(--#{$prefix}default-margin);
+        }
+        &.space-lg-lg {
+            padding-bottom: calc(2 * var(--#{$prefix}default-margin));
+        }
+        &.space-lg-xl {
+            padding-bottom: calc(4 * var(--#{$prefix}default-margin));
+        }
+        &.space-lg-xxl {
+            padding-bottom: calc(8 * var(--#{$prefix}default-margin));
+        }
+    }
+}
+
+.opencms-page-editor {
+    .type-spacer {
+        background-image: repeating-linear-gradient(90deg,rgba(0,0,0,.1),rgba(0,0,0,.1) 1px,transparent 1px,transparent 20px)
     }
 }
 

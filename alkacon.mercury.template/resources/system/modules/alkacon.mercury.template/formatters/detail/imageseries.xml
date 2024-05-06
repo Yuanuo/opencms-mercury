@@ -11,11 +11,13 @@
         <uuid>89904c3a-7fe2-4ac0-a553-1723c00a45e8</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-imageseries.description.formatter) %(key.type.general.description.detail)]]></Description>
     <Rank><![CDATA[45000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[imageseries]]></ContainerType>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
       </Types>
     </Match>
     <AutoEnabled>false</AutoEnabled>
@@ -38,10 +40,13 @@
       <IncludeName><![CDATA[cssWrapper3.default]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[cssWrapperExtra.default]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[cssWrapperKeyPiece.detail]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[cssWrapperParagraphs.detail]]></IncludeName>
+      <IncludeName><![CDATA[imageSeriesDisplay.default]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[imageSeriesCss.default]]></IncludeName>
@@ -82,9 +87,6 @@
     <Setting>
       <IncludeName><![CDATA[showImageSeriesListCopyright.default]]></IncludeName>
     </Setting>
-    <Setting>
-      <IncludeName><![CDATA[autoLoad.false]]></IncludeName>
-    </Setting>
     <MetaMapping>
       <Key><![CDATA[ogTitleMeta]]></Key>
       <Element><![CDATA[MetaInfo/Title]]></Element>
@@ -103,6 +105,11 @@
     <MetaMapping>
       <Key><![CDATA[Keywords]]></Key>
       <Element><![CDATA[MetaInfo/Keywords]]></Element>
+      <Order><![CDATA[4700]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[Robots]]></Key>
+      <Element><![CDATA[MetaInfo/Robots]]></Element>
       <Order><![CDATA[4700]]></Order>
     </MetaMapping>
     <MetaMapping>

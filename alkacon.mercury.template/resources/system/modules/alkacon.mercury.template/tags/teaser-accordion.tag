@@ -1,5 +1,5 @@
 <%@ tag pageEncoding="UTF-8"
-    display-name="teaser-compact"
+    display-name="teaser-accordion"
     body-content="scriptless"
     trimDirectiveWhitespaces="true"
     description="Displays an accordion teaser." %>
@@ -13,6 +13,12 @@
 
 <%@ attribute name="accordionId" type="java.lang.String" required="false"
     description="Id of the parent accordion." %>
+
+<%@ attribute name="contentId" type="java.lang.String" required="false"
+    description="Id of the content element." %>
+
+<%@ attribute name="instancedate" type="java.lang.String" required="false"
+    description="The instance date of the content element, for event series." %>
 
 <%@ attribute name="preface" type="java.lang.String" required="false"
     description="The optional preface text for the accordion." %>
@@ -34,29 +40,41 @@
 <c:set var="showImageSubtitle"  value="${setting.showImageSubtitle.toBoolean}" />
 <c:set var="open"               value="${setting.firstOpen.toBoolean and (setting.index.toInteger == 0)}" />
 <c:set var="multipleOpen"       value="${setting.multipleOpen.toBoolean}" />
-<c:set var="accordionId"        value="${empty accordionId ? setting.listid.toString : accordionId}" />
-<c:set var="itemId"><mercury:idgen prefix="acco" uuid="${cms.element.instanceId}" />_${setting.index.toInteger}</c:set>
+<c:set var="parentId"           value="${not empty accordionId ? accordionId : setting.listid.toString}" />
+<c:set var="contentId"><mercury:idgen prefix="" uuid="${not empty contentId ? contentId : cms.element.instanceId}" />${empty instancedate ? '' : '_'.concat(fn:replace(instancedate.hashCode(), '-', ''))}</c:set>
+<c:set var="itemId"             value="a${parentId}${contentId}" />
 
 <mercury:nl />
 <article class="accordion ${cssWrapper}"><%----%>
 <mercury:nl />
 
     ${'<h'}${hsize} class="acco-header pivot"${'>'}
-        <a class="acco-toggle ${open ? '':'collapsed'}"<%--
-        --%>data-toggle="collapse" <%--
-        --%>data-target="#${itemId}" <%--
-        --%>href="#${itemId}"><%----%>
-            <c:out value="${title}"></c:out>
-        </a><%----%>
+        <button type="button" <%--
+        --%>class="acco-toggle ${open ? '':'collapsed'}" <%--
+        --%>data-bs-toggle="collapse" <%--
+        --%>data-bs-target="#${itemId}" <%--
+        --%>aria-controls="${itemId}" <%--
+        --%>aria-expanded="${open}"><%--
+        --%><c:out value="${title}"></c:out>
+        </button><%----%>
+
+        <c:if test="${cms.isEditMode}">
+            <a href="#${itemId}" class="hash-link"><%----%>
+                <span class="badge oct-meta-info"><%----%>
+                    <mercury:icon icon="hashtag" tag="span" />
+                </span><%----%>
+            </a><%----%>
+        </c:if>
     ${'</h'}${hsize}${'>'}
 
-    <div id="${itemId}" class="acco-body collapse ${open ? 'show' : ''}"${multipleOpen ? '' : ' data-parent=\"#'.concat(accordionId).concat('\"')}><%----%>
+    <div id="${itemId}" class="acco-body collapse ${open ? 'show' : ''}"${multipleOpen ? '' : ' data-bs-parent=\"#'.concat(parentId).concat('\"')}><%----%>
         <c:if test="${not empty preface}">
              <mercury:heading text="${preface}" level="${7}" css="sub-header pivot" ade="${false}" />
         </c:if>
         <mercury:paragraphs
             pieceLayout="${9}"
             paragraphs="${paragraphs}"
+            cssWrapper="paragraph"
             splitDownloads="${false}"
             hsize="${hsize + 1}"
             imageRatio="${imageRatio}"

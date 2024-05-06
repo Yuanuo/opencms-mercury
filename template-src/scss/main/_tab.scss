@@ -19,9 +19,100 @@
  * Source file: _tab.scss
  */
 
+%acco-header {
+    position: relative;
+
+    > .hash-link {
+        display: none;
+    }
+
+    &:hover {
+        > .hash-link {
+            font-size: var(--#{$prefix}body-font-size);
+            font-weight: var(--#{$prefix}body-font-weight);
+            line-height: var(--#{$prefix}body-line-height);
+
+            position: absolute;
+            right: calc(0.5 * var(--#{$prefix}at-spacing-x));
+            top: var(--#{$prefix}at-spacing-y);
+            display: flex;
+            z-index: $overflow-z-index;
+        }
+    }
+}
+
+%acco-toggle {
+    display: block;
+    width: 100%;
+    position: relative;
+
+    margin: 0;
+    padding: var(--#{$prefix}at-spacing-y) var(--#{$prefix}at-spacing-x);
+
+    font-family: $at-header-font-family;
+    font-weight: $at-header-font-weight;
+    font-size: $at-header-font-size;
+    line-height: $at-header-line-height;
+
+    text-transform: $at-text-transform;
+    text-decoration: none;
+    text-align: inherit;
+    @include use-hyphens-headings;
+
+    border: var(--#{$prefix}at-border);
+    border-radius: var(--#{$prefix}at-border-radius);
+
+    text-overflow: ellipsis;
+    overflow: hidden;
+    z-index: $overflow-z-index;
+
+    color: var(--#{$prefix}at-header);
+    background-color: var(--#{$prefix}at-header-bg);
+}
+
+%acco-toggle-active {
+    color: var(--#{$prefix}at-header-active);
+    background-color: var(--#{$prefix}at-header-active-bg);
+    border-color: var(--#{$prefix}at-header-active-bg);
+}
+
+%acco-toggle-hover {
+    color: var(--#{$prefix}at-header-hover);
+    background-color: var(--#{$prefix}at-header-hover-bg);
+    border-color: var(--#{$prefix}at-header-hover-bg);
+    text-decoration: none;
+}
+
+
+.variant-tabs,
+.accordion {
+    --#{$prefix}at-header: #{$at-header};
+    --#{$prefix}at-header-bg: #{$at-header-bg};
+    --#{$prefix}at-header-active: #{$at-header-active};
+    --#{$prefix}at-header-active-bg: #{$at-header-active-bg};
+    --#{$prefix}at-header-hover: #{$at-header-hover};
+    --#{$prefix}at-header-hover-bg: #{$at-header-hover-bg};
+
+    --#{$prefix}at-spacing-x: #{$at-spacing-x};
+    --#{$prefix}at-spacing-y: #{$at-spacing-y};
+    --#{$prefix}at-content-padding-x: #{$at-content-padding-x};
+    --#{$prefix}at-content-padding-y: #{$at-content-padding-y};
+    --#{$prefix}at-margin-between: #{$at-margin-between};
+
+    --#{$prefix}at-border-radius: #{$at-border-radius};
+    --#{$prefix}at-border-color: #{$at-border-color};
+    --#{$prefix}at-border: #{$at-border};
+
+    --#{$prefix}tab-content-margin-top: #{$tab-content-margin-top};
+
+    --#{$prefix}acco-body-margin-top: #{$acco-body-margin-top};
+    --#{$prefix}acco-body-bg: #{$acco-body-bg};
+}
+
 // Tabs
+
 .tab-content {
-    padding: $default-margin-small 0;
+    margin-top: var(--#{$prefix}tab-content-margin-top);
 
     > .tab-pane {
         display: none;
@@ -32,7 +123,6 @@
 }
 
 .tab-list {
-
     list-style: none;
     padding: 0;
     margin: 0;
@@ -44,94 +134,63 @@
     }
 
     > li {
-        margin-bottom: $accordion-margin;
+        @extend %acco-header;
+        margin-bottom: var(--#{$prefix}at-margin-between);
 
-        > a {
-            border: 1px solid $accordion-border-color;
-            font-size: $accordion-header-font-size;
-            line-height: $accordion-header-line-height;
-            background: $accordion-header-bg;
-            text-transform: $accordion-text-transform;
-            // note: for small screens, tabs are formatted like accordions, hence use these variables here
-            display: block;
-            position: relative;
-            font-family: $font-family-headings;
-            font-weight: $font-weight-headings;
-            color: $accordion-header-color;
-            margin: 0;
-            padding: $default-margin-verysmall $default-margin-small;
-            @include round-corners($tab-border-radius);
+        &:last-of-type {
+            margin-bottom: 0;
+        }
+
+        > .tab-toggle {
+            @extend %acco-toggle;
 
             &.active {
-                color: get-text-color($main-theme);
-                background: $main-theme;
+                @extend %acco-toggle-active;
             }
 
             &:hover {
-                color: get-text-color($tab-header-bg-hover);
-                background: $tab-header-bg-hover;
-                text-decoration: none;
+                @extend %acco-toggle-hover;
             }
         }
     }
 }
 
+.acco-body > div > .row-12,
+.acco-body > div > .row,
 .tab-pane > div > .row-12,
 .tab-pane > div > .row {
     // tabs that have a nested container row first:
     // remove bottom margin that was added by the elements on a page from last row in nested tabs
     // using a negative margin
     &:last-child {
-         margin-bottom: -1 * $default-margin;
+         margin-bottom: calc(-1 * var(--#{$prefix}element-margin));
     }
 }
-.tab-pane > div > .element {
-    // tabs that directly contain elements:
-    // remove bottom margin from the last element in the tab
-    &:last-child {
-         margin-bottom: 0;
-    }
-}
-
-@include media-breakpoint-up(lg) {
-
-    .tab-list {
-        border-bottom: solid 2px $main-theme;
-
-        > li {
-            float: left;
+.acco-body > div,
+.tab-pane > div {
+    > .element,
+    > .detail-page {
+        // tabs that directly contain elements:
+        // remove bottom margin from the last element in the tab
+        &:last-child {
             margin-bottom: 0;
-
-            > a {
-                text-transform: $tab-text-transform;
-                font-size: $tab-header-font-size;
-                line-height: $tab-header-line-height;
-                background: transparent;
-                border: none;
-                @if ($tab-border-radius > 0) {
-                    border-bottom-left-radius: 0;
-                    border-bottom-right-radius: 0;
-                }
-            }
         }
     }
 }
 
-
 // Accordion panels
 
 .accordion {
-
     position: relative;
     display: flex;
     flex-direction: column;
+
     min-width: 0;
     overflow-wrap: anywhere;
     word-break: break-word;
-    margin-bottom: $accordion-margin;
-    box-shadow: $accordion-panel-shadow;
-    border: $accordion-border;
-    @include round-corners($accordion-border-radius, true);
+
+    box-shadow: $acco-panel-shadow;
+    margin-bottom: var(--#{$prefix}at-margin-between);
 
     &:last-of-type {
         margin-bottom: 0;
@@ -139,130 +198,450 @@
 
     .acco-header {
         margin: 0;
-        font-size: $accordion-header-font-size;
-        @if ($accordion-header-font-size-md != $accordion-header-font-size) {
-            @include media-breakpoint-down(md) {
-                font-size: $accordion-header-font-size-md;
+        @extend %acco-header;
+
+        .acco-toggle {
+
+            @extend %acco-toggle;
+
+            &[aria-expanded="true"] {
+                @extend %acco-toggle-active;
+
+                @if ($acco-border-radius-expand-adjust) {
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+            }
+
+            &:hover {
+                @extend %acco-toggle-hover;
             }
         }
-        @include use-hyphens-headings;
-        line-height: $accordion-header-line-height;
-        text-transform: $accordion-text-transform;
 
-        > a {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
-            padding: $accordion-header-padding;
-            color: $accordion-header-color;
-            @if ($accordion-header-bg != transparent) {
-                background: $accordion-header-bg;
+        @if ($acco-toggle-arrows) {
+            &:hover > .hash-link {
+                top: 50%;
+                transform: translateY(-50%);
+                right: calc(3rem + var(--#{$prefix}at-spacing-x));
+                // 3rem should be about the size of the toggle button
             }
 
-            &:focus,
-            &:hover {
-                color: get-text-color($accordion-header-bg-hover);
-                background: $accordion-header-bg-hover;
-                text-decoration: none;
+            .acco-toggle {
+                padding-right: calc(3rem + var(--#{$prefix}at-spacing-x));
+
+                &::after {
+                    @include toggle-arrow-open-after;
+                    right: var(--#{$prefix}at-spacing-x);
+                }
+                &.collapsed::after {
+                    @include toggle-arrow-closed-after;
+                }
             }
         }
     }
 
     .acco-body {
-        border-top: $accordion-border-between;
-        // note: bottom space will be added as margin, either from floating image or piece text
-        padding: $accordion-body-padding;
-        @if ($accordion-body-bg != transparent) {
-            background: $accordion-body-bg;
+        // border-top: var(--#{$prefix}at-border);
+        border: var(--#{$prefix}at-border);
+        border-radius: var(--#{$prefix}at-border-radius);
+
+        background-color: var(--#{$prefix}acco-body-bg);
+        margin-top: var(--#{$prefix}acco-body-margin-top);
+        padding: var(--#{$prefix}at-content-padding-y) var(--#{$prefix}at-content-padding-x);
+
+        overflow: hidden;
+        z-index: $overflow-z-index;
+
+        @if ($acco-border-radius-expand-adjust) {
+            &.collapsing,
+            &.show {
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
         }
 
+        // teaser-accordion tag places piece divs directly in the acco-body
         @include piece-bottom-margin;
-        > .piece:last-of-type {
-            margin-bottom: $default-margin-small;
-        }
     }
 
     .sub-header {
         @extend .h3;
-        margin-bottom: $headings-margin-bottom;
-    }
-
-    @if ($accordion-toggle-arrows) {
-        .acco-header > a {
-            padding-right: 3 * $default-margin-small;
-        }
-
-        .acco-toggle {
-            position: relative;
-
-            &::after {
-                position: absolute;
-                display: inline-block;
-                font-family: ForkAwesome;
-                font-weight: normal;
-                font-size: inherit; // inherit size / height so that the generated icon matches the header font
-                font-style: normal;
-                line-height: inherit;
-                content: "\f078";
-                top: $default-margin-verysmall;
-                right: $default-margin-small;
-                transform: rotate(-180deg) translate(0,0);
-                transition: transform .33s;
-            }
-            &.collapsed::after {
-                transform: rotate(0) translate(0,0);
-                transition: transform 0.33s;
-            }
-        }
+        margin-bottom: var(--#{$prefix}headings-margin-bottom);
     }
 }
 
-.box .accordion .acco-header > a:not(.btn):not(.uncolored)  {
-    // in a box the heading color must not be changed becasue the panel will generate the background
-    color: $accordion-header-color;
-    &:focus,
-    &:hover {
-        color: get-text-color($accordion-header-bg-hover);
-    }
-}
+@include media-breakpoint-up(lg) {
+   .tab-list {
+        border-bottom: solid 2px var(--#{$prefix}at-header-active-bg);
 
-// Colored tabs
-
-@each $color-name, $bg-color, $highlight-color in $tab-colors {
-
-    .color-#{""+$color-name} .tab-list {
-        border-bottom-color: $bg-color;
         > li {
-            > a {
-                &.active {
-                    color: get-text-color($bg-color);
-                    background: $bg-color;
-                }
+            float: left;
+            margin-bottom: 0;
 
-                &:focus,
-                &:hover {
-                    color: get-text-color($highlight-color);
-                    background: $highlight-color;
-                }
+            > .tab-toggle {
+                width: auto;
+
+                // not active tabs are colored like regular text
+                color: var(--#{$prefix}body-color);
+                background-color: transparent;
+
+                border: none;
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
             }
         }
     }
 }
 
-// Colored accordion panels
+// (Image) tile accordions
 
-@each $type-name, $bg-color, $highlight-color in $accordion-colors {
+.variant-tile-accordion {
 
-    .color-#{""+$type-name} .accordion .acco-header {
+    .tile-accordion.row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-bottom: 0;
+    }
 
-        > a {
-            color: get-text-color($bg-color);
-            background: $bg-color;
+    .collapse-trigger {
+        display: flex;
+        position: relative;
 
-            &:hover,
-            &:hover {
-                color: get-text-color($highlight-color);
-                background: $highlight-color;
+        .tile-col {
+            container: tile-col / inline-size;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+
+        .text-overlay,
+        .boxbg-overlay {
+            --#{$prefix}square-text-overlay-fg-shadow: none;
+            --#{$prefix}square-text-overlay-bg-opacity: 0.75;
+            --#{$prefix}square-text-overlay-bg: var(--#{$prefix}body-bg);
+            --#{$prefix}square-text-overlay-bg-rgb: var(--#{$prefix}body-bg-rgb);
+            --#{$prefix}square-text-overlay-fg: var(--#{$prefix}body-color);
+        }
+
+        .text-overlay {
+            display: flex;
+            align-items: center;
+            .piece {
+                width: 100%;
+            }
+            @container tile-col (max-width: 150px) {
+                --#{$prefix}square-text-overlay-padding-h: 1rem;
+            }
+        }
+
+        .piece-heading {
+            @include heading-base;
+            overflow: visible;
+            font-size: $at-tile-header-font-size-static;
+            @container tile-col (min-width: 0px) {
+                font-size: #{fluid-size-container(22px, 10px, 300px, 100px)};
+            }
+        }
+
+        .hash-link {
+            display: none;
+            z-index: #{$overflow-z-index + 20};
+            position: absolute;
+            top: 15px;
+            right: calc(15px + 0.5 * var(--#{$prefix}gutter-x));
+        }
+
+        &:hover > .hash-link {
+            display: block;
+        }
+    }
+
+    .collapse-target {
+        margin-top: max(var(--#{$prefix}gutter-y), 10px);
+        margin-bottom: calc(10 * clamp(0px, calc(10px - var(--#{$prefix}gutter-y)), 1px));
+
+        &.collapsing {
+            transition: none;
+        }
+
+        .detail-page:last-child,
+        .element:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &.show-button {
+        .collapse-trigger .trigger-item::after {
+            @include icon-font();
+            content: $toggle-arrow-icon;
+            display: flex;
+            position: absolute;
+            justify-content: center;
+            align-items: center;
+            line-height: 1;
+            color: var(--#{$prefix}body-color);
+            background-color: var(--#{$prefix}body-bg);
+            font-size: $at-tile-button-font-size;
+            width: $at-tile-button-size;
+            height: $at-tile-button-size;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-left-radius: var(--#{$prefix}image-border-radius);
+            border-bottom-right-radius: var(--#{$prefix}image-border-radius);
+            bottom: -1 * $at-tile-button-size;
+            transition: bottom .33s, opacity .33s;
+            transform: translateX(-50%);
+            left: 50%;
+            opacity: 1;
+        }
+        .collapse-trigger.collapsed .trigger-item::after {
+            bottom: 0;
+            opacity: 0;
+        }
+        .collapse-target {
+            &::before {
+                display: flex;
+                content: '';
+                height: 0;
+                transition: height .33s;
+            }
+            &.show::before {
+                height: calc(#{$at-tile-button-size});
+            }
+        }
+    }
+
+    &.hide-button {
+        .collapse-target {
+            &.collapsing {
+                transition: height .1s;
+            }
+        }
+    }
+
+    &.show-border {
+        .collapse-trigger {
+            .content-box {
+                outline: $at-tile-outline-width solid var(--#{$prefix}body-bg);
+                transition: outline-width .2s;
+            }
+            &.collapsed {
+                .content-box {
+                    outline-width: 0;
+                }
+            }
+        }
+    }
+
+    &.text-below {
+        .collapse-trigger {
+            .text-overlay {
+                --#{$prefix}square-text-overlay-bg-opacity: 1;
+                position: relative;
+                flex-grow: 1;
+            }
+
+            .content-box {
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+
+                .effect-box {
+                    .image-src-box,
+                    .image-src-box img {
+                        border-bottom-left-radius: 0;
+                        border-bottom-right-radius: 0;
+                    }
+                }
+            }
+        }
+    }
+
+    @include media-breakpoint-down(md) {
+        span.col-6 {
+            &:nth-of-type(n+1) {
+                order: 10;
+            }
+            &:nth-of-type(n+3) {
+                order: 30;
+            }
+            &:nth-of-type(n+5) {
+                order: 50;
+            }
+            &:nth-of-type(n+7) {
+                order: 70;
+            }
+            &:nth-of-type(n+9) {
+                order: 90;
+            }
+            &:nth-of-type(n+11) {
+                order: 110;
+            }
+            &:nth-of-type(n+13) {
+                order: 130;
+            }
+        }
+        div.target-6 {
+            &:nth-of-type(n+1) {
+                order: 20;
+            }
+            &:nth-of-type(n+3) {
+                order: 40;
+            }
+            &:nth-of-type(n+5) {
+                order: 60;
+            }
+            &:nth-of-type(n+7) {
+                order: 80;
+            }
+            &:nth-of-type(n+9) {
+                order: 100;
+            }
+            &:nth-of-type(n+11) {
+                order: 120;
+            }
+            &:nth-of-type(n+13) {
+                order: 140;
+            }
+        }
+    }
+    @include media-breakpoint-up(md) {
+        span.col-md-3 {
+            &:nth-of-type(n+1) {
+                order: 10;
+            }
+            &:nth-of-type(n+5) {
+                order: 30;
+            }
+            &:nth-of-type(n+9) {
+                order: 50;
+            }
+            &:nth-of-type(n+13) {
+                order: 70;
+            }
+        }
+        div.target-md-3 {
+            &:nth-of-type(n+1) {
+                order: 20;
+            }
+            &:nth-of-type(n+5) {
+                order: 40;
+            }
+            &:nth-of-type(n+9) {
+                order: 60;
+            }
+            &:nth-of-type(n+13) {
+                order: 80;
+            }
+        }
+
+        span.col-lg-2,
+        span.col-md-4 {
+            &:nth-of-type(n+1) {
+                order: 10;
+            }
+            &:nth-of-type(n+4) {
+                order: 30;
+            }
+            &:nth-of-type(n+7) {
+                order: 50;
+            }
+            &:nth-of-type(n+10) {
+                order: 70;
+            }
+            &:nth-of-type(n+13) {
+                order: 90;
+            }
+        }
+
+        div.target-lg-2,
+        div.target-md-4 {
+            &:nth-of-type(n+1) {
+                order: 20;
+            }
+            &:nth-of-type(n+4) {
+                order: 40;
+            }
+            &:nth-of-type(n+7) {
+                order: 60;
+            }
+            &:nth-of-type(n+10) {
+                order: 80;
+            }
+            &:nth-of-type(n+13) {
+                order: 100;
+            }
+        }
+
+        span.col-md-6 {
+            &:nth-of-type(n+1) {
+                order: 10;
+            }
+            &:nth-of-type(n+3) {
+                order: 30;
+            }
+            &:nth-of-type(n+5) {
+                order: 50;
+            }
+            &:nth-of-type(n+7) {
+                order: 70;
+            }
+            &:nth-of-type(n+9) {
+                order: 90;
+            }
+            &:nth-of-type(n+11) {
+                order: 110;
+            }
+            &:nth-of-type(n+13) {
+                order: 130;
+            }
+        }
+        div.target-md-6 {
+            &:nth-of-type(n+1) {
+                order: 20;
+            }
+            &:nth-of-type(n+3) {
+                order: 40;
+            }
+            &:nth-of-type(n+5) {
+                order: 60;
+            }
+            &:nth-of-type(n+7) {
+                order: 80;
+            }
+            &:nth-of-type(n+9) {
+                order: 100;
+            }
+            &:nth-of-type(n+11) {
+                order: 120;
+            }
+            &:nth-of-type(n+13) {
+                order: 140;
+            }
+        }
+    }
+    @include media-breakpoint-up(lg) {
+        span.col-lg-2 {
+            &:nth-of-type(n+1) {
+                order: 10;
+            }
+            &:nth-of-type(n+7) {
+                order: 30;
+            }
+            &:nth-of-type(n+13) {
+                order: 50;
+            }
+        }
+        div.target-lg-2 {
+            &:nth-of-type(n+1) {
+                order: 20;
+            }
+            &:nth-of-type(n+7) {
+                order: 40;
+            }
+            &:nth-of-type(n+13) {
+                order: 60;
             }
         }
     }

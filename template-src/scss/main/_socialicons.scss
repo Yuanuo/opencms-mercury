@@ -22,18 +22,12 @@
 // Default social icon style, grey and boxed
 
 .social-icons {
-    // shariff 3 uses Font Awesome 5 while Mercury uses ForkAwesome
+    // shariff 3 uses Font Awesome 5 while Mercury uses Font (Fork) Awesome 4
     .fas,
     .fab {
+        @include icon-font(); // mercury:icon
         display: inline-block;
-        font-family: ForkAwesome;
         font-size: inherit;
-        text-rendering: auto;
-        -webkit-font-smoothing: antialiased;
-    }
-
-    .fa-linkedin-in:before {
-        content: "\f0e1";
     }
 }
 
@@ -41,6 +35,7 @@
     list-style: none;
     font-size: 0;
     padding: 0;
+    line-height: 1;
 
     ul {
         margin: 0;
@@ -51,7 +46,7 @@
 
     &.element {
         // social icons use display flex, so margin of items must be subtracted from element default margin
-        margin-bottom: $default-margin - $social-links-margin;
+        margin-bottom: calc(var(--#{$prefix}element-margin) - $social-links-margin);
     }
 
     li {
@@ -63,6 +58,7 @@
         vertical-align: middle;
 
         a {
+            color: $social-links-color;
             background-color: $social-links-bg;
             width: $social-links-box-height;
             height: $social-links-box-height;
@@ -74,7 +70,7 @@
             }
 
             font-size: $social-links-size;
-            @include round-corners($social-links-border-radius);
+            border-radius: $social-links-border-radius;
 
             * {
                 color: $social-links-color;
@@ -97,23 +93,28 @@
     .share_text {
         display: none;
         text-align: left;
-        padding-right: $default-margin-small;
-        font-size: $font-size-base;
-        @if ($btn-font-family != $font-family-base) {
-            font-family: $btn-font-family;
-        }
-        @if ($btn-font-weight != $font-weight-base) {
-            font-weight: $btn-font-weight;
-        }
+        padding-right: var(--#{$prefix}default-margin-small);
+        font-size: var(--#{$prefix}body-font-size);
+        font-family: var(--#{$prefix}btn-font-family);
+        font-weight: $btn-font-weight;
     }
 
+    .ico,
     .fa,
     .fas,
-    .fab, {
+    .fab {
         width: #{$social-links-box-height - 2*$social-links-border-width};
         line-height: #{$social-links-box-height - 2*$social-links-border-width};
         text-align: center;
         font-size: $social-links-size;
+    }
+
+    .ico-svg {
+        line-height: 1;
+        height: #{$social-links-box-height - 2*$social-links-border-width};
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .bgi {
@@ -154,8 +155,13 @@
 @mixin social-icons-verbose {
     a {
         width: initial;
+        display: flex;
+
         .share_text {
             display: inline;
+
+            display: flex;
+            align-items: center;
         }
     }
 }
@@ -227,9 +233,9 @@
 // Add class 'themed' to use the main theme color for the icons
 
 .social-icons.themed li a {
-    background-color: $main-theme;
+    background-color: var(--#{$prefix}main-theme);
     * {
-        color: get-text-color($main-theme);
+        color: var(--#{$prefix}main-theme-fg);
     }
 }
 

@@ -21,47 +21,36 @@ import Masonry from 'masonry-layout';
 
 "use strict";
 
-//the global objects that must be passed to this module
-var jQ;
-var DEBUG;
+function createMasonryList(listId, listSelector) {
 
-var m_masonryLists = {};
-
-function createMasonryList(listId) {
-
-    if (DEBUG) console.info("MasonryList.createMasonryList(" + listId + ")");
-
-    return new Masonry('#' + listId + ' .row-tile', {
-        itemSelector: '.teaser-tile',
+    if (Mercury.debug()) console.info("MasonryList.createMasonryList(" + listId + ")");
+    return new Masonry('#' + listId + listSelector, {
+        itemSelector: '.tile-col',
         percentPosition: true
     });
 }
 
 /****** Exported functions ******/
 
-export function init(jQuery, debug) {
+export function init() {
 
-    jQ = jQuery;
-    DEBUG = debug;
+    if (Mercury.debug()) console.info("MasonryList.init()");
 
-    if (DEBUG) console.info("MasonryList.init()");
-
-    var $listElements = jQ('.masonry-list .list-dynamic');
-    if (DEBUG) console.info("MasonryList.init() .masonry-list .list-dynamic elements found: " + $listElements.length);
-
-    if ($listElements.length > 0 ) {
-        $listElements.each(function() {
-            var $list = jQ(this);
-
-            var list = {};
-            list.id = $list.attr("id");
-
-            m_masonryLists[list.id] = list;
+    const listElements = document.querySelectorAll('.masonry-list .list-dynamic');
+    if (Mercury.debug()) console.info("MasonryList.init() .masonry-list .list-dynamic elements found: " + listElements.length);
+    for (const listElement of listElements) {
+        listElement.addEventListener("list:loaded", function(e) {
+            const listId = e.target.getAttribute('id');
+            createMasonryList(listId, " .list-entries");
         });
     }
 
-    jQ(".masonry-list .row-tile").parent().on("list:loaded", function() {
-        var listId = $(this).attr("id");
-        m_masonryLists[listId].masonry = createMasonryList(listId);
-    });
+    const imageseriesElements = document.querySelectorAll('.masonry-list .series');
+    if (Mercury.debug()) console.info("MasonryList.init() .masonry-list .series elements found: " + imageseriesElements.length);
+    for (const listElement of imageseriesElements) {
+        listElement.addEventListener("imageseries:loaded", function(e) {
+            const listId = e.target.getAttribute('id');
+            createMasonryList(listId, " .images");
+        });
+    }
 }

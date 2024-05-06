@@ -19,7 +19,6 @@
  */
 
 .list-content {
-
     .list-box {
         position: relative;
         display: flex;
@@ -28,7 +27,7 @@
         &.initial-load {
             opacity: 0.5;
             &::after {
-                content: ' ';
+                content: " ";
                 position: absolute;
                 z-index: 10;
                 display: block;
@@ -54,7 +53,7 @@
         ul.list-entries {
             // this does not work for dynamic lists
             > .list-entry:last-of-type {
-                > .teaser {
+                > .teaser:not(.teaser-text-tile) {
                     margin-bottom: 0;
                 }
             }
@@ -66,7 +65,7 @@
         position: relative; // required otherwise edit points may get mixed up
 
         &:not(:last-of-type) {
-            margin-bottom: $default-margin;
+            margin-bottom: var(--#{$prefix}element-margin);
         }
     }
 
@@ -75,14 +74,14 @@
     }
 
     .list-link {
-        margin-top: $default-margin;
+        margin-top: var(--#{$prefix}element-margin);
     }
 }
 
 // Teasers - applies for teasers in lists as well as teasers placed directly on a page
 
 .teaser {
-    margin-bottom: $default-margin;
+    margin-bottom: var(--#{$prefix}element-margin);
     @include clearfix;
 
     &.teaser-compact {
@@ -92,36 +91,28 @@
         }
     }
 
-    .intro-headline {
-        @include font-size-responsive($teaser-title-size-mobile, $teaser-title-size);
-        line-height: $teaser-title-height;
-        margin-bottom: $default-margin-small;
-    }
-
-    .teaser-btn {
-          &:not(:last-child) {
-            margin-right: $default-margin-small;
+    @if (not $list-teaser-format-inlist-only) {
+        .intro-headline {
+            @include font-size-responsive($teaser-title-size-mobile, $teaser-title-size);
+            line-height: $teaser-title-height;
+            margin-bottom: $teaser-headings-margin-bottom;
         }
-        @if ($teaser-btn-def-padding != $btn-def-padding) {
-            padding: $teaser-btn-def-padding;
-        }
-        @if ($teaser-btn-color != $btn-default) {
-            background-color: $teaser-btn-color;
-            color:  get-text-color($teaser-btn-color);
-            font-size: $font-size-sm;
 
-            &:hover {
-                background-color: $teaser-btn-hover-color;
-                color:  get-text-color($teaser-btn-hover-color);
+        .teaser-btn {
+            &:not(:last-child) {
+                margin-right: var(--#{$prefix}ws-margin);
+            }
+            @if ($teaser-btn-def-padding != $btn-def-padding) {
+                padding: $teaser-btn-def-padding;
             }
         }
-    }
 
-    .teaser-date {
-        line-height: 1.2;
-        font-size: 80%;
-        color: $teaser-info-color;
-        margin-bottom: $default-margin-verysmall;
+        .teaser-date {
+            line-height: 1.2;
+            font-size: 80%;
+            color: $teaser-info-color;
+            margin-bottom: $teaser-date-margin-bottom;
+        }
     }
 
     .heading {
@@ -141,7 +132,7 @@
             &,
             &:focus,
             &:hover {
-                color: $body-color;
+                color: var(--#{$prefix}body-color);
                 text-decoration: none;
             }
         }
@@ -166,6 +157,30 @@
         &.teaser-compact {
             // compact teaser elements have a reduced bottom margin
             margin-bottom: $list-teaser-margin-compact;
+        }
+
+        @if ($list-teaser-format-inlist-only) {
+            .intro-headline {
+                @include font-size-responsive($teaser-title-size-mobile, $teaser-title-size);
+                line-height: $teaser-title-height;
+                margin-bottom: $teaser-headings-margin-bottom;
+            }
+
+            .teaser-btn {
+                &:not(:last-child) {
+                    margin-right: var(--#{$prefix}ws-margin);
+                }
+                @if ($teaser-btn-def-padding != $btn-def-padding) {
+                    padding: $teaser-btn-def-padding;
+                }
+            }
+
+            .teaser-date {
+                line-height: 1.2;
+                font-size: 80%;
+                color: $teaser-info-color;
+                margin-bottom: $teaser-date-margin-bottom;
+            }
         }
     }
 
@@ -194,12 +209,18 @@
             margin-bottom: $list-teaser-margin-compact;
 
             .intro-headline {
-                margin-bottom: $default-margin-verysmall;
+                margin-bottom: var(--#{$prefix}default-margin-verysmall);
                 font-size: inherit; // this way the heading will have the same size as the text
             }
 
             .teaser-btn {
                 padding: $teaser-btn-compact-padding;
+            }
+
+            .list-badge {
+                font-size: 70%;
+                padding: 2px 4px;
+                bottom: 1px;
             }
         }
     }
@@ -210,12 +231,11 @@
 @if ($list-side-adjust) {
     aside .list-content,
     .list-content.list-aside {
-
         .teaser {
             // make buttons in side grey so that they don't distract from main content
             .teaser-btn:not(:hover) {
-                background-color: $list-side-color;
-                color: get-text-color($list-side-color);
+                background-color: var(--#{$prefix}highlight-color);
+                color: var(--#{$prefix}highlight-fg-color);
             }
 
             .intro-headline {
@@ -242,7 +262,7 @@
                         @include font-size-responsive(
                             // the intro heading should be the same in all variations: 65% percent of the reduced teaser title font size
                             round($teaser-title-size-mobile * 9) * 0.1 * 0.65,
-                            round($teaser-title-size * 9 ) * 0.1 * 0.65
+                            round($teaser-title-size * 9) * 0.1 * 0.65
                         )
                     }
                 }
@@ -279,7 +299,6 @@
     }
 }
 
-
 // Tiling teasers with flex box layout
 
 .teaser-tile {
@@ -294,10 +313,56 @@
         @include text-tile;
 
         > .body {
+            display: flex;
+            flex-direction: column;
             > .heading {
                 .headline {
                     line-height: $teaser-title-height;
                 }
+            }
+            .type-list-group {
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+                .text {
+                    flex-grow: 1;
+                }
+            }
+        }
+
+        &.box {
+            padding: 0 0 var(--#{$prefix}box-padding) 0;
+            &.pnv {
+                padding-top: var(--#{$prefix}box-padding);
+            }
+            > *:not(.visual) {
+                padding: 0 var(--#{$prefix}box-padding);
+            }
+            > .visual {
+                .content, // for type media
+                .calendar-sheet, // for type event etc.
+                .image-src-box,
+                .image-src-box > img {
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+                .calendar-sheet {
+                    border: none;
+                }
+            }
+        }
+    }
+}
+
+.tile-var {
+    .teaser.piece {
+        margin-bottom: 0;
+        width: 100%;
+
+        &.full {
+            > .body {
+                flex-basis: auto;
+                flex-grow: 1;
             }
         }
     }
@@ -326,19 +391,26 @@
     flex-grow: 0; // no growing in masonry lists
 }
 
+@include media-breakpoint-down($piece-desktop-breakpoint) {
+    .mobile-reduced {
+        .teaser-text {
+            display: none;
+        }
+    }
+}
+
 // Download lists
 
 @mixin dl-btn {
-    margin-top: $default-margin-verysmall;
+    margin-top: var(--#{$prefix}default-margin-verysmall);
     min-width: 200px;
 
-    .fa {
-        padding-right: $default-margin-small;
+    .ico {
+        padding-right: var(--#{$prefix}ws-margin);
     }
 }
 
 .download-list {
-
     a:hover {
         text-decoration: none;
         .dl-content {
@@ -346,7 +418,7 @@
                 text-decoration: underline;
             }
             .dl-desc {
-                color: $text-dark;
+                color: var(--#{$prefix}body-color);
             }
         }
     }
@@ -354,7 +426,7 @@
     a:not(:hover) .dl-content {
         .dl-desc,
         .dl-file {
-            color: $text-dark;
+            color: var(--#{$prefix}body-color);
         }
     }
 
@@ -376,21 +448,20 @@
     .dl-cat {
         .dl-cat-label {
             @include list-category-label(false, false);
-            margin-right: $default-margin-small;
+            margin-right: var(--#{$prefix}ws-margin);
         }
     }
 
     &.dl-list-elaborate {
-
         li.list-entry {
-            padding-top: $default-margin-small;
-            padding-bottom: $default-margin-small;
-            border-bottom: 1px solid $highlight-color;
+            padding-top: var(--#{$prefix}default-margin-small);
+            padding-bottom: var(--#{$prefix}default-margin-small);
+            border-bottom: 1px solid var(--#{$prefix}highlight-color);
 
             &:last-child {
                 padding-bottom: 0;
                 border-bottom: none;
-                margin-bottom: $default-margin;
+                margin-bottom: var(--#{$prefix}element-margin);
             }
 
             &:first-child {
@@ -401,19 +472,18 @@
         .dl-content {
             .dl-title {
                 margin-top: 0;
-                margin-bottom: $default-margin-verysmall;
+                margin-bottom: var(--#{$prefix}default-margin-verysmall);
             }
             .dl-file {
-                margin-bottom: $default-margin-verysmall;
+                margin-bottom: var(--#{$prefix}default-margin-verysmall);
             }
             .dl-desc {
-                margin-bottom: $default-margin-verysmall;
+                margin-bottom: var(--#{$prefix}default-margin-verysmall);
             }
             .dl-btn {
                 @include dl-btn;
             }
         }
-
 
         .dl-stats {
             .dl-type::after {
@@ -428,17 +498,17 @@
                     float: left;
                 }
                 > .dl-cat {
-                    padding-left: $default-margin;
+                    padding-left: calc(2 * var(--#{$prefix}ws-margin));
                     float: right;
                 }
             }
 
             .dl-info {
-                margin-top: $default-margin-small;
+                margin-top: var(--#{$prefix}p-spacer);
                 text-align: center;
-                .fa {
+                .ico {
                     font-size: 4.0rem;
-                    margin-bottom: $default-margin-verysmall;
+                    margin-bottom: var(--#{$prefix}default-margin-verysmall);
                 }
                 .dl-info-text {
                     display: none;
@@ -446,10 +516,10 @@
             }
         }
 
-        @include media-breakpoint-down(sm) {
+        @include media-breakpoint-down(md) {
             .dl-info {
                 text-align: left;
-                margin-top: $default-margin-verysmall;
+                margin-top: var(--#{$prefix}default-margin-verysmall);
 
                 .btn-info {
                     @include button-base;
@@ -457,15 +527,15 @@
                     text-align: left;
                     min-width: 50%;
                 }
-                .fa {
-                    min-width: 2*$default-margin;
+                .ico {
+                    min-width: calc(4 * var(--#{$prefix}ws-margin));
                 }
             }
             .dl-content .dl-btn {
                 min-width: 50%;
                 text-align: left;
-                .fa {
-                    min-width: 2*$default-margin;
+                .ico {
+                    min-width: calc(4 * var(--#{$prefix}ws-margin));
                 }
             }
             .dl-stats {
@@ -475,23 +545,27 @@
     }
 
     &.dl-list-compact {
-
         .list-entries {
-            border-bottom: 1px solid $dl-list-highlight-color;
-            margin-bottom: $default-margin-small;
+            border-bottom: 1px solid var(--#{$prefix}highlight-color);
+            margin-bottom: var(--#{$prefix}default-margin-small);
         }
 
         li:nth-child(odd) .dl-link {
-            background-color: $dl-list-highlight-color;
+            background-color: var(--#{$prefix}highlight-color);
         }
 
         .dl-link {
-            padding-top: $default-margin-small;
-            padding-bottom: $default-margin-small;
+            padding-top: var(--#{$prefix}default-margin-small);
+            padding-bottom: var(--#{$prefix}default-margin-small);
         }
         a.dl-link:hover {
             .dl-title {
-                color: $main-theme-hover;
+                color: var(--#{$prefix}link-hover-color);
+            }
+        }
+        &.box {
+            a.dl-link:hover {
+                transition: none;
             }
         }
 
@@ -503,18 +577,18 @@
         .dl-link {
             display: flex;
             &.dl-link-disp {
-               flex-grow: 10;
-               width: 100%;
+                flex-grow: 10;
+                width: 100%;
             }
-            .fa {
+            .ico {
                 font-size: 2.0rem;
             }
         }
         .dl-type {
-            padding: 0 $default-margin-small;
+            padding: 0 var(--#{$prefix}ws-margin);
         }
         .dl-dl {
-            padding-right: $default-margin-small;
+            padding-right: var(--#{$prefix}ws-margin);
         }
         .dl-content {
             flex-grow: 10;
@@ -542,7 +616,7 @@
         }
         .dl-show-file {
             .dl-link {
-                .fa {
+                .ico {
                     padding-top: 0.4rem;
                     font-size: 2.5rem;
                 }
@@ -552,7 +626,7 @@
                 flex-direction: column;
             }
         }
-        @include media-breakpoint-down(sm) {
+        @include media-breakpoint-down(md) {
             .dl-teaser-compact {
                 flex-direction: column;
             }
@@ -568,7 +642,7 @@
                     justify-content: flex-start;
                     padding-top: 0;
                     padding-bottom: 1rem;
-                    .fa {
+                    .ico {
                         padding-top: 0;
                         font-size: 1.8rem;
                     }
@@ -615,15 +689,15 @@
             &:not(.disabled) {
                 // make buttons in side grey so that they don't distract from main content
                 > a:not(:hover) {
-                    background-color: $body-bg;
-                    border-color: $list-side-color;
-                    color: get-text-color($body-bg);
+                    background-color: var(--#{$prefix}body-bg);
+                    border-color: var(--#{$prefix}highlight-border-color);
+                    color: var(--#{$prefix}body-color);
                 }
                 &.active {
                     > a:not(:hover) {
-                        background-color: $list-side-color;
-                        border-color: $list-side-color;
-                        color: get-text-color($list-side-color);
+                        background-color: var(--#{$prefix}highlight-border-color);
+                        border-color: var(--#{$prefix}highlight-border-color);
+                        color: var(--#{$prefix}highlight-border-fg-color);
                     }
                 }
             }
@@ -632,14 +706,14 @@
                 // assume on small screens side columns are full width
                 // on large screens button in side columns must be smaller to fit into column
                 &.previous {
-                    margin-right: $default-margin-verysmall;
+                    margin-right: calc(0.5 * var(--#{$prefix}ws-margin));
                 }
                 &.next {
-                    margin-left: $default-margin-verysmall;
+                    margin-left: calc(0.5 * var(--#{$prefix}ws-margin));
                 }
                 &.first {
                     &.gap::after {
-                        margin: 0 $default-margin-verysmall;
+                        margin: 0 calc(0.5 * var(--#{$prefix}ws-margin));
                     }
                 }
 
@@ -654,9 +728,9 @@
     .btn-append {
         // also recolor append button in side lists
         &:not(:hover) {
-            background-color: $list-side-color;
-            border-color: $list-side-color;
-            color: get-text-color($list-side-color);
+            background-color: var(--#{$prefix}highlight-color);
+            border-color: var(--#{$prefix}highlight-color);
+            color: var(--#{$prefix}highlight-fg-color);
         }
     }
 }
@@ -674,7 +748,6 @@
     .list-dynamic:not(.list-paginate) {
         // button append loading
         .list-pagination {
-
             @include media-breakpoint-up(lg) {
                 display: flex;
                 justify-content: center;
@@ -699,19 +772,53 @@
     justify-content: flex-end;
 }
 
+.list-entries.row ~ .list-pagination {
+    // Bs5 row list do not have bottom margin, so add above pagination
+    margin-top: var(--#{$prefix}element-margin);
+}
+
 // List archive filter menu
 
 .type-list-filter {
+    --#{$prefix}filter-body-bg: #{$list-filter-body-bg};
+    --#{$prefix}filter-body-fg: #{$list-filter-body-fg};
+
+    --#{$prefix}filter-btn-bg: #{$list-filter-background};
+    --#{$prefix}filter-btn-fg: #{$list-filter-color};
+
+    --#{$prefix}filter-btn-hover-bg: #{$list-filter-hover};
+    --#{$prefix}filter-btn-hover-fg: #{$list-filter-hover-fg};
+
+    --#{$prefix}filter-border-color: #{$list-border-color};
+
+    --#{$prefix}filter-highlight-bg: #{$list-filter-highlight-bg};
+    --#{$prefix}filter-highlight-fg: #{$list-filter-highlight-fg};
+    --#{$prefix}filter-highlight-border: #{$list-filter-highlight-border};
+
+    --#{$prefix}filter-highlight-hover-bg: #{$list-filter-highlight-hover-bg};
+    --#{$prefix}filter-highlight-hover-fg: #{$list-filter-highlight-hover-fg};
+    --#{$prefix}filter-highlight-hover-border: #{$list-filter-highlight-hover-border};
+
+    --#{$prefix}filter-disabled-bg: #{$list-filter-disabled-bg};
+    --#{$prefix}filter-disabled-fg: #{$list-filter-disabled-fg};
+    --#{$prefix}filter-disabled-border: #{$list-filter-disabled-border};
+
+    @include button-reset-outline-border;
 
     button {
         padding-left: $nav-side-left-padding-step;
-        padding-right: $default-margin;
+        padding-right: $nav-handle-right-padding;
     }
 
     .filterbox {
         border-radius: $list-border-radius;
-        margin-bottom: $default-margin;
-        background-color: $body-bg;
+        margin-bottom: var(--#{$prefix}element-margin);
+        color: var(--#{$prefix}filter-body-fg);
+        background-color: var(--#{$prefix}filter-body-bg);
+
+        &:empty {
+            margin-bottom: 0;
+        }
 
         &:last-of-type {
             margin-bottom: 0;
@@ -722,6 +829,11 @@
         }
 
         &.search {
+            // uses form which requires changing the default colors
+            --#{$prefix}body-bg: var(--#{$prefix}filter-body-bg);
+            --#{$prefix}body-color: var(--#{$prefix}filter-body-fg);
+            --#{$prefix}highlight-color: var(--#{$prefix}filter-disabled-fg);
+
             padding: 0;
 
             .styled-form {
@@ -737,7 +849,7 @@
 
             input,
             .icon-prepend {
-                border-color: $list-border-color;
+                border-color: var(--#{$prefix}filter-border-color);
             }
         }
 
@@ -746,17 +858,16 @@
             position: relative;
             text-align: left;
             border-radius: $list-border-radius;
+            color: var(--#{$prefix}filter-btn-fg);
+            background-color: var(--#{$prefix}filter-btn-bg);
 
-            @if ($list-filter-background != $btn-default) {
-                background: $list-filter-background;
-                color: $list-filter-color;
-                &:hover {
-                    background: $list-filter-hover;
-                }
+            &:hover {
+                color: var(--#{$prefix}filter-btn-hover-fg);
+                background-color: var(--#{$prefix}filter-btn-hover-bg);
             }
 
             &::before {
-                font-family: ForkAwesome;
+                @include icon-font();
                 font-weight: normal;
                 padding-right: $btn-h-padding;
             }
@@ -765,24 +876,17 @@
         .btn.li-label,
         .nav-side li > a + a {
             &::after {
-                position: absolute;
-                display: inline-block;
-                font-family: ForkAwesome;
-                right: 0;
+                @include toggle-arrow-open-after;
                 width: $nav-handle-right-padding;
-                content: "\f078";
-                font-weight: normal;
-                text-align: center;
-                transform: rotate(-180deg);
-                transition: transform $nav-animation-time;
+                right: 0;
             }
             &.collapsed::after {
-                transform: rotate(0);
+                @include toggle-arrow-closed-after;
             }
         }
         .nav-side li > a + a {
             &::after {
-                content: "\f107";
+                content: $toggle-alternate-icon;
             }
         }
 
@@ -792,12 +896,14 @@
         }
 
         &.categories {
+            --#{$prefix}icon-margin: 2.4rem;
+
             > div {
                 padding: $grid-gutter-width-half;
             }
 
             .btn.li-label:before {
-                content: "\f02c";
+                content: "\f02c"; // mercury:icon - fa-tags
             }
 
             ul {
@@ -806,27 +912,54 @@
                 list-style: outside none none;
 
                 li {
-                    margin-top: 2px;
+                    margin-top: 0.4rem;
+                    &:first-child {
+                        margin-top: 0;
+                    }
 
                     a {
                         cursor: pointer;
+                        @include list-category-label(true, true);
+
+                        padding-left: var(--#{$prefix}icon-margin);
+                        line-height: 1.2;
+                        text-decoration: none;
+
+                        &::before {
+                            display: inline-block;
+                            margin-left: calc(-1 * var(--#{$prefix}icon-margin));
+                            width: var(--#{$prefix}icon-margin);
+                            padding-left: $btn-padding;
+                            padding-right: 0;
+                        }
                     }
 
                     &.active a {
                         font-weight: $font-weight-bold;
                     }
 
-                    .li-entry {
-                        @include list-category-label(true, true);
-                    }
-
                     .li-count {
                         &::before {
-                            padding-left: 4px;
+                            padding-left: 0.4rem;
                             content: "(";
                         }
                         &::after {
                             content: ")";
+                        }
+                    }
+
+                    &.disabled {
+                        a {
+                            pointer-events: none;
+                            cursor: default;
+
+                            color: var(--#{$prefix}filter-disabled-fg);
+                            background-color: var(--#{$prefix}filter-disabled-bg);
+                            border: var(--#{$prefix}filter-disabled-border);
+                        }
+
+                        .li-count {
+                            display: none;
                         }
                     }
                 }
@@ -837,7 +970,7 @@
             padding: 0;
 
             .btn.li-label:before {
-                content: "\f115";
+                content: "\f115"; // mercury:icon - fa-folder-open-o
             }
 
             .nav-side {
@@ -846,34 +979,45 @@
                 margin-left: 0;
                 margin-right: 0;
 
-                li > a {
-                    // padding-left: $default-margin;
-                    padding-right: $nav-handle-right-padding;
-                    + a {
-                        padding-left: 0;
-                        padding-right: 0;
+                li {
+                    > a {
+                        padding-right: $nav-handle-right-padding;
+                        + a {
+                            padding-left: 0;
+                            padding-right: 0;
+                        }
+                    }
+
+                    &.disabled {
+                        a {
+                            pointer-events: none;
+                            cursor: default;
+                            color: var(--#{$prefix}grey);
+                        }
                     }
                 }
             }
         }
 
         &.archive {
-
             .btn.li-label:before {
-                content: "\f133";
+                content: "\f133"; // mercury:icon - fa-calendar-o
             }
 
             button.year {
-                color: $text-dark;
-                background-color: $grey-lighter;
+                color: var(--#{$prefix}filter-highlight-fg);
+                background-color: var(--#{$prefix}filter-highlight-bg);
+                border: var(--#{$prefix}filter-highlight-border);
                 padding-left: calc(#{$nav-side-left-padding-step} - 1px);
 
                 &:hover {
-                    background-color: $grey-light;
+                    color: var(--#{$prefix}filter-highlight-hover-fg);
+                    background-color: var(--#{$prefix}filter-highlight-hover-bg);
+                    border: var(--#{$prefix}filter-highlight-hover-border);
                 }
 
                 &::before {
-                    content: "\f133";
+                    content: "\f133"; // mercury:icon - fa-calendar-o
                 }
                 &::after {
                     width: calc(#{$nav-handle-right-padding} - 2px);
@@ -894,18 +1038,16 @@
 
                 li {
                     display: inline-block;
-                    padding: $default-margin-small 0;
+                    padding: var(--#{$prefix}ws-margin) 0;
                     width: 16.666666%;
                     font-size: 1.2rem;
                     text-align: center;
                     cursor: pointer;
-                    @if ($btn-font-family != $font-family-base) {
-                        font-family: $btn-font-family;
-                    }
+                    font-family: var(--#{$prefix}btn-font-family);
+                    background-color: var(--#{$prefix}filter-body-bg);
 
                     a {
-                        color: $text-dark;
-
+                        color:  var(--#{$prefix}filter-highlight-fg);
                         &:hover {
                             text-decoration: none;
                         }
@@ -936,13 +1078,87 @@
                     }
 
                     &:hover {
-                        background-color: $grey-lighter;
+                        color:  var(--#{$prefix}filter-highlight-hover-fg);
+                        background-color: var(--#{$prefix}filter-highlight-hover-bg);
                         transition: background-color 0.33s;
 
                         .li-count {
                             display: block;
                         }
                     }
+
+                    &.disabled {
+                        background-color: var(--#{$prefix}filter-disabled-bg);
+                        pointer-events: none;
+                        cursor: default;
+
+                        a {
+                            pointer-events: none;
+                            cursor: default;
+                        }
+
+                        .li-count {
+                            display: none;
+                        }
+
+                        .li-entry {
+                            color: var(--#{$prefix}filter-disabled-fg);
+                        }
+                    }
+                }
+            }
+        }
+
+        &.resetbuttons {
+            display: flex;
+            flex-direction: column;
+            flex-basis: content;
+            --#{$prefix}filter-btn-size: #{$list-filter-btn-size};
+            .resetbutton {
+                display: flex;
+                font-family: var(--#{$prefix}btn-font-family);
+                @if ($btn-text-transform != none) {
+                    text-transform: $btn-text-transform;
+                }
+                @if ($btn-font-size != $font-size-base) {
+                    font-size: $btn-font-size;
+                }
+                @if ($btn-font-weight != $font-weight-base) {
+                    font-weight: $btn-font-weight;
+                }
+                text-align: left;
+                align-items: center;
+                color: var(--#{$prefix}body-color);
+                background-color: var(--#{$prefix}body-bg);
+                margin: 0 0 var(--#{$prefix}ws-margin) 0;
+                padding: 0;
+                border: none;
+
+                &:before {
+                    @include icon-font;
+                    content: "\f00d";
+                    color: var(--#{$prefix}filter-btn-fg);
+                    background-color: var(--#{$prefix}filter-btn-bg);
+                    height: var(--#{$prefix}filter-btn-size);
+                    line-height: var(--#{$prefix}filter-btn-size);
+                    width: var(--#{$prefix}filter-btn-size);
+                    min-width: var(--#{$prefix}filter-btn-size);
+                    border-radius: 100%;
+                    margin-right: var(--#{$prefix}ws-margin);
+                    display: flex;
+                    justify-content: center;
+                }
+                &:hover,
+                &:focus {
+                    color: var(--#{$prefix}link-hover-color);
+                }
+                &:focus:before,
+                &:hover:before {
+                    color: var(--#{$prefix}filter-btn-hover-fg);
+                    background-color: var(--#{$prefix}filter-btn-hover-bg);
+                }
+                &:last-of-type {
+                    margin-bottom: 0;
                 }
             }
         }
@@ -953,43 +1169,38 @@
 
 .type-list-sortoptions {
 
+    &.box {
+        overflow: visible;
+    }
+
     .dropdown-toggle {
-        padding: $btn-padding #{$btn-padding * 4} $btn-padding #{$btn-padding * 2};
+        padding: $btn-padding #{$btn-h-padding * 3} $btn-padding $btn-h-padding;
 
         &::after {
-            position: absolute;
-            display: inline-block;
-            font-family: ForkAwesome;
-            font-weight: normal;
-            content: "\f078";
+            @include toggle-arrow-open-after(true);
             right: $btn-h-padding;
-            transition: $nav-animation-time;
-            margin: 0;
             border: none;
-            width: auto;
-            height: auto;
+            vertical-align: auto;
+            margin: 0;
+        }
+
+        &.show {
+            &::after {
+                @include toggle-arrow-closed-after(true);
+            }
         }
     }
 
     .btn-group {
         display: flex;
         justify-content: flex-end;
-
-        .list-option.show {
-            .dropdown-toggle {
-                &::after {
-                    transform: rotate(-180deg) translate(0,0);
-                }
-            }
-        }
     }
-
 
     .dropdown-menu {
         padding: 0;
         border-radius: 0;
         font-size: $font-size-base;
-        color: $text-dark;
+        color: var(--#{$prefix}body-color);
         min-width: 16rem;
         font-weight: $font-weight-base;
         box-shadow: $nav-shadow;
@@ -999,11 +1210,13 @@
             animation-duration: $nav-animation-time;
             animation-fill-mode: both;
             transform-origin: top;
+            min-width: 100%;
         }
 
         > li > a {
-            padding: $default-margin-verysmall $default-margin;
-            color: $text-dark;
+            padding: $btn-def-padding;
+            background-color: var(--#{$prefix}body-bg);
+            color: var(--#{$prefix}body-color);
             text-decoration: none;
             clear: both;
             display: block;
@@ -1011,7 +1224,8 @@
             line-height: 1.4;
 
             &:hover {
-                background-color: $grey-light;
+                color: var(--#{$prefix}btn-fg);
+                background-color: var(--#{$prefix}btn-bg);
             }
         }
 
@@ -1019,20 +1233,20 @@
             > a,
             > a:hover,
             > a:focus {
-                color: get-text-color($main-theme);
-                background-color: $main-theme;
+                color: var(--#{$prefix}btn-fg);
+                background-color: var(--#{$prefix}btn-bg);
             }
         }
 
         .divider {
-            margin: $default-margin-verysmall 0;
+            margin: calc(0.5 * var(--#{$prefix}ws-margin)) 0;
         }
     }
 
     .list-option {
         position: relative;
-        margin-bottom: $default-margin;
-        margin-left: $default-margin-small;
+        margin-bottom: var(--#{$prefix}element-margin);
+        margin-left: var(--#{$prefix}ws-margin);
 
         &.btn.placeholder {
             // make button already occupy space without displaying anything
@@ -1043,13 +1257,9 @@
                 background-color: transparent;
             }
         }
-
-        span {
-            margin-right: $default-margin-verysmall;
-        }
     }
 
-    @include media-breakpoint-down(sm) {
+    @include media-breakpoint-down(md) {
         .dropdown-menu,
         .dropdown-toggle {
             width: 100%;

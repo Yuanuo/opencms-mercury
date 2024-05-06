@@ -21,48 +21,45 @@
 
 .area-foot {
 
-    @include media-breakpoint-down(sm) {
+    @include media-breakpoint-down(md) {
         // Fix for Lighthouse "Tap targets are not sized appropriately"
         // Increase line height in footer so that links are wider apart
         line-height: $foot-line-height-mobile;
     }
 
     .topfoot {
-        display: flex;
-        padding-top: $default-margin;
-        background-color: $foot-top-bg-color;
-        color: $foot-top-text-color;
-
-        h1, h2, h3, h4, h5, h6 {
-            color: $foot-top-header-color;
-        }
-
-        a:not(.btn) {
-            color: $foot-top-link-color;
-
-            &:focus,
-            &:hover {
-                color: $foot-top-link-hover-color;
-            }
-        }
+        --#{$prefix}body-color: #{$foot-top-text-color};
+        --#{$prefix}body-bg: #{$foot-top-bg-color};
+        --#{$prefix}headings-color: #{$foot-top-header-color};
+        --#{$prefix}link-color: #{$foot-top-link-color};
+        --#{$prefix}link-hover-color: #{$foot-top-link-hover-color};
+        --#{$prefix}link-color-rgb: #{to-rgb($foot-top-link-color)};
+        --#{$prefix}link-hover-color-rgb: #{to-rgb($foot-top-link-hover-color)};
     }
+
+    .subfoot {
+        --#{$prefix}body-color: #{$foot-sub-text-color};
+        --#{$prefix}body-bg: #{$foot-sub-bg-color};
+        --#{$prefix}headings-color: #{$foot-sub-header-color};
+        --#{$prefix}link-color: #{$foot-sub-link-color};
+        --#{$prefix}link-hover-color: #{$foot-sub-link-hover-color};
+        --#{$prefix}link-color-rgb: #{to-rgb($foot-sub-link-color)};
+        --#{$prefix}link-hover-color-rgb: #{to-rgb($foot-sub-link-hover-color)};
+    }
+
+    .topfoot,
     .subfoot {
         display: flex;
-        padding-top: $default-margin;
-        background-color: $foot-sub-bg-color;
-        color: $foot-sub-text-color;
+        flex-direction: column;
+        padding-top: var(--#{$prefix}element-margin);
+        color: var(--#{$prefix}body-color);
+        background-color: var(--#{$prefix}body-bg);
 
-        h1, h2, h3, h4, h5, h6 {
-            color: $foot-sub-header-color;
+        @if ($linked-headings-color != unset) {
+            --#{$prefix}linked-headings-color: var(--#{$prefix}link-color);
         }
-
-        a:not(.btn) {
-            color: $foot-sub-link-color;
-
-            &:focus,
-            &:hover {
-                color: $foot-sub-link-hover-color;
-            }
+        @if ($linked-headings-hover-color != unset) {
+            --#{$prefix}linked-headings-hover-color: var(--#{$prefix}link-hover-color);
         }
     }
 }
@@ -72,8 +69,8 @@
 @if ($nav-mobile-topcontrol-default) {
 
     #topcontrol {
-        color: $nav-toggle-text;
-        background: $nav-toggle-bg;
+        color: var(--#{$prefix}nav-toggle-fg);
+        background: var(--#{$prefix}nav-toggle-bg);
         z-index: #{$above-oc-z-index + 150}; // the back to top icon should be above the edit points and the privacy policy banner
         width: $nav-toggle-size;
         height: $nav-toggle-size;
@@ -90,12 +87,12 @@
 
         @if ($nav-mobile-position == right) {
             right: $nav-mobile-toggle-side;
-            @if ($nav-breakpoint-mobile != xl) {
+            @if ($nav-breakpoint-mobile != xxl) {
                 @include media-breakpoint-up($nav-breakpoint-desktop) {
                     right: $grid-gutter-width-half;
                 }
                 @if ($nav-mobile-toggle-side-xs != $nav-mobile-toggle-side) {
-                    @include media-breakpoint-down(xs) {
+                    @include media-breakpoint-down(md) {
                         right: $nav-mobile-toggle-side-xs;
                     }
                 }
@@ -110,21 +107,16 @@
             opacity: 1;
         }
 
-        &:hover {
-            @include color-transition;
-            background-color: $nav-toggle-bg-hover;
-        }
-
         &::after {
+            @include icon-font();
             width: $nav-toggle-size;
             line-height: floor($nav-toggle-size * 0.95); // fa-angle-up symbol has too much white space on top
-            content: "\f106"; // fa-angle-up
+            content: "\f106"; // mercury:icon - fa-angle-up
             position: absolute;
             text-align: center;
-            font-family: ForkAwesome;
         }
 
-        @include media-breakpoint-down(xs) {
+        @include media-breakpoint-down(md) {
             width: round($nav-toggle-size-xs);
             height: round($nav-toggle-size-xs);
 

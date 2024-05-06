@@ -37,6 +37,9 @@ var m_keyboardNavPermanent = false;
 
 var $topControl = null;
 
+let m_nmc = null;
+let m_isActive = false;
+
 function removeKeyboardClass(event) {
     setKeyboardClass(false);
 }
@@ -130,12 +133,21 @@ function initMegaMenu() {
             // calculate left position from the .nav-main-container
             var $megaMenu = $megaMenuItem.find('.nav-mega-menu');
             var $menuContainer = $megaMenuItem.closest('.nav-main-container');
-            var posLeft = -1 * ($menuContainer.offset().left - ((Mercury.windowWidth() - $megaMenu.outerWidth()) / 2));
+            var posLeft = -1 * ($menuContainer.offset().left - ((window.innerWidth - $megaMenu.outerWidth()) / 2));
             if (DEBUG) console.info("MegaMenu: Setting position top=" + posTop + " left=" + posLeft);
             // set the position
             $megaMenu.css('top', posTop + 'px');
             $megaMenu.css('left', posLeft + 'px');
         });
+        let headerEl = $megaMenuItem.closest('.header-group.sticky .head')[0];
+        if (headerEl != null) {
+            headerEl.addEventListener('header:notfixed', (e) => {
+                $megaMenuItem.removeClass("ed");
+            });
+            headerEl.addEventListener('header:isfixed', (e) => {
+                $megaMenuItem.removeClass("ed");
+            });
+        }
     });
 
     jQ(document).on('click', '.nav-main-container .nav-mega-menu', function(e) {
@@ -187,7 +199,7 @@ function toggleMenu($submenu, $menuToggle, targetmenuId, event) {
     var eventMouseenter = event.type == "mouseenter";
     var eventMouseleave = event.type == "mouseleave";
     var eventKeydown = (event.type == "keydown" && ((event.which == 13) || (event.which == 32))); // limit keydown to enter and space
-    var eventTouchstart = event.type == "touchstart";
+    var eventTouch = event.type == (Mercury.gridInfo().isDesktopNav() ? "touchstart" : "touchend");
     var eventClick = event.type == "click";
 
     var expanded = $submenu.hasClass("ed");
@@ -209,14 +221,14 @@ function toggleMenu($submenu, $menuToggle, targetmenuId, event) {
         if (VERBOSE) console.info("Navigation.toggleMenu, isDesktopNav=true eventMouseenter=" + eventMouseenter + " eventMouseleave=" + eventMouseleave, $submenu ,$menuToggle);
         // desktop navigation
         var $targetmenu = jQ("#" + targetmenuId).first();
-        if (!expanded && (eventMouseenter || eventKeydown || eventTouchstart)) {
+        if (!expanded && (eventMouseenter || eventKeydown || eventTouch)) {
             stopEventPropagation = true;
             resetMenu($menuToggle);
             $submenu.addClass("ed");
             $submenu.children("[aria-expanded]").attr('aria-expanded', true);
             if ($submenu.parent().hasClass("nav-main-items")) {
                 // this is a toplevel menu entry
-                if ($targetmenu.offset().left + $targetmenu.outerWidth() > Mercury.windowWidth()) {
+                if ($targetmenu.offset().left + $targetmenu.outerWidth() > window.innerWidth) {
                     // this menu must open left
                     $submenu.addClass("open-left");
                 } else {
@@ -229,7 +241,7 @@ function toggleMenu($submenu, $menuToggle, targetmenuId, event) {
                 if (openRight || (openLeft && ($submenu.offset().left - $targetmenu.outerWidth() <= 0))) {
                     // we have opened left too far, open to the right again
                     $submenu.addClass("open-right");
-                } else if (openLeft || ($targetmenu.offset().left + $targetmenu.outerWidth() > Mercury.windowWidth())) {
+                } else if (openLeft || ($targetmenu.offset().left + $targetmenu.outerWidth() > window.innerWidth)) {
                     // this menu must open left, the right corner is outside window
                     $submenu.addClass("open-left");
                     var $parent = $submenu.parent();
@@ -239,7 +251,7 @@ function toggleMenu($submenu, $menuToggle, targetmenuId, event) {
                     }
                 }
             }
-        } else if (expanded && (eventMouseleave || eventKeydown || eventTouchstart)) {
+        } else if (expanded && (eventMouseleave || eventKeydown || eventTouch)) {
             if (eventMouseleave) {
                 // only close open menu if this is NOT a top level menu (top level menu has separate timeout)
                 if (!$submenu.parent().hasClass("nav-main-items")) {
@@ -255,7 +267,7 @@ function toggleMenu($submenu, $menuToggle, targetmenuId, event) {
                 $submenu.children("[aria-expanded]").attr('aria-expanded', false);
             }
         }
-    } else if (eventTouchstart || eventClick) {
+    } else if (eventTouch || eventClick) {
         // mobile navigation
         stopEventPropagation = true;
         resetMenu($menuToggle);
@@ -274,16 +286,20 @@ function toggleMenu($submenu, $menuToggle, targetmenuId, event) {
 }
 
 function toggleHeadNavigation() {
-    var toggle = jQ('.nav-toggle');
-    toggle.toggleClass('active');
-    var active = toggle.hasClass('active');
-    toggle.attr('aria-expanded', active);
+    var toggle = jQ('.nav-toggle-btn');
+    toggle.toggleClass('active-nav');
+    m_isActive = toggle.hasClass('active-nav');
+    toggle.attr('aria-expanded', m_isActive);
     jQ(document.documentElement).toggleClass('active-nav');
-    if (active) {
-        jQ('#nav-toggle-label-close > .nav-toggle.active').focus();
+    let $focusOn;
+    if (m_isActive) {
+        $focusOn = jQ('#nav-toggle-label-close > .nav-toggle-btn.active-nav');
+        if ($focusOn.length < 1) $focusOn = jQ('html.keyboard-nav #nav-toggle-label-close.nav-toggle-btn.active-nav');
     } else {
-        jQ('#nav-toggle-label-open > .nav-toggle').focus();
+        $focusOn = jQ('#nav-toggle-label-open > .nav-toggle-btn');
+        if ($focusOn.length < 1) $focusOn = jQ('html.keyboard-nav #nav-toggle-label-open.nav-toggle-btn');
     }
+    $focusOn.focus();
 }
 
 // Elements in head navigation
@@ -346,9 +362,9 @@ function initHeadNavigation() {
     m_isBurgerHeader = false || jQ('header.bh').length;
 
     // Responsive navbar toggle button
-    jQ('.nav-toggle').on('click', toggleHeadNavigation);
+    jQ('.nav-toggle-btn').on('click', toggleHeadNavigation);
     jQ('.head-overlay').click(function() {
-        jQ('.nav-toggle').removeClass('active');
+        jQ('.nav-toggle-btn').removeClass('active-nav');
         jQ(document.documentElement).removeClass('active-nav');
     });
 
@@ -384,14 +400,24 @@ function initHeadNavigation() {
     });
 
     // Add handler for elements that should not keep the focus
-    jQ('[data-toggle], .blur-focus').on('mouseleave', function(e) {
+    jQ('[data-bs-toggle], .blur-focus').on('mouseleave', function(e) {
         jQ(this).blur();
     });
 
     // If user presses tab, add marker class to document body to enable focus highlighting
+    const $nmc = jQ('.nav-main-container');
+    if ($nmc.length > 0) m_nmc = $nmc.get(0);
     jQ(document.documentElement).on('keydown', function(e) {
         if (e.which == 9) {
             setKeyboardClass(true);
+            if (m_isActive && m_isBurgerHeader && (m_nmc != null)) {
+                // Close the burger header if the focus is outside
+                setTimeout(() => {
+                    const hasFocus = m_nmc.contains(document.activeElement);
+                    if (VERBOSE) console.info("Navigation.keydown() focus in navigation: " + hasFocus);
+                    if (! hasFocus) toggleHeadNavigation();
+                }, 100);
+            }
         }
     });
 
@@ -434,7 +460,8 @@ function initHeadNavigation() {
                 m_fixedHeader.getHeight = function () {
                     return this.height > 0 ? this.height : this.$element.height();
                 }
-                jQ(window).on('scroll', debUpdateFixedScroll).on('resize', debUpdateFixedResize);
+                window.addEventListener("scroll", debUpdateFixedScroll, { passive: true });
+                window.addEventListener("resize", debUpdateFixedResize, { passive: true });
                 updateFixed(true);
             } else {
                 if (DEBUG) console.info("Fixed header element found, but disabled by CSS!");
@@ -530,11 +557,13 @@ function updateFixed(resize) {
                     m_fixedHeader.$header.removeClass('header-notfixed').addClass('header-isfixed');
                     m_fixedHeader.height = m_fixedHeader.$element.height();
                     m_checkScrollTop = 999999999999;
+                    m_fixedHeader.$element[0].dispatchEvent(new CustomEvent("header:isfixed", { bubbles: true, cancelable: true }));
                 }
             }
         } else if (!fixHeader && m_fixedHeader.isFixed) {
             // header should not be fixed, but is
             resetFixedHeader();
+            m_fixedHeader.$element[0].dispatchEvent(new CustomEvent("header:notfixed", { bubbles: true, cancelable: true }));
         }
         if (!m_fixedHeader.isFixed) {
             // add class to identify a header that has been scrolled but is not fixed yet
@@ -584,13 +613,14 @@ function fixedHeaderActive() {
 function initSmoothScrolling() {
 
     // attach click handler to anchor links on the page
-    jQ('a[href*="#"]:not([href="#"]):not([data-toggle]):not([data-slide])').click(function() {
+    jQ('a[href*="#"]:not([href="#"]):not([data-bs-toggle]):not([data-slide])').click(function() {
         if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
             var $target = jQ(this.hash);
             if ($target.length) {
                 jQ(this).blur();
                 scrollToAnchor($target);
                 focusOnElement($target);
+                window.history.pushState(null, null, this.hash);
                 return false;
             }
         }
@@ -631,12 +661,31 @@ function initClickmeShowme() {
 
 // auto-scroll to an opened accordion tab
 function initAccordionScroll() {
-    jQ('.type-tab.variant-accordion article.accordion').on('shown.bs.collapse', function() {
+    jQ('article.accordion').on('shown.bs.collapse', function() {
         var $tab = $(this).closest('article.accordion').find('.acco-header');
         if (! $tab.visible()) {
-            scrollToAnchor($tab, -5);
+            doScrollToAnchor($tab, -5);
         }
     })
+    jQ('.collapse-target').on('shown.bs.collapse', function() {
+        var $tar = $(this);
+        setTimeout(function () {
+            // must wait for animation to finish before calculating the anchor position
+            var $tab = $tar.find('.collapse-container');
+            if (! $tab.visible()) {
+                var $tac = $tar.prev('.collapse-trigger').find('.text-overlay').first();
+                doScrollToAnchor($tac, -5);
+            }
+        }, 330);
+    })
+}
+
+// auto-scroll to and open a regular tab
+function openTabFromHash($tab) {
+    var parentId = "#b_" + $tab.attr('id');
+    var $parent = jQ(parentId);
+    $parent.tab('show');
+    doScrollToAnchor($parent, -5);
 }
 
 // apply "external" class to all a href links
@@ -692,6 +741,54 @@ function focusOnElement($element) {
     $element.focus();
 }
 
+function doScrollToAnchor($anchor, offset) {
+    if (DEBUG) console.info("Navigation.debScrollToAnchor() called!");
+    if ($anchor.length) {
+        if ($anchor.collapse && (! $anchor.hasClass('show'))) {
+            // this anchor is a bootstrap collapse, show it
+            if ($anchor.hasClass('tab-pane')) {
+                // this anchor is a bootstrap tab, show it
+                if (DEBUG) console.info("Navigation.debScrollToAnchor(#" + $anchor.attr('id') + ") is a tab!");
+                openTabFromHash($anchor);
+                return;
+            } else if ($anchor.hasClass('acco-body') || $anchor.hasClass('collapse-target')) {
+                if (DEBUG) console.info("Navigation.debScrollToAnchor(#" + $anchor.attr('id') + ") is a collapse!");
+                $anchor.collapse("show");
+                return;
+            }
+        }
+        offset = offset || 0;
+        var targetTop = $anchor.offset().top + offset;
+        targetTop = targetTop < 0 ? 0 : targetTop;
+        if (DEBUG) console.info("Navigation.debScrollToAnchor(#" + $anchor.attr('id') + ") position:" + targetTop, $anchor);
+        if (fixedHeaderActive() && (targetTop > m_fixedHeader.bottom)) {
+            if (m_fixedHeader.height < 0) {
+                // fixed header height is unknown, i.e. page was not scrolled down so far
+                // jump to header bottom to activate the fixed header first
+                if (targetTop > m_fixedHeader.bottom) {
+                    jQ('html, body').scrollTop(m_fixedHeader.bottom - Mercury.toolbarHeight() + 1);
+                    updateFixed(true);
+                }
+            }
+            targetTop = targetTop - m_fixedHeader.getHeight();
+            if (DEBUG) console.info("Navigation.debScrollToAnchor(#" + $anchor.attr('id') + ") adjusting position to:" + targetTop);
+        }
+        var page = $("html, body");
+        // see: https://stackoverflow.com/questions/18445590/jquery-animate-stop-scrolling-when-user-scrolls-manually
+        page.on("scroll mousedown wheel DOMMouseScroll mousewheel keyup touchmove", function () {
+            page.stop();
+        });
+        page.animate({ scrollTop: Math.ceil(targetTop - Mercury.toolbarHeight()) }, 750, function () {
+            page.off("scroll mousedown wheel DOMMouseScroll mousewheel keyup touchmove");
+        });
+        if (Mercury.gridInfo().isMobileNav()) {
+            // close the mobile navigation
+            jQ('.nav-toggle-btn').removeClass('active-nav');
+            jQ(document.documentElement).removeClass('active-nav');
+        }
+    }
+}
+
 // functions that require the Mercury object
 var debUpdateFixedResize;
 var debUpdateFixedScroll;
@@ -715,39 +812,7 @@ function initDependencies() {
         initMenu();
     }, 100);
 
-    debScrollToAnchor = Mercury.debounce(function($anchor, offset) {
-        if ($anchor.length) {
-            offset = offset || 0;
-            var targetTop = $anchor.offset().top + offset;
-            targetTop = targetTop < 0 ? 0 : targetTop;
-            if (DEBUG) console.info("Navigation.debScrollToAnchor(#" + $anchor.attr('id') + ") position:" + targetTop, $anchor);
-            if (fixedHeaderActive() && (targetTop > m_fixedHeader.bottom)) {
-                if (m_fixedHeader.height < 0) {
-                    // fixed header height is unknown, i.e. page was not scrolled down so far
-                    // jump to header bottom to activate the fixed header first
-                    if (targetTop > m_fixedHeader.bottom) {
-                        jQ('html, body').scrollTop(m_fixedHeader.bottom - Mercury.toolbarHeight() + 1);
-                        updateFixed(true);
-                    }
-                }
-                targetTop = targetTop - m_fixedHeader.getHeight();
-                if (DEBUG) console.info("Navigation.debScrollToAnchor(#" + $anchor.attr('id') + ") adjusting position to:" + targetTop);
-            }
-            var page = $("html, body");
-            // see: https://stackoverflow.com/questions/18445590/jquery-animate-stop-scrolling-when-user-scrolls-manually
-            page.on("scroll mousedown wheel DOMMouseScroll mousewheel keyup touchmove", function(){
-                page.stop();
-            });
-            page.animate({ scrollTop: Math.ceil(targetTop - Mercury.toolbarHeight()) }, 750, function(){
-                page.off("scroll mousedown wheel DOMMouseScroll mousewheel keyup touchmove");
-            });
-            if (Mercury.gridInfo().isMobileNav()) {
-                // close the mobile navigation
-                jQ('.nav-toggle').removeClass('active');
-                jQ(document.documentElement).removeClass('active-nav');
-            }
-        }
-    }, 500, true);
+    debScrollToAnchor = Mercury.debounce(doScrollToAnchor, 500, true);
 }
 
 /****** Exported functions ******/

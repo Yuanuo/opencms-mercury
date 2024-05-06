@@ -26,7 +26,7 @@
         }
     }
 
-    @include media-breakpoint-down(sm) {
+    @include media-breakpoint-down(md) {
         &.text-below-on-xs {
             &.square-col .preview .image-src-box {
                 position: relative;
@@ -92,6 +92,9 @@
             text-align: center;
             z-index: #{$overflow-z-index + 1};
 
+            svg {
+                filter: drop-shadow(1px 1px 1px #000) drop-shadow(0px 0px 5px rgba(0,0,0,0.5));
+            }
             span {
                 opacity: 0.7;
                 display: block;
@@ -143,7 +146,7 @@
         &.placeholder {
             cursor: auto;
             &::after {
-                content: "\f04b";
+                content: "\f04b"; // mercury:icon - fa-play
             }
         }
     }
@@ -154,7 +157,7 @@
     }
 
     .content {
-        @include round-corners($image-border-radius);
+        border-radius: var(--#{$prefix}image-border-radius);
         position: absolute;
         top: 0;
         left: 0;
@@ -178,7 +181,7 @@
 
         // adjusting the preview background (pbg) color for social media types
         &.pbg-main {
-            background-color: $color-pbg-main;
+            background-color: var(--#{$prefix}main-theme);
         }
         &.pbg-facebook {
             background-color: $color-pbg-facebook;
@@ -266,10 +269,17 @@
             display: flex;
             flex-direction: column;
             justify-content: space-around;
-            background-color: $audio-player-compact-bg;
 
             .audio-player .audio-box {
-                background-color: transparent;
+                color: $audio-player-compact-color;
+                background-color: $audio-player-compact-bg;
+
+                .audio-progress {
+                    border-color: $audio-player-compact-color;
+                    .progress-bar {
+                        background-color: $audio-player-compact-color;
+                    }
+                }
             }
 
             .media-overlay-top {
@@ -293,10 +303,11 @@
     .audio-box {
         display: flex;
         flex-direction: column;
+        color: $audio-player-color;
         background-color: $audio-player-bg;
         padding: $audio-player-spacing;
         font-size: $audio-player-font-size;
-        @include round-corners($audio-player-border-radius);
+        border-radius: $audio-player-border-radius;
 
         .audio-headline {
             margin-bottom: $audio-player-spacing;
@@ -307,12 +318,12 @@
             display: block;
             margin-bottom: $audio-player-spacing;
             border: $audio-player-progress-border;
-            @include round-corners($audio-player-border-radius);
+            border-radius: $audio-player-border-radius;
 
             .progress-bar {
                 // overwrite bootstrap standards
                 height: $audio-player-progress-height;
-                background-color: $audio-player-progress-bg;
+                background-color: $audio-player-color;
                 transition: none;
                 width: 0;
             }
@@ -337,6 +348,7 @@
                     justify-content: center;
                     align-items: center;
 
+                    > .ico,
                     > .fa {
                         cursor: pointer;
                     }
@@ -358,10 +370,12 @@
     }
 }
 
-.square-col > .content .audio-player .copyright{
-    position: relative;
-    > div {
-        @include image-copyright;
+.square-col > .content .audio-player {
+    .copyright {
+        position: relative;
+        > div {
+            @include image-copyright;
+        }
     }
 }
 
@@ -379,15 +393,14 @@
 .onclick-activation {
     position: relative;
     cursor: pointer;
-    margin-bottom: $default-margin;
-
-    @include round-corners($image-border-radius);
+    margin-bottom: var(--#{$prefix}element-margin);
+    border-radius: var(--#{$prefix}image-border-radius);
 
     .oa-heading,
     .oa-notice {
         color: #fff;
         text-shadow: $media-preview-text-shadow;
-        padding: 0 $default-margin;
+        padding: 0 var(--#{$prefix}default-margin);
         margin: 0;
         z-index: #{$overflow-z-index + 2};
     }
@@ -427,24 +440,24 @@
     }
 
     &.no-image {
-        background-color: $main-theme;
+        background-color: var(--#{$prefix}main-theme);
     }
 
     @mixin compact-display {
         .oa-heading,
         .oa-notice {
             position: relative;
-            padding-top: $default-margin-small;
-            padding-bottom: $default-margin-small;
+            padding-top: var(--#{$prefix}default-margin-small);
+            padding-bottom: var(--#{$prefix}default-margin-small);
         }
         .centered {
-            top: $default-margin-small;
+            top: var(--#{$prefix}default-margin-small);
             left: auto;
             transform: none;
         }
         .oa-icon {
             text-align: right;
-            padding-right: $default-margin;
+            padding-right: var(--#{$prefix}default-margin);
         }
         &.has-icon {
             .oa-heading {
@@ -463,14 +476,14 @@
             position: absolute;
         }
         .oa-heading {
-            top: $default-margin;
+            top: var(--#{$prefix}default-margin);
         }
         .oa-notice {
-            bottom: $default-margin-small;
+            bottom: var(--#{$prefix}default-margin-small);
         }
     }
 
-    @include media-breakpoint-down(sm) {
+    @include media-breakpoint-down(md) {
         &.presized {
             &.no-image,
             &.has-image {

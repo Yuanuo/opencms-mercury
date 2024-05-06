@@ -8,6 +8,9 @@
 <%@ attribute name="cssWrapper" type="java.lang.String" required="false"
     description="'class' selectors to add to the generated teaser tag." %>
 
+<%@ attribute name="teaserClass" type="java.lang.String" required="false"
+    description="Main CSS class used to identify the generated element. By default this is 'teaser'." %>
+
 <%@ attribute name="attrWrapper" type="java.lang.String" required="false"
     description="Attributes to add to the generated div surrounding section." %>
 
@@ -78,6 +81,9 @@
 <%@ attribute name="linkOption" type="java.lang.String" required="false"
     description="Controls if and how the link is displayed. Default is 'button'." %>
 
+<%@ attribute name="linkNewWin" type="java.lang.Boolean" required="false"
+    description="Controls if links are opened in a new browser window." %>
+
 <%@ attribute name="buttonText" type="java.lang.String" required="false"
     description="An optional button label used on the link button, or 'none' which means no link button will be shown.
     HTML in this will be escaped." %>
@@ -109,6 +115,9 @@
 <%@ attribute name="teaserType" type="java.lang.String" required="false"
     description="Type teaser to generate. Valid values are 'teaser-compact', 'teaser-elaborate' and 'teaser-text-tile'." %>
 
+<%@ attribute name="headingInBody" type="java.lang.Boolean" required="false"
+    description="If 'true', the heading will be placed inside the body text. This allows for more flexible CSS formatting, but will break the 'piece' structure." %>
+
 <%@ attribute name="markupVisual" required="true" fragment="true"
     description="Markup shown for the visual, usually an image." %>
 
@@ -129,25 +138,28 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
 
-
+<c:set var="teaserClass"        value="${empty teaserClass ? 'teaser' : teaserClass}" />
 <c:set var="pieceLayout"        value="${empty pieceLayout ? 6 : pieceLayout}" />
 <c:set var="hsize"              value="${empty hsize ? 3 : hsize}" />
+<c:set var="headingInBody"      value="${headingInBody and ((pieceLayout le 1) or (pieceLayout ge 6))}" />
 <c:choose>
-    <c:when test="${fn:contains(teaserType, 'teaser-text-tile') or fn:contains(teaserType, 'teaser-masonry')}">
+    <c:when test="${(fn:contains(teaserType, 'teaser-text-tile') or fn:contains(teaserType, 'teaser-masonry')) and not fn:contains(teaserType, '-var')}">
         <c:set var="addButtonDiv" value="${true}" />
         <c:set var="pieceLayout" value="${1}"/>
         <c:set var="sizeDesktop" value="${12}" />
         <c:set var="sizeMobile" value="${12}" />
+        <c:set var="headingInBody" value="${false}" />
     </c:when>
     <c:when test="${fn:contains(teaserType, 'teaser-compact')}">
         <c:set var="hideImage"  value="${true}"/>
     </c:when>
 </c:choose>
-<c:set var="sizeDesktop"        value="${not empty sizeDesktop ? sizeDesktop : (((pieceLayout > 1) and (pieceLayout != 10)) ? 4 : 12)}" />
+<c:set var="sizeDesktop"        value="${not empty sizeDesktop ? sizeDesktop : (((pieceLayout ge 1) and (pieceLayout != 10)) ? 4 : 12)}" />
 <c:set var="buttonText"         value="${buttonText eq '-' ? null : buttonText}" /><%-- Allows to have a "none" default but still use the value from the content by setting '-' as button text. --%>
-<c:set var="showButton"         value="${buttonText ne 'none'}" />
+<c:set var="showButton"         value="${(buttonText ne 'none') and (linkOption ne 'none')}" />
 <c:set var="addButtonDiv"       value="${showButton ? (empty groupId ? addButtonDiv : false) : false}" />
 <c:set var="dateOnTop"          value="${empty dateOnTop ? false : dateOnTop}" />
+<c:set var="textLength"         value="${empty textLength ? -1 : textLength}" />
 
 <%-- These are currently not configurable, maybe add this later --%>
 <c:set var="linkOnHeadline"     value="${true}" />
@@ -191,10 +203,10 @@
         ${not empty intro ? ': ' : ''}
         <mercury:out value="${headline}" />
     </c:set>
-    <c:set var="linkHeadline" value="${linkOnHeadline and (hsize > 0)}" />
+    <c:set var="linkHeadline" value="${linkOnHeadline and not headingInBody and (hsize > 0)}" />
 </c:if>
 
-<c:if test="${(not empty date) and (dateFormat ne 'none')}">
+<c:if test="${(not empty date) and date.isSet and (dateFormat ne 'none')}">
     <c:set var="dateMarkup">
         <div class="teaser-date"><%----%>
             <mercury:instancedate date="${date}" format="${dateFormat}" />
@@ -202,8 +214,60 @@
     </c:set>
 </c:if>
 
+<c:if test="${empty markupBodyOutput}">
+    <c:set var="markupTextOutput">
+
+        <c:if test="${headingInBody}">
+            <c:if test="${dateOnTop and not empty dateMarkup}">
+                ${dateMarkup}
+            </c:if>
+
+            <c:if test="${not empty headline or not empty introxw}">
+                <mercury:intro-headline
+                    intro="${intro}"
+                    headline="${headline}"
+                    prefix="${headlinePrefix}"
+                    suffix="${headlineSuffix}"
+                    level="${hsize}"
+                    tabindex="${not linkHeadline}"
+                    ade="${ade}" />
+            </c:if>
+        </c:if>
+
+        <c:if test="${not empty preTextMarkup}">
+            ${preTextMarkup}
+        </c:if>
+
+        <c:if test="${not dateOnTop and not empty dateMarkup}">
+            ${dateMarkup}
+        </c:if>
+
+        <c:if test="${(not empty pText) and (textLength != 0)}">
+            <%-- textLength of -2 outputs the whole text without HTML escaping --%>
+            <%-- textLength of < 0 outputs the whole text --%>
+            <%-- textLength of 0 completely hides the text --%>
+            <%-- textLength of > n outputs the text trimmed down to max n chars --%>
+            <c:set var="prefaceInBody" value="${true}" />
+            <div class="teaser-text"><%----%>
+                <c:choose>
+                    <c:when test="${textLength == -2}">
+                        ${pText}
+                    </c:when>
+                    <c:when test="${textLength < 0}">
+                        <c:out value="${pText}" />
+                    </c:when>
+                    <c:otherwise>
+                        <c:out value="${cms:trimToSize(pText, textLength)}" />
+                    </c:otherwise>
+                </c:choose>
+            </div><%----%>
+        </c:if>
+
+    </c:set>
+</c:if>
+
 <mercury:piece
-    cssWrapper="teaser${' '}${teaserType}${empty cssWrapper ? '' : ' '.concat(cssWrapper)}"
+    cssWrapper="${teaserClass}${' '}${teaserType}${empty cssWrapper ? '' : ' '.concat(cssWrapper)}${headingInBody ? ' hib' : ''}${prefaceInBody ? ' pib' : ''}"
     attrWrapper="${attrWrapper}"
     pieceLayout="${pieceLayout}"
     sizeDesktop="${sizeDesktop}"
@@ -215,24 +279,27 @@
     bodyPostMarkup="${bodyPostMarkup}">
 
     <jsp:attribute name="heading">
-        <c:if test="${dateOnTop and not empty dateMarkup}">
-            ${dateMarkup}
-        </c:if>
-        <c:if test="${not empty headline or not empty intro}">
-            <mercury:link
-                link="${link}"
-                test="${linkHeadline}">
+        <c:if test="${not headingInBody}">
+            <c:if test="${dateOnTop and not empty dateMarkup}">
+                ${dateMarkup}
+            </c:if>
+            <c:if test="${not empty headline or not empty intro}">
+                <mercury:link
+                    link="${link}"
+                    newWin="${linkNewWin}"
+                    test="${linkHeadline}">
 
-                <mercury:intro-headline
-                    intro="${intro}"
-                    headline="${headline}"
-                    prefix="${headlinePrefix}"
-                    suffix="${headlineSuffix}"
-                    level="${hsize}"
-                    tabindex="${not linkHeadline}"
-                    ade="${ade}" />
+                    <mercury:intro-headline
+                        intro="${intro}"
+                        headline="${headline}"
+                        prefix="${headlinePrefix}"
+                        suffix="${headlineSuffix}"
+                        level="${hsize}"
+                        tabindex="${not linkHeadline}"
+                        ade="${ade}" />
 
-            </mercury:link>
+                </mercury:link>
+            </c:if>
         </c:if>
     </jsp:attribute>
 
@@ -242,6 +309,7 @@
         </c:if>
         <mercury:link
             link="${link}"
+            newWin="${linkNewWin}"
             title="${linkHeadline ? null : linkTitle}"
             attr="${linkHeadline ? 'tabindex=\"-1\"' : null}"
             test="${not empty markupVisualOutput and not noLinkOnVisual}">
@@ -252,61 +320,15 @@
     <jsp:attribute name="text">
         <c:choose>
             <c:when test="${empty markupBodyOutput}">
-
-                <c:set var="markupTextOutput">
-
-                    <c:if test="${not empty preTextMarkup}">
-                        ${preTextMarkup}
-                    </c:if>
-
-                    <c:if test="${not dateOnTop and not empty dateMarkup}">
-                        ${dateMarkup}
-                    </c:if>
-
-                    <c:choose>
-                        <c:when test="${false and not empty preface}">
-                            <%-- deactivated so that preface is also cut off --%>
-                            <div class="teaser-text">
-                                <c:out value="${preface}" />
-                             </div><%----%>
-                        </c:when>
-
-                        <c:when test="${not empty pText}">
-                            <%-- textLength of < 0 outputs the whole text --%>
-                            <%-- textLength of 0 completely hides the text --%>
-                            <%-- textLength of > n outputs the text trimmed down to max n chars --%>
-                            <c:if test="${empty textLength}">
-                                <c:set var="textLength" value="-1" />
-                            </c:if>
-                            <c:if test="${textLength != 0}">
-                                <div class="teaser-text"><%----%>
-                                    <c:choose>
-                                        <c:when test="${textLength == -2}">
-                                            ${pText}
-                                        </c:when>
-                                        <c:when test="${textLength < 0}">
-                                            <c:out value="${pText}" />
-                                        </c:when>
-                                        <c:otherwise>
-                                            <c:out value="${cms:trimToSize(pText, textLength)}" />
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div><%----%>
-                            </c:if>
-                        </c:when>
-                    </c:choose>
-
-                </c:set>
-
                 <mercury:link
                     link="${link}"
+                    newWin="${linkNewWin}"
                     title="${linkHeadline ? null : linkTitle}"
                     css='uncolored'
                     attr="${linkHeadline ? 'tabindex=\"-1\"' : null}"
                     test="${linkOnText and not empty markupTextOutput}">
                     ${markupTextOutput}
                 </mercury:link>
-
             </c:when>
             <c:otherwise>
                 ${markupBodyOutput}
@@ -339,11 +361,12 @@
                         </c:when>
                         <c:otherwise>
                             <%-- default is 'button' --%>
-                            <c:set var="linkCss" value="btn piece-btn" />
+                            <c:set var="linkCss" value="btn piece-btn teaser-btn" />
                         </c:otherwise>
                     </c:choose>
                     <mercury:link
                         link="${link}"
+                        newWin="${linkNewWin}"
                         css="${linkCss}"
                         text="${buttonText}"
                         forceText="${forceText}"

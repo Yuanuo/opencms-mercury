@@ -229,21 +229,32 @@ export function showMarkers(mapId, group) {
 
     if (DEBUG) console.info("GoogleMap showMapMarkers() called with map id: " + mapId);
     var map = m_maps[mapId];
+    let mapData;
+    for (let md of m_mapData) {
+        if (md.id === mapId) {
+            mapData = md;
+        }
+    }
     if (map) {
-        var markers = map.markers;
-        var g = decodeURIComponent(group);
-        hideAllInfo(mapId);
-        for (var i = 0; i < markers.length; i++) {
-            if (markers[i].group == g || g == 'showall') {
-                markers[i].setVisible(true);
-            } else {
-                markers[i].setVisible(false);
+        if (!mapData.markerCluster) {
+            var markers = map.markers;
+            var g = decodeURIComponent(group);
+            hideAllInfo(mapId);
+            for (var i = 0; i < markers.length; i++) {
+                if (markers[i].group == g || g == 'showall') {
+                    markers[i].setVisible(true);
+                } else {
+                    markers[i].setVisible(false);
+                }
             }
+        } else {
+            hideAllInfo(mapId);
+            showSingleMap(mapData, group);
         }
     }
 }
 
-function showSingleMap(mapData){
+function showSingleMap(mapData, filterByGroup){
 
     var mapId = mapData.id;
 
@@ -285,8 +296,8 @@ function showSingleMap(mapData){
     var groupsFound = 0;
 
     if (typeof mapData.markers !== "undefined") {
+        let idx = 0;
         for (var p=0; p < mapData.markers.length; p++) {
-
             var point = mapData.markers[p];
             var group = point.group;
             if (group === "centerpoint") {
@@ -299,46 +310,48 @@ function showSingleMap(mapData){
                 if (DEBUG) console.info("GoogleMap new marker group added: " + group + " with color: " + color);
                 groups[group] = getPuempel(color);
             }
-
-            // get marker data from calling object
-            var marker = new google.maps.Marker({
-                position: new google.maps.LatLng(point.lat, point.lng),
-                map: map,
-                title: point.title,
-                group: group,
-                icon: groups[group],
-                info: point.info,
-                index: p,
-                mapId: mapId,
-                geocode: point.geocode
-            });
-
-            // add marker to marker map
-            markers.push(marker);
-
-            // initialize info window
-            var infoWindow = new google.maps.InfoWindow({
-                content: marker.info,
-                marker: marker,
-                geocode: point.geocode,
-                index: p
-            });
-
-            // add marker to marker map
-            infoWindows.push(infoWindow);
-
-            if (DEBUG) console.info("GoogleMap attaching Event lister: " + p + " to map id " + mapId);
-
-            // attach event listener that shows info window to marker
-            // see http://you.arenot.me/2010/06/29/google-maps-api-v3-0-multiple-markers-multiple-infowindows/
-            if (group !== "centerpoint") {
+            if (!mapData.markerCluster || filterByGroup === undefined || filterByGroup == "showall" || decodeURIComponent(filterByGroup) == group) {
+                // get marker data from calling object
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(point.lat, point.lng),
+                    map: map,
+                    title: point.title,
+                    group: group,
+                    icon: groups[group],
+                    info: point.info,
+                    index: idx,
+                    mapId: mapId,
+                    geocode: point.geocode
+                });
+    
+                // add marker to marker map
+                markers.push(marker);
+    
+                // initialize info window
+                var infoWindow = new google.maps.InfoWindow({
+                    content: marker.info,
+                    marker: marker,
+                    geocode: point.geocode,
+                    index: idx
+                });
+    
+                // add marker to marker map
+                infoWindows.push(infoWindow);
+    
+                if (DEBUG) console.info("GoogleMap attaching Event lister: " + p + " to map id " + mapId);
+    
+                // attach event listener that shows info window to marker
+                // see http://you.arenot.me/2010/06/29/google-maps-api-v3-0-multiple-markers-multiple-infowindows/
                 marker.addListener('click', function() {
                     showInfo(this.mapId, this.index);
                 });
+                idx++;
             }
         }
     }
-
+    if (mapData.markerCluster) {
+        new MarkerClusterer({markers: markers, map: map, renderer: getClusterGraphic()});
+    }
     // store map in global array, required e.g. to select marker groups etc.
     var map = {
         'id': mapId,
@@ -349,7 +362,10 @@ function showSingleMap(mapData){
     m_maps[mapId] = map;
 }
 
-export function showGeoJson(mapId, geoJson) {
+/**
+ * Loads and displays a GeoJSON file.
+ */
+export function showGeoJson(mapId, geoJson, ajaxUrlMarkersInfo) {
 
     if (DEBUG) console.info("Google update markers for map with id: " + mapId);
     let map;
@@ -358,7 +374,6 @@ export function showGeoJson(mapId, geoJson) {
     } catch (e) {
         // map data may already be loaded but not the map
     }
-
     if (!map) { // no cookie consent yet
         return;
     }
@@ -391,12 +406,11 @@ export function showGeoJson(mapId, geoJson) {
     if (centerPoint) {
         checkBounds([map.getCenter().lng(), map.getCenter().lat()]); // bounding box includes the center point
     }
-    const infoWindows = new Map();
     for (let i = 0; i < features.length; i++) {
         const feature = features[i];
         const coordinates = feature.geometry.coordinates;
+        const infoCoordinates = feature.properties.coords;
         checkBounds(coordinates);
-        const info = feature.properties.info;
         const marker = new google.maps.Marker({
             position: new google.maps.LatLng(coordinates[1], coordinates[0]),
             map: map,
@@ -405,28 +419,24 @@ export function showGeoJson(mapId, geoJson) {
         });
         markers.push(marker);
         const infoWindow = new google.maps.InfoWindow({
-            content: info,
             marker: marker,
             zIndex: i
         });
-        const key = coordinates.join(",");
-        if (!infoWindows.has(key)) {
-            infoWindows.set(key, [infoWindow]);
-        } else {
-            let contents = infoWindow.getContent();
-            contents += infoWindows.get(key)[infoWindows.get(key).length - 1].getContent();
-            infoWindow.setContent(contents);
-            infoWindows.get(key).push(infoWindow);
-        }
         marker.addListener("click", function(event) {
             if (m_maps[mapId].infoWindow) {
                 m_maps[mapId].infoWindow.close();
             }
-            infoWindow.open(map, marker);
+            const ajaxUrl = ajaxUrlMarkersInfo + "&coordinates=" + infoCoordinates;
+            fetch(ajaxUrl)
+                .then(response => response.text())
+                .then(data => {
+                    infoWindow.setContent(data);
+                    infoWindow.open(map, marker);
+                });
             m_maps[mapId].infoWindow = infoWindow;
         });
     }
-    const clusterer = new MarkerClusterer({markers: markers, map: map, renderer: getClusterGraphic()});
+    new MarkerClusterer({markers: markers, map: map, renderer: getClusterGraphic()});
     if (boundsNorthEast.lat) { // catch no center point and no features
         const bounds = new google.maps.LatLngBounds();
         bounds.extend(boundsNorthEast);
@@ -450,13 +460,15 @@ function showMap(event){
     // called by click on hidden map element in edit mode
     if (DEBUG) {console.log("GoogleMap show map with id: " + event.currentTarget.id);}
     var mapToShow= event.currentTarget;
-
     for(var i=0; i<m_mapData.length;i++){
         if(m_mapData[i].id == mapToShow.id){
             m_mapData[i].showPlaceholder=false;
             showSingleMap(m_mapData[i]);
         }
     }
+    window.dispatchEvent(new CustomEvent("map-placeholder-click", {
+        detail: GoogleMap
+    }));
 }
 
 /****** Exported functions ******/

@@ -16,7 +16,9 @@
 
 <c:set var="cssWrapper"             value="${setCssWrapperAll}" />
 <c:set var="loginproject"           value="${setting.loginproject.isSet ? setting.loginproject.toString : 'Online'}" />
-<c:set var="loginou"                value="${setting.loginou.isSet ? fn:trim(cms.element.setting.loginou.toString) : ''}" />
+<c:set var="loginou"                value="${setting.loginou.isSet ? fn:trim(cms.element.setting.loginou.toString) : null}" />
+<c:set var="loginpage"              value="${setting.loginpage.isSet ? fn:trim(cms.element.setting.loginpage.toString) : null}" />
+<c:set var="formCssWrapper"         value="${setting.formCssWrapper}" />
 
 <%-- Must close setting tag here because the loginBean uses inline code --%>
 </mercury:setting-defaults>
@@ -25,7 +27,7 @@
     <c:set var="loginproject" value="${loginou eq '/' ? '' : loginou}${loginproject}"/>
 </c:if>
 
-<cms:secureparams />
+<cms:secureparams replaceInvalid="bad_param" />
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
 
@@ -35,7 +37,7 @@
 
     <c:choose>
         <c:when test="${(param.action eq 'login') and (not empty param.loginName) and (not empty param.loginPassword)}">
-            <c:set var="loginpage"      value="${empty cms.pageResource.property['login-start'] ? cms.requestContext.uri : cms.pageResource.property['login-start']}" />
+            <c:set var="loginpage"      value="${empty loginpage ? (empty cms.pageResource.property['login-start'] ? cms.requestContext.uri : cms.pageResource.property['login-start']) : loginpage}" />
             <c:set var="loginresource"  value="${empty param.requestedResource ? loginpage : param.requestedResource}" />
             <c:set var="loginuri"       value="${cms.requestContext.siteRoot}${loginresource}" />
             <c:set var="loginuser"      value="${param.loginName}"/>
@@ -70,7 +72,7 @@
 <mercury:nl/>
 <div class="element type-login-form pivot${cssWrapper}"><%----%>
 
-    <form class="styled-form" target="_self" method="post"><%----%>
+    <form class="styled-form ${formCssWrapper}" target="_self" method="post"><%----%>
         <input type="hidden" name="requestedResource" value="${param.requestedResource}" /><%----%>
         <c:choose>
 
@@ -81,13 +83,13 @@
                 <fieldset><%----%>
                     <section><%----%>
                         <label class="input ${loginError ? 'state-error' : ''}"><%----%>
-                            <span class="icon-prepend fa fa-user"></span><%----%>
+                            <mercury:icon icon="user-o" tag="span" cssWrapper="icon-prepend" />
                             <input type="text" id="loginName" name="loginName" placeholder="<fmt:message key="msg.page.login.username" />"/><%----%>
                         </label><%----%>
                     </section><%----%>
                     <section><%----%>
                         <label class="input ${loginError ? 'state-error' : ''}"><%----%>
-                            <span class="icon-prepend fa fa-lock"></span><%----%>
+                            <mercury:icon icon="lock" tag="span" cssWrapper="icon-prepend" />
                             <input type="password" id="loginPassword" name="loginPassword" placeholder="<fmt:message key="msg.page.login.password" />"/><%----%>
                         </label><%----%>
                         <c:if test="${loginError}">
@@ -108,7 +110,7 @@
                     <section><%----%>
                         <label for="loginName" class="label"><fmt:message key="msg.page.login.loggedin" />:</label><%----%>
                         <div class="input"><%----%>
-                            <span class="icon-prepend fa fa-user"></span><%----%>
+                            <mercury:icon icon="user-o" tag="span" cssWrapper="icon-prepend" />
                             <input type="text" id="loginName" name="loginName" value="${cms.requestContext.currentUser.fullName}"/><%----%>
                         </div><%----%>
                     </section><%----%>

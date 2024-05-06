@@ -75,7 +75,7 @@
         <c:if test="${not isAudio}">
             <div class="centered icon"><%----%>
                 <c:if test="${icon ne 'none'}">
-                    <span class="fa fa-${icon}"></span><%----%>
+                    <mercury:icon icon="${icon}" tag="span" inline="${true}" />
                 </c:if>
                 <c:if test="${caseDynamicListNoscript or caseStandardElement}">
                     <mercury:alert-online showJsWarning="${true}" addNoscriptTags="${caseStandardElement}" />
@@ -156,7 +156,12 @@
                     <c:choose>
                         <c:when test="${isAudio}">
                             <c:if test="${not empty image}">
-                                <mercury:image-animated image="${image}" ratio="${usedRatio}" title="${content.value.Title}" />
+                                <mercury:image-animated
+                                    image="${image}"
+                                    ratio="${usedRatio}"
+                                    showCopyright="${false}"
+                                    setTitle="${false}"
+                                />
                             </c:if>
                             <mercury:audio-player
                                 audioUri="${content.value.MediaContent.value.Audio.value.Data.toLink}"
@@ -175,7 +180,6 @@
                                     <mercury:image-animated
                                         image="${image}"
                                         ratio="${usedRatio}"
-                                        alt="${placeholderMessage} - ${content.value.Title}"
                                         showCopyright="${showCopyright}"
                                         setTitle="${false}"
                                     />

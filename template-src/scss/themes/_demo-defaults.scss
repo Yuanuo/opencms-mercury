@@ -68,27 +68,26 @@ $foot-main-bg-color:            $grey-darker !default;
 
 // Large array of colors to be used in backgrounds
 
-$bg-colors:
+$theme-colors:
 (
- // name            // bg-color      // highlight-color
- (grey-darker,      $grey-darker,   $main-theme),
- (grey-dark,        $grey-dark,     $main-theme),
- (grey,             $grey,          $main-theme),
- (grey-light,       $grey-light,    $main-theme),
- (grey-lighter,     $grey-lighter,  $main-theme),
- (violet,           $violet,        $red),
- (green,            $green,         $orange),
- (yellow,           $yellow,        $red-orange),
- (cyan,             $cyan,          $blue-cyan),
- (blue-dark,        $blue-dark,     $blue-light),
- (blue,             $blue,          $blue-light),
- (blue-light,       $blue-light,    $blue),
- (orange-dark,      $red-orange,    $orange),
- (orange,           $orange,        $orange-light),
- (red-dark,         $red-dark,      $red-light),
- (red,              $red,           $red-light),
- (white,            $white,         $main-theme),
- (default,          $main-theme,    $main-theme-hover)
+ (grey-darker,      $grey-darker),
+ (grey-dark,        $grey-dark),
+ (grey,           $grey),
+ (grey-light,       $grey-light),
+ (grey-lighter,     $grey-lighter),
+ (violet,         $violet),
+ (green,          $green),
+ (yellow,         $yellow),
+ (cyan,           $cyan),
+ (blue-dark,        $blue-dark),
+ (blue,           $blue),
+ (blue-light,       $blue-light),
+ (orange-dark,      $red-orange),
+ (orange,         $orange),
+ (red-dark,         $red-dark),
+ (red,            $red),
+ (white,          $white),
+ (default,          $main-theme)
 ) !default;
 
 // Link colors
@@ -134,16 +133,10 @@ $map-colors: (
 
 // Tile and square settings
 
-$sq-margins:                    (0, 2, 4, 5, 10, 15, 20, 25, 50, 100) !default;
-$sq-cols-sm:                    ((12, 12), (6, 6)) !default;
-$sq-cols-md:                    ((12, 12), (9, 9), (6, 6), (4, 4), (3, 3)) !default;
-$sq-cols-lg:                    ((12, 12), (9, 9), (8, 8), (6, 6), (4, 4), (3, 3), (2o4, 2.4), (2,2)) !default;
-$sq-cols-xl:                    ((12, 12), (9, 9), (8, 8), (6, 6), (4, 4), (3, 3), (2o4, 2.4), (2,2)) !default;
-
 $sq-heights-sm:                 ((0o5, 0.5), (2, 2)) !default;
-$sq-heights-md:                 ((0o5, 0.5), (1o5, 1.5), (2, 2)) !default;
-$sq-heights-lg:                 ((0o5, 0.5), (1o5, 1.5), (2, 2)) !default;
-$sq-heights-xl:                 ((0o25, 0.25), (0o5, 0.5), (1o5, 1.5), (2, 2)) !default;
+$sq-heights-md:                 ((0o5, 0.5), (1, 1), (1o5, 1.5), (2, 2)) !default;
+$sq-heights-lg:                 ((0o5, 0.5), (1, 1), (1o5, 1.5), (2, 2)) !default;
+$sq-heights-xl:                 ((0o25, 0.25), (0o5, 0.5), (1, 1), (1o5, 1.5), (2, 2)) !default;
 
 $ti-cols:                       ((6, 6), (4, 4), (3, 3), (2o4, 2.4), (2,2), (1o5, 1.5)) !default;
 

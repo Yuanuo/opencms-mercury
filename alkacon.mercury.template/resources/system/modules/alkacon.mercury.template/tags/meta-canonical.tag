@@ -8,6 +8,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
 
 
@@ -18,7 +19,7 @@
     description="The canonical URL of the resource currently rendered." %>
 
 
-<c:set var="isSearchPage"       value="${fn:startsWith(cms.pageResource.link, cms.functionDetail['Search page'])}" />
+<c:set var="isSearchPage"       value="${fn:startsWith(cms.pageResource.link, cms.functionDetailPage['Search page'])}" />
 <c:set var="isListPage"         value="${not isSearchPage and (not empty param.page)}" />
 <c:set var="hasRequestLocale"   value="${not empty param.__locale}" />
 <c:set var="isPreviewLink"      value="${not empty param.__disableDirectEdit}" />
@@ -46,7 +47,8 @@
         This is currently only implemented for list pages.
     --%>
     <c:if test="${isListPage and param.page ne '1'}">
-        <c:set var="canonicalParams" value="?page=${param.page}" />
+        <c:set var="pageNum" value="${cms.wrap[param.page].toInteger}" />
+        <c:set var="canonicalParams" value="${empty pageNum ? null : '?page='.concat(pageNum)}" />
     </c:if>
 
     <%--
@@ -86,7 +88,7 @@
                 </c:choose>
                 <c:if test="${not empty targetLink}">
                     <%-- Output of alternate language link --%>
-                    <link rel="alternate" hreflang="${targetLocale}" href="${cms.site.url}${targetLink}${canonicalParams}" /><mercury:nl /><%----%>
+                    <link rel="alternate" hreflang="${targetLocale}" href="${cms.site.url}${targetLink}${canonicalParams}"><mercury:nl /><%----%>
                     <c:if test="${hasRequestLocale and (targetLocale eq param.__locale)}">
                         <c:set var="canonicalURL" value="${targetLink}" />
                     </c:if>
@@ -127,7 +129,7 @@
 
     <c:if test="${renderMetaTags}">
         <%-- Output the canonical URL --%>
-        <link rel="canonical" href="${canonicalURL}" /><%----%>
+        <link rel="canonical" href="${canonicalURL}"><%----%>
         <mercury:nl />
         <mercury:nl />
 

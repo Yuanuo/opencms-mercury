@@ -15,10 +15,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// Boostrap class prefix
+
+$prefix:                            'my-' !default; // prefix for the generated CSS variables
+
+$divide-precision:                  6 !default; // default precision for the Bs5 divide operation
+
 // Features - disable what is not needed to keep the generated CSS small
 
-$feature-use-flexible-header:       true !default; // use flexible header from _header.scss
-$feature-use-burger-header:         false !default; // use burger header from _header.scss (if 'true' overwrites flexible header setting - see below)
+// Header to use from _header.scss
+$feature-use-flexible-header:       true !default; // use flexible header
+$feature-use-burger-header:         false !default; // use burger header
+$feature-header-type:               if($feature-use-burger-header, 'burger', 'flexible') !default; // decide which header to use
 
 // Required default colors
 
@@ -29,34 +37,155 @@ $grey:                              #aaa !default;
 $grey-dark:                         #888 !default;
 $black:                             #000 !default;
 
-// Colors to be used for backgrounds
+
+// Editor GUI / element containers and markers
+//
+// The colors for the element containers are considered "system" colors.
+// These should NOT be changed in the theme!
+
+$con-col-cyan:                      #1bb39a !default;
+$con-col-blue:                      #144382 !default;
+$con-col-blue-light:                #2197db !default;
+$con-col-blue-steel-light:          #e8f3f8 !default;
+$con-col-orange:                    #ffa826 !default;
+$con-col-orange-hover:              #ffbf3f !default;
+$con-col-orange-light:              #ffe5bf !default;
+$con-col-red-orange-light:          #ffdac7 !default;
+$con-col-red-light:                 #ff264a !default;
+$con-col-red-lighter:               #ffe3e7 !default;
+$con-col-darker-red-light:          #ffc9d2 !default;
+$con-col-red:                       #b31b34 !default;
+$con-col-red-dark:                  #8b1528 !default;
+$con-col-purple:                    #eed2ee !default;
+$con-col-green-light:               #effab4 !default;
+
+$con-text-col-dark:                 #444 !default;
+$con-text-col-grey:                 #7f8691 !default;
+$con-text-col-light:                #fff !default;
+
+$con-margin:                        20px !default;
+
+// Theme colors to be used
 // This is a list of lists in the following format:
 // (
-//    name          bg-color        highlight-color
-//   ("red",        $color-red,     $color-orange)
+//    name          bg-color
+//   ("red",        $color-red)
 // )
-// highlight-color is used in case the _background_ changes on hover
-// this is e.g. the case for colored buttons, in the sitemap, pagination, tabs and accordions
 
-$bg-colors:                         () !default;
+$theme-colors:                        () !default;
 
-// Pre-defined text, link and hover colors for background colors
+// Pre-matched color configuration in case a theme color is uses as background color
 // This is a map in the following format:
-// (
-//    bg to match   list with text, link and hover colors
-//    $color-red:   ($text-color,  $link-color, $hover-color)
-// )
-// If no definitions are provided, an algorithm will try to pick suitable colors based on the background
+//    (bg-color-to-match: (map with variable names to match)) - For example:
+//    ( $color-red: (
+//        "body-color": $text-light,
+//        "link-color": $main-theme,
+//        "link-hover-color": $main-theme-hover,
+//        "btn-bg": $color-blue,
+//        "btn-fg": $text-light
+//      )
+//    )
+// See the "set-box-colors()" mixin for the values that are read from the map
+// If no definitions are provided, an algorithm will try to pick suitable colors based on the default background, text and link colors
 
-$match-text-bg-colors:              () !default;
+$theme-matched-colors:             () !default;
+$theme-matched-defaults:           (
+    $con-col-orange: (
+        "body-color": $white,
+        "link-color": $con-text-col-dark
+    ),
+    $con-col-cyan: (
+        "body-color": $white,
+        "link-color": $con-text-col-dark
+    ),
+    $con-col-red-light: (
+        "body-color": $white,
+        "link-color": $con-text-col-dark
+    )
+);
+$theme-matched-colors-merged:      map-merge($theme-matched-colors, $theme-matched-defaults);
+
+// Default margins / spacing
+
+$default-margin:                    2.0rem !default;
+$default-margin-small:              round($default-margin * 50) * 0.01 !default;   // 1.0 rem
+$default-margin-verysmall:          round($default-margin * 25) * 0.01 !default;   // 0.5 rem
+
+$element-margin:                    $default-margin !default;
+$ws-margin:                         1.0rem !default;
+$paragraph-margin-bottom:           $default-margin-small !default; // margin used at the end of paragraphs
+$headings-margin-bottom:            $paragraph-margin-bottom !default; // margin below <hx> elements
+
+$grid-gutter-width:                 30px !default;
+$grid-gutter-width-half:            $grid-gutter-width * 0.5 !default;
+$grid-row-columns:                  12 !default;
+
+@include ensure-not-css-property($default-margin);
+@include ensure-not-css-property($default-margin-small);
+@include ensure-not-css-property($default-margin-verysmall);
+@include ensure-not-css-property($element-margin);
+@include ensure-not-css-property($paragraph-margin-bottom);
+@include ensure-not-css-property($headings-margin-bottom);
+@include ensure-not-css-property($grid-gutter-width);
+
+
+// Bootstrap container sizes
+// Note: These values are used in image-srcset.tag, if changed a sitemap attribute can be used to align these
+
+$grid-breakpoints: (
+    xs: 0,
+    sm: 552px,
+    md: 764px,
+    lg: 1014px,
+    xl: 1200px,
+    xxl: 1400px
+) !default;
+
+$container-max-widths: (
+    sm: 540px,
+    md: 744px,
+    lg: 992px,
+    xl: 1170px,
+   xxl: 1320px
+) !default;
+
+
+// Rounded corners
+
+$default-border-radius:             0 !default;
+$copyright-border-radius:           floor($default-border-radius * 0.5) !default;
+$image-border-radius:               var(--#{$prefix}border-radius) !default;
+
+// Z-index for OpenCms toolbar and edit points
+
+$oc-z-index:                        100000 !default;                // OC edit points are at 100000
+$above-oc-toolbar:                  300000 !default;                // OC toolbar is at 200000
+$above-oc-z-index:                  $oc-z-index + 50000 !default;   // OC toolbar is at 200000, we want to be below this
+$overflow-z-index:                  5 !default;                     // Used by elements that require an overflow:hidden
+
+
+// Further Bootstrap variables
+$rfs-breakpoint:                    552px !default;
+
+$primary:                           $main-theme !default;
+
+$border-color:                      $grey-light !default;
+$table-striped-bg:                  $grey-lighter !default;
+
+$label-margin-bottom:               $default-margin-verysmall !default; // margin below <label> elements
+$dropdown-border-radius:            $default-border-radius !default; // BS dropdown border radius
+
+$modal-inner-padding:               1rem !default; // inner padding for modal dialog
+$zindex-modal-backdrop:             $above-oc-z-index + 1000 !default;
+$zindex-modal:                      $above-oc-z-index + 1050 !default;
 
 
 // Font definitions
 
-$font-family-base:                  "Montserrat", sans-serif !default;
-$font-family-headings:              "Open Sans", sans-serif !default;
-$font-family-sans-serif:            $font-family-base !default; // Boostrap 4 defines this the other way around
-$font-family-gui:                   "-apple-system" !default; // the font used in containers and other "GUI" components
+$font-family-base:                  "default-sans-serif" !default;
+$font-family-headings:              $font-family-base !default;
+$font-family-sans-serif:            $font-family-base !default; // Bootstrap defines this the other way around
+$font-family-gui:                   "default-sans-serif" !default; // the font used in containers and other "GUI" components
 
 $font-family-base:                  get-font-family($font-family-base); // match given names against preloaded font list
 $font-family-headings:              get-font-family($font-family-headings);
@@ -66,7 +195,7 @@ $font-family-gui:                   get-font-family($font-family-gui);
 $font-weight-light:                 300 !default;
 $font-weight-normal:                400 !default;
 $font-weight-bold:                  600 !default;
-$font-weight-bolder:                $font-weight-bold !default; // used in Boostrap 4 reboot.scss for <b> and <strong>
+$font-weight-bolder:                $font-weight-bold !default; // used in Bootstrap reboot.scss for <b> and <strong>
 
 $font-weight-base:                  $font-weight-normal !default;
 $font-weight-headings:              $font-weight-bold !default;
@@ -157,7 +286,7 @@ $font-size-lg:                      round($font-size-base * 12.5) * 0.1 !default
 $font-size-sm:                      round($font-size-base * 8) * 0.1 !default;
 
 $line-height-base:                  1.5 !default;
-$line-height-headings:              1.25 !default;
+$headings-line-height:              1.25 !default;
 $line-height-lead:                  $line-height-base !default;
 
 
@@ -182,96 +311,53 @@ $lead-font-size-mobile:             round($lead-font-size * 9) * 0.1 !default;
 $text-lightness-threshold:          69 !default;  // 58 orange, 69 grey to use light text
 $text-contrast-threshold:           2.5 !default;
 
-
-// Default margins
-
-$default-margin:                    2.0rem !default;
-$default-margin-smaller:            round($default-margin * 75) * 0.01 !default;   // 1.5 rem
-$default-margin-small:              round($default-margin * 50) * 0.01 !default;   // 1.0 rem
-$default-margin-quitesmall:         round($default-margin * 37.5) * 0.01 !default; // 0.75 rem
-$default-margin-verysmall:          round($default-margin * 25) * 0.01 !default;   // 0.5 rem
-$default-margin-ultrasmall:         round($default-margin * 12.5) * 0.01 !default; // 0.25 rem
-$default-margin-extremesmall:       round($default-margin * 6.25) * 0.01 !default; // 0.12 rem
-
-$detail-piece-margin-bottom:        $default-margin !default;
-$headings-margin-bottom:            $default-margin-small !default;
-$intro-headings-margin-bottom:      $default-margin-ultrasmall !default;
-$piece-headings-margin-bottom:      $headings-margin-bottom !default;
-
+$text-use-wcag-contrast:            false !default; // if true, then $text-contrast-threshold is set to predefined values and $text-lightness-threshold is ignored
+$wacg-conformance-level:            "AA" !default; // if this is not set to "AAA" then "AA" is assumed, see https://www.w3.org/WAI/WCAG21/Understanding/conformance#conformance-requirements
+@if $text-use-wcag-contrast {
+    @if $wacg-conformance-level == "AAA" {
+        $text-contrast-threshold: 7;
+    } @else {
+        $text-contrast-threshold: 4.5;
+    }
+}
 
 // Text and page colors
 
 $text-light:                        $white !default;
-$text-dark:                         #555 !default;
+$text-dark:                         #444 !default;
 $body-bg:                           $white !default;
 $body-color:                        $text-dark !default;
-$headings-color:                    $text-dark !default;
 $code-color:                        $black !default;
-$intro-headings-color:              $main-theme !default;
 $focus-outline-color:               $main-theme-hover !default;
 $highlight-color:                   $grey-lighter !default;
+$highlight-border-color:            $grey-light !default;
+$highlight-fg-color:                get-text-color($highlight-color) !default;
+$highlight-border-fg-color:         get-text-color($highlight-border-color) !default;
+$disabled-color:                    $grey-light !default;
+$disabled-fg-color:                 get-text-color($disabled-color) !default;
+$darkbg-color:                      #222 !default;
+$online-warn-color:                 $highlight-color !default;
+
+$main-theme-fg:                     get-text-color($main-theme);
+$main-theme-hover-fg:               get-text-color($main-theme-hover);
+
 $image-bg-color:                    #f6f6f6 !default;
-$linked-headings-color:             none !default;
-$linked-headings-decoration:        none !default;
-
-$default-transition-time:           0.33s !default; // default timing for animation effects
-
-// Rounded corners
-
-$default-border-radius:             0 !default;
-$copyright-border-radius:           floor($default-border-radius * 0.5) !default;
-$image-border-radius:               $default-border-radius !default;
-
-
-// OpenCms default Z-index for edit points
-
-$oc-z-index:                        100000 !default;                // OC edit points are at 100000
-$above-oc-toolbar:                  300000 !default;                // OC toolbar is at 200000
-$above-oc-z-index:                  $oc-z-index + 50000 !default;   // OC toolbar is at 200000, we want to be below this
-$overflow-z-index:                  5 !default;                     // Used by elements that require an overflow:hidden
-
-
-// Bootstrap container sizes
-// Note: These values are also hardcoded in image-srcset.tag
-
-$grid-breakpoints: (
-    xs: 0,
-    sm: 552px,
-    md: 764px,
-    lg: 1014px,
-    xl: 1200px
-) !default;
-
-$container-max-widths: (
-    sm: 540px,
-    md: 744px,
-    lg: 992px,
-    xl: 1170px
-) !default;
-
-
-// Bootstrap variables
-
-$grid-gutter-width:                 30px !default;
-$grid-gutter-width-half:            $grid-gutter-width * 0.5 !default;
-
-$primary:                           $main-theme !default;
 
 $link-color:                        $main-theme !default;
 $link-decoration:                   none !default;
 $link-hover-color:                  $main-theme-hover !default;
 $link-hover-decoration:             underline !default;
+$link-fg-color:                     get-text-color($link-color) !default;
+$link-hover-fg-color:               get-text-color($link-hover-color) !default;
 
-$border-color:                      $grey-light !default;
-$table-accent-bg:                   $grey-lighter !default;
+$headings-color:                    $text-dark !default;
+$intro-headings-color:              $main-theme !default;
+$linked-headings-color:             unset !default;
+$linked-headings-hover-color:       if($linked-headings-color != $link-color, $linked-headings-color, $link-hover-color) !default;
+$linked-headings-decoration:        unset !default;
+$linked-headings-hover-decoration:  $linked-headings-decoration !default;
 
-$paragraph-margin-bottom:           $default-margin-small !default; // margin below <p> elements
-$label-margin-bottom:               $default-margin-verysmall !default; // margin below <label> elements
-$dropdown-border-radius:            $default-border-radius !default; // BS dropdown border radius
-
-$modal-inner-padding:               1rem !default; // inner padding for modal dialog
-$zindex-modal-backdrop:             $above-oc-z-index + 1000 !default;
-$zindex-modal:                      $above-oc-z-index + 1050 !default;
+$default-transition-time:           0.33s !default; // default timing for animation effects
 
 
 // Drop shadow color for effects
@@ -290,9 +376,7 @@ $btn-lg-padding:                    round($btn-padding * 12.5) * 0.1 round($btn-
 $btn-sm-padding:                    round($btn-padding * 2.5) * 0.1 round($btn-padding * 12.5) * 0.1 !default;
 $btn-xs-padding:                    $btn-sm-padding !default;
 $btn-border-radius:                 $default-border-radius !default;
-$btn-default:                       $main-theme !default;
-$btn-default-hover:                 $main-theme-hover !default;
-$btn-disabled:                      $grey-light !default;
+$btn-disabled:                      $disabled-color !default;
 $btn-text-transform:                none !default;
 $btn-border-style:                  none !default;
 $btn-white-space:                   nowrap !default;
@@ -300,8 +384,13 @@ $btn-min-width:                     0 !default;
 $btn-line-height:                   $line-height-base !default;
 $btn-font-size:                     $font-size-base !default;
 $btn-xs-font-size:                  1.2rem !default;
-$btn-colors:                        $bg-colors !default;
+$btn-border:                        var(--#{$prefix}btn-fg) !default;
+$btn-hover-border:                  var(--#{$prefix}btn-hover-fg) !default;
 
+$btn-bg:                            $main-theme !default;
+$btn-fg:                            get-text-color($btn-bg) !default;
+$btn-hover-bg:                      $main-theme-hover !default;
+$btn-hover-fg:                      get-text-color($btn-hover-bg) !default;
 
 // Content sections
 
@@ -309,13 +398,19 @@ $section-border-radius:             $default-border-radius !default;
 $iconbox-border-radius:             $default-border-radius !default;
 $colored-row-color:                 $highlight-color !default;
 $section-subtitle-size:             13px !default;
+$section-subtitle-margin-top:       calc(0.5 * var(--#{$prefix}paragraph-margin-bottom)) !default;
 
-$piece-btn-padding:                 $btn-def-padding !default;
-$piece-btn-lg-padding:              $btn-lg-padding !default;
-$piece-text-margin:                 $default-margin-small !default;
-$piece-text-to-link-margin:         $piece-text-margin !default;
-$piece-visual-last-top-margin:      $piece-text-margin !default;
 $piece-desktop-breakpoint:          md !default;
+$piece-gutter-x:                    $grid-gutter-width !default;
+$piece-text-link-decoration:        $link-decoration !default;
+$piece-text-link-hover-decoration:  $link-hover-decoration !default;
+$piece-btn-white-space:             $btn-white-space !default;
+$piece-text-to-link-margin:         var(--#{$prefix}paragraph-margin-bottom) !default;
+$piece-visual-last-margin-top:      var(--#{$prefix}paragraph-margin-bottom) !default;
+$piece-visual-margin-bottom:        var(--#{$prefix}paragraph-margin-bottom) !default;
+$piece-paragraph-margin-bottom:     var(--#{$prefix}paragraph-margin-bottom) !default;
+$piece-headings-margin-bottom:      var(--#{$prefix}headings-margin-bottom) !default;
+$intro-headings-margin-bottom:      calc(0.25 * var(--#{$prefix}paragraph-margin-bottom)) !default; // margin below intro headings
 
 $use-hyphens:                       true !default; // enable hyphenation / word breaks (not all browsers support this)
 $piece-hyphens:                     $use-hyphens !default; // enable hyphenation / word breaks specially in piece
@@ -326,6 +421,17 @@ $piece-hyphens-text:                $piece-hyphens !default; // enable hyphenati
 $piece-hyphens-text-xs:             $piece-hyphens-text !default; // enable hyphenation for XS and SM
 $piece-hyphens-text-md:             $piece-hyphens-text !default; // enable hyphenation for MS, LG and XL
 $nav-hyphens:                       $use-hyphens !default; // enable hyphenation / word breaks specially in navigation
+
+$icon-box-fix-heading-size:         true !default; // fix size of headings in icon boxes?
+$icon-box-use-colored-a:            false !default; // use hover color for linked icon box text?
+
+// Copyright
+
+$copyright-padding:                 2px 4px !default;
+$copyright-font-size:               8px !default;
+$copyright-color:                   $black !default;
+$copyright-bg-color:                rgba($white, 0.6) !default;
+$copyright-opacity:                 0.8 !default;
 
 
 // Navigation
@@ -407,7 +513,7 @@ $nav-mobile-position:               right !default; // alternatives are ""left" 
 $nav-mobile-bg-color:               $nav-border !default; // background color of mobile navigation wrapper
 $nav-mobile-menu-bg-color:          $nav-head-bg !default; // background color of mobile navigation items wrapper
 $nav-mobile-logo-bg-color:          $nav-mobile-menu-bg-color !default; // background color of mobile navigation logo wrapper
-$nav-mobile-side-size:              250px + $grid-gutter-width-half !default; // size of mobile side menu for "left" and "right"
+$nav-mobile-side-size:              calc(250px + #{$grid-gutter-width-half}) !default; // size of mobile side menu for "left" and "right"
 $nav-mobile-side-content-move:      false !default; // move content when mobile side nav is shown?
 $nav-mobile-font-size:              16px !default; // font size for mobile sub-menu entries
 $nav-mobile-line-target-height:     36px !default; // line height of mobile menu nav entries
@@ -415,7 +521,7 @@ $nav-mobile-line-padding:           6px !default;
 $nav-mobile-line-height:            $nav-mobile-line-target-height - (2 * $nav-mobile-line-padding) !default;
 $nav-mobile-show-box:               true !default; // show a boxed color background behind arrows on mobile navigation
 $nav-mobile-box-bg-color:           $text-dark !default; // background behind "box" arrows on mobile navigation (if enabled)
-$nav-mobile-box-color:              check-text-color($nav-mobile-box-bg-color, $text-light) !default; // color of "box" arrows on mobile navigation (if enabled)
+$nav-mobile-box-color:              get-text-color($nav-mobile-box-bg-color, $text-light) !default; // color of "box" arrows on mobile navigation (if enabled)
 $nav-mobile-box-top:                4px !default; // top position for "box" with arrow
 $nav-mobile-box-right:              $grid-gutter-width-half !default; // right position for "box" with arrow
 $nav-mobile-box-height:             $nav-mobile-line-target-height - (2 * $nav-mobile-box-top) !default; // height for "box" background
@@ -430,7 +536,7 @@ $nav-mobile-toggle-side-xs:         $nav-mobile-toggle-side !default; // left / 
 $nav-mobile-border-color:           $nav-border !default; // border for mobile menu items
 $nav-mobile-border:                 solid 1px $nav-mobile-border-color !default; // border for mobile menu items
 $nav-mobile-smaller-xs-toggle:      true !default; // make toggle button smaller on xs screens, can be 'true' or 'false'
-$nav-mobile-header-color:           check-text-color($nav-mobile-menu-bg-color, $nav-header-text) !default; // text color of header links in mobile menu
+$nav-mobile-header-color:           get-text-color($nav-mobile-menu-bg-color, $nav-header-text) !default; // text color of header links in mobile menu
 $nav-mobile-header-text-transform:  $nav-header-text-transform !default; // text transform of header links in mobile menu
 $nav-mobile-header-font-size:       $nav-header-font-size !default; // font size of header links in mobile menu
 $nav-mobile-topcontrol-default:     true !default; // default topcontrol button, if false then no styling is supplied for topcontrol
@@ -446,13 +552,13 @@ $nav-megamenu-bg:                   $nav-bg; // background color for the mega me
 
 $fh-header-bg-color:                $nav-head-bg !default; // color of the header background container
 $fh-meta-bg-color:                  none !default; // background color of the meta / service links
-$fh-meta-color:                     check-text-color($fh-meta-bg-color, $nav-header-text, $fh-header-bg-color) !default; // font color for meta / service links
-$fh-meta-hover-color:               check-text-color($fh-meta-bg-color, $nav-header-text-hover, $fh-header-bg-color) !default; // font hover color for meta / service links
+$fh-meta-color:                     get-text-color($fh-meta-bg-color, $nav-header-text) !default; // font color for meta / service links
+$fh-meta-hover-color:               get-text-color($fh-meta-bg-color, $nav-header-text-hover) !default; // font hover color for meta / service links
 $fh-meta-font-size:                 $font-size-sm !default; // font size for meta / service links
 $fh-meta-text-transform:            uppercase !default; // text transformation for meta / service links
 $fh-title-font-size:                $h4-font-size !default; // font size for title in header
 $fh-title-bg-color:                 none !default; // background color of the title
-$fh-title-color:                    check-text-color($fh-title-bg-color, $nav-header-text, $fh-header-bg-color) !default; // background color of the title
+$fh-title-color:                    get-text-color($fh-title-bg-color, $nav-header-text) !default; // background color of the title
 $fh-nav-bg-color:                   none !default; // background color of the first level navigation in LG, XL
 $fh-nav-header-padding-increase:    12px !default; // additional space to add between the first level nav items in LG, XL
 $fh-ac-bg-color:                    none !default; // color of additional container
@@ -463,10 +569,9 @@ $fh-grid-gutter-width-half:         $fh-grid-gutter-width * 0.5 !default; // hal
 
 // Burger header
 
-@if ($feature-use-burger-header) {
+@if ($feature-header-type == 'burger') {
     // set required variables to force wrap menu for desktop
-    $feature-use-flexible-header:       false !global; // burger header setting is stronger than flexible header
-    $nav-breakpoint-mobile:             xl !global;
+    $nav-breakpoint-mobile:             xxl !global;
     $nav-breakpoint-desktop:            none !global;
     $nav-breakpoint-sticky-header-size: 2 !global;
     $nav-mobile-side-content-move:      false !global; // this feature is not supported
@@ -488,10 +593,8 @@ $bh-header-padding-meta:            $bh-header-padding-verysmall !default; // pa
 
 // The "nav-toggle" button - this is the "burger" button to show / hide the mobile navigation
 
-$nav-toggle-bg:                     $main-theme !default; // color of toggle button
-$nav-toggle-bg-hover:               $main-theme-hover !default; // hover color of toggle button
-$nav-toggle-bg-active:              $nav-toggle-bg !default; // color of toggle button if activated
-$nav-toggle-text:                   $white !default; // color of text in toggle button
+$nav-toggle-bg:                     var(--#{$prefix}main-theme) !default; // color of toggle button
+$nav-toggle-fg:                     var(--#{$prefix}main-theme-fg) !default; // color of text in toggle button
 $nav-toggle-size:                   40px !default; // height of toggle button
 $nav-toggle-size-xs:                30px !default; // on smaller screens the button size is reduced further
 $nav-toggle-bottom:                 5px !default; // bottom positioning of toggle button
@@ -501,19 +604,20 @@ $nav-toggle-size-with-border:       $nav-toggle-size + 2*$nav-toggle-border-widt
 
 // Breadcrumbs
 
-$nav-breadcrumb-space:              $default-margin-verysmall !default; // spacing base between breadcrumbs
-$nav-breadcrumb-space-left:         0.8 * $nav-breadcrumb-space !default; // spacing after breadcrumb before separator
-$nav-breadcrumb-space-right:        1.5 * $nav-breadcrumb-space !default; // spacing after separator before breadcrumb
+$nav-breadcrumb-space:              var(--#{$prefix}default-margin-verysmall) !default; // spacing base between breadcrumbs
+$nav-breadcrumb-space-left:         calc(0.8 * #{$nav-breadcrumb-space}) !default; // spacing after breadcrumb before separator
+$nav-breadcrumb-space-right:        calc(1.5 * #{$nav-breadcrumb-space}) !default; // spacing after separator before breadcrumb
 $nav-breadcrumb-bg-color:           none !default; // background color for breadcrumbs
-$nav-breadcrumb-padding:            $default-margin-verysmall 0 0 0 !default; // padding around breadcrumbs
-$nav-breadcrumb-text-color:         check-text-color($nav-breadcrumb-bg-color, $nav-header-text) !default; // text color of breadcrumbs
-$nav-breadcrumb-text-hover-color:   check-text-color($nav-breadcrumb-bg-color, $nav-header-text-hover) !default; // hover color of breadcrumb links
+$nav-breadcrumb-padding:            var(--#{$prefix}default-margin-verysmall) 0 0 0 !default; // padding around breadcrumbs
+$nav-breadcrumb-colored-padding:    var(--#{$prefix}default-margin-small) 0 !default; // padding if breadcrumbs background is colored
+$nav-breadcrumb-text-color:         get-text-color($nav-breadcrumb-bg-color, $nav-header-text) !default; // text color of breadcrumbs
+$nav-breadcrumb-text-hover-color:   get-text-color($nav-breadcrumb-bg-color, $nav-header-text-hover) !default; // hover color of breadcrumb links
 $nav-breadcrumb-font-size:          $font-size-sm !default; // font size for the breadcrumbs
 $nav-breadcrumb-image-size:         round($nav-breadcrumb-font-size * 80) * 0.01 !default; // image height / width for the breadcrumbs
+$nav-breadcrumb-separator-color:    if($nav-breadcrumb-bg-color == none, $grey, $nav-breadcrumb-text-color) !default; // color of breadcrumbs separator
 $nav-breadcrumb-separator:          "\f0da" !default; // separator char between breadcrumbs
-$nav-breadcrumb-separator-color:    conditional-value($nav-breadcrumb-bg-color == none, $grey, $nav-breadcrumb-text-color) !default; // color of breadcrumbs separator
-$nav-breadcrumb-separator-font:     ForkAwesome !default; // font-family for breadcrumbs separator
-
+$nav-breadcrumb-separator-font:     var(--#{$prefix}icon-font-family) !default; // font-family for breadcrumb seperator - NOTE: Sometimes you may want to use a 'standard' font with a seperator like '/' or '|', hence this is configurable
+$nav-breadcrumb-separator-font-size: $nav-breadcrumb-font-size !default; // font size for the breadcrumb separator, may need to be adjusted depending on font used
 
 // Side navigation - mirrors the main navigation by default, and allows to use different colors if required.
 
@@ -527,7 +631,7 @@ $nav-side-font-size:                $font-size-base !default;
 $nav-side-border:                   1px solid $nav-border !default;
 $nav-side-boxed:                    false !default; // true/false: show border around sidebar navigation
 $nav-side-left-padding-step:        $grid-gutter-width-half !default;
-$nav-side-left-padding-start:       conditional-value($nav-side-boxed == true, $nav-side-left-padding-step, 2px) !default;
+$nav-side-left-padding-start:       if($nav-side-boxed == true, $nav-side-left-padding-step, 2px) !default;
 $nav-side-right-padding:            30px !default;
 $nav-side-ver-padding:              6px !default;
 $nav-side-padding:                  $nav-side-ver-padding $nav-side-right-padding $nav-side-ver-padding $nav-side-left-padding-start !default;
@@ -542,187 +646,221 @@ $foot-line-height-mobile:           max(1.8, $line-height-base) !default;
 $foot-top-bg-color:                 $black !default;
 $foot-top-text-color:               get-text-color($foot-top-bg-color) !default;
 $foot-top-header-color:             $foot-top-text-color !default;
-$foot-top-link-color:               get-accent-color($foot-top-text-color, 10%) !default;
+$foot-top-link-color:               get-text-color($foot-top-bg-color, get-accent-color($foot-top-text-color, 10%)) !default;
 $foot-top-link-hover-color:         $foot-top-link-color !default;
 
 $foot-sub-bg-color:                 $foot-top-bg-color !default;
 $foot-sub-text-color:               get-text-color($foot-sub-bg-color) !default;
 $foot-sub-header-color:             $foot-sub-text-color !default;
-$foot-sub-link-color:               get-accent-color($foot-sub-text-color, 10%) !default;
+$foot-sub-link-color:               get-text-color($foot-sub-bg-color, get-accent-color($foot-sub-text-color, 10%)) !default;
 $foot-sub-link-hover-color:         $foot-sub-link-color !default;
 
 
 // Lists and pagination
 
-$list-border-color:                 $grey-light !default;
-$list-border-radius:                $default-border-radius !default;
+$list-border-color:                 var(--#{$prefix}grey-light) !default;
+$list-border-radius:                var(--#{$prefix}border-radius) !default;
 $list-search-shadow:                $panel-shadow !default;
 $list-category-radius:              0.5rem !default;
 $list-tile-header-lines:            2 !default;
 $list-side-adjust:                  true !default; // make side lists less "prominent" - if 'false' lists in aside will be displayed like regular lists
-$list-side-color:                   $grey-light !default; // color of pagination in side lists and small pagination
-$list-side-headings-color:          $text-dark !default; // color of headings in side lists
+$list-side-headings-color:          var(--#{$prefix}body-color) !default; // color of headings in side lists
 $list-side-intro-color:             $list-side-headings-color !default; // color of intro line in side lists
-$list-filter-background:            $btn-default !default;
-$list-filter-hover:                 $btn-default-hover !default;
-$list-filter-color:                 get-text-color($list-filter-background) !default;
+$list-teaser-format-inlist-only:    false !default;
+$list-filter-background:            var(--#{$prefix}btn-bg) !default;
+$list-filter-color:                 var(--#{$prefix}btn-fg) !default;
+$list-filter-hover:                 var(--#{$prefix}btn-hover-bg) !default;
+$list-filter-hover-fg:              var(--#{$prefix}btn-hover-fg) !default;
+$list-filter-btn-size:              calc(0.8rem + var(--#{$prefix}body-font-size)) !default;
+$list-filter-body-bg:               var(--#{$prefix}white) !default;
+$list-filter-body-fg:               var(--#{$prefix}text-dark) !default;
+$list-filter-disabled-bg:           var(--#{$prefix}filter-body-bg) !default;
+$list-filter-disabled-fg:           var(--#{$prefix}grey) !default;
+$list-filter-disabled-border:       1px solid var(--#{$prefix}grey-lighter) !default;
+$list-filter-highlight-border:      none !default;
+$list-filter-highlight-bg:          var(--#{$prefix}grey-lighter) !default;
+$list-filter-highlight-fg:          var(--#{$prefix}text-dark)  !default;
+$list-filter-highlight-hover-bg:    var(--#{$prefix}grey-light) !default;
+$list-filter-highlight-hover-fg:    var(--#{$prefix}text-dark)  !default;
+$list-filter-highlight-hover-border: none !default;
 
-$pagination-text-color:             $text-dark !default;
-$pagination-text-active-color:      $text-light !default;
-$pagination-border-color:           $grey-light !default;
+$pagination-spacing:                $default-margin !default;
+$pagination-item-jump-spacing:      calc(0.5 * $pagination-spacing) !default;
+$pagination-item-margin:            0 -1px 0 0 !default;
+$pagination-item-padding:           5px 12px !default;
+$pagination-border-color:           var(--#{$prefix}highlight-border-color) !default;
 $pagination-border:                 1px solid $pagination-border-color !default;
-$pagination-border-radius:          $default-border-radius !default;
-$pagination-background-color:       $body-bg !default;
-$pagination-hover-color:            $main-theme-hover !default;
-$pagination-active-color:           $main-theme !default;
-$pagination-margin:                 0 !default;
-$pagination-colors:                 $bg-colors !default;
+$pagination-border-radius:          var(--#{$prefix}btn-border-radius) !default;
+$pagination-disabled-fg-color:      var(--#{$prefix}pag-border-color) !default;
+$pagination-active-fg-color:        var(--#{$prefix}main-theme-fg) !default;
+$pagination-active-bg-color:        var(--#{$prefix}main-theme) !default;
+$pagination-hover-fg-color:         var(--#{$prefix}main-theme-hover-fg) !default;
+$pagination-hover-bg-color:         var(--#{$prefix}main-theme-hover) !default;
 
-$list-teaser-margin:                2 * $default-margin !default;
-$list-teaser-margin-compact:        $default-margin !default;
+$list-teaser-margin:                calc(2 * var(--#{$prefix}element-margin)) !default;
+$list-teaser-margin-compact:        var(--#{$prefix}element-margin) !default;
 
 $teaser-title-size:                 $h3-font-size !default;
 $teaser-title-size-mobile:          $h3-font-size-mobile !default;
 $teaser-title-size-reduced:         $h4-font-size !default;
 $teaser-title-size-reduced-mobile:  $h4-font-size-mobile !default;
-$teaser-title-height:               $line-height-headings !default;
+$teaser-title-height:               $headings-line-height !default;
 
 $teaser-btn-def-padding:            $btn-def-padding !default;
 $teaser-btn-compact-padding:        $btn-sm-padding !default;
 $teaser-btn-compact-light-padding:  0 $btn-padding !default;
-$teaser-info-color:                 $text-dark !default; // color of additional teaser infos, e.g. the date
+$teaser-info-color:                 var(--#{$prefix}body-color) !default; // color of additional teaser infos, e.g. the date
 
-$teaser-btn-color:                  $btn-default  !default;
-$teaser-btn-hover-color:            $btn-default-hover !default;
+$teaser-headings-margin-bottom:     var(--#{$prefix}paragraph-margin-bottom) !default;
+$teaser-date-margin-bottom:         calc(0.5 * var(--#{$prefix}paragraph-margin-bottom)) !default;
 
-$dl-list-highlight-color:           $highlight-color !default; // highlight background for compact download lists
+// Detail pages
+$detail-desktop-breakpoint:         $piece-desktop-breakpoint !default;
+$detail-visual-spacer-x:            var(--#{$prefix}default-margin-small) !default;
+$detail-visual-spacer-y:            var(--#{$prefix}default-margin-small) !default;
+$detail-content-spacer-y:           var(--#{$prefix}element-margin) !default;
 
 
 // Event calendar sheet
 
 $calendar-sheet-width:              165px !default;
-$calendar-sheet-barcolor:           $main-theme !default;
-$calendar-sheet-bgcolor:            $grey-lighter !default;
-$calendar-sheet-border:             $grey-light !default;
-$calendar-sheet-border-radius:      $default-border-radius !default;
-$calendar-sheet-margin:             10% !default;
-$calendar-sheet-colors:             $bg-colors !default;
+$calendar-sheet-bar-width:          80% !default;
 $calendar-sheet-bar-height:         15px  !default;
-
+$calendar-sheet-side-margin:        calc(0.5 * var(--#{$prefix}gutter-x)) !default;
 
 // Contacts
 
-$contact-margins:                   $default-margin-verysmall !default;
+$contact-spacer-x:                  calc(0.5 * var(--#{$prefix}default-margin-small)) !default;
+$contact-spacer-y:                  calc(0.5 * var(--#{$prefix}default-margin-small)) !default;
+
+
+// Toggle arrows
+
+$toggle-transition-time:            $default-transition-time !default;
+$toggle-arrow-icon:                 "\f078" !default;
+$toggle-alternate-icon:             "\f107" !default;
+$toggle-open-rotation:              -180deg !default;
+$toggle-closed-rotation:            0 !default;
 
 
 // Tabs and accordions
 
-$tab-text-transform:                none !default;
-$tab-header-font-size:              $h4-font-size !default;
-$tab-header-line-height:            $h4-font-size * 1.2 !default;
-$tab-border-radius:                 $default-border-radius !default;
-$tab-header-bg-hover:               $main-theme-hover !default;
-$tab-colors:                        $bg-colors !default;
+$at-header:                         var(--#{$prefix}highlight-fg-color) !default;
+$at-header-bg:                      var(--#{$prefix}highlight-color) !default;
+$at-header-active:                  var(--#{$prefix}main-theme-fg) !default;
+$at-header-active-bg:               var(--#{$prefix}main-theme) !default;
+$at-header-hover:                   var(--#{$prefix}main-theme-hover-fg) !default;
+$at-header-hover-bg:                var(--#{$prefix}main-theme-hover) !default;
 
-$accordion-text-transform:          none !default;
-$accordion-border-color:            $grey-light !default;
-$accordion-border:                  1px solid $accordion-border-color !default;
-$accordion-border-between:          $accordion-border !default;
-$accordion-header-color:            $headings-color !default;
-$accordion-header-bg:               $grey-lighter !default;
-$accordion-header-bg-hover:         $main-theme !default;
-$accordion-header-padding:          $default-margin-verysmall $default-margin-small !default;
-$accordion-header-font-size:        $h3-font-size !default;
-$accordion-header-font-size-md:     $h4-font-size !default;
-$accordion-header-line-height:      1.2 !default;
-$accordion-body-bg:                 transparent !default;
-$accordion-body-padding:            $default-margin-small  $default-margin-small 0  $default-margin-small !default;
-$accordion-margin:                  $default-margin-verysmall !default;
-$accordion-toggle-arrows:           true !default;
-$accordion-border-radius:           $default-border-radius !default;
-$accordion-colors:                  $tab-colors !default;
-$accordion-panel-shadow:            $panel-shadow !default;
+$at-spacing:                        $default-margin !default;
+$at-spacing-x:                      calc(0.5 * $at-spacing) !default;
+$at-spacing-y:                      calc(0.25 * $at-spacing) !default;
+$at-margin-between:                 $at-spacing-y !default;
+$at-content-padding-x:              $at-spacing-x !default;
+$at-content-padding-y:              $at-content-padding-x !default;
+
+$at-header-font-size:               $h4-font-size !default;
+$at-header-font-family:             var(--#{$prefix}font-family-headings) !default;
+$at-header-font-weight:             var(--#{$prefix}font-weight-headings) !default;
+
+$at-header-line-height:             1.2 !default;
+$at-text-transform:                 none !default;
+
+$at-border-radius:                  var(--#{$prefix}border-radius) !default;
+$at-border-color:                   var(--#{$prefix}grey-light) !default;
+$at-border:                         1px solid var(--#{$prefix}at-border-color) !default;
+
+$at-tile-button-size:               40px !default;
+$at-tile-button-font-size:          round($at-tile-button-size * 0.5) !default;
+$at-tile-outline-width:             4px !default;
+$at-tile-header-font-size-static:   $h4-font-size-mobile !default;
+
+$acco-body-bg:                      transparent !default;
+$acco-toggle-arrows:                true !default;
+$acco-arrow-icon:                   "\f078" !default;
+$acco-panel-shadow:                 $panel-shadow !default;
+$acco-body-margin-top:              if($at-border == none, 0, -1px) !default; // should match the border width from $at-border
+$acco-border-radius-expand-adjust:  (($acco-body-margin-top == 0) or ($acco-body-margin-top == -1px)) !default;
+
+$tab-content-margin-top:            calc(0.5 * $at-spacing) !default;
+
 
 // Slider
 
-$slider-slide-border-radius:        $default-border-radius !default;
-$slider-caption-border-radius:      $default-border-radius !default;
-$slider-caption-padding:            $default-margin-verysmall 0 !default;
+$slider-slide-border-radius:        var(--#{$prefix}border-radius) !default;
+$slider-caption-border-radius:      var(--#{$prefix}border-radius) !default;
+$slider-caption-padding:            var(--#{$prefix}default-margin-verysmall) 0 !default;
 $slider-text-shadow:                1px 1px 1px rgba(#333, .5) !default;
-$logo-slider-paddings:              (5, 10, 15, 20) !default;
+$logo-slider-paddings:              (10) !default;
 $slider-background-opacity:         0.75 !default;
 
 
 // Media
 
-$audio-player-color:                $text-dark;
+$audio-player-color:                get-text-color($body-bg);
 $audio-player-bg:                   transparentize($body-bg, 0.25) !default;
-$audio-player-compact-bg:           $grey-lighter !default;
+$audio-player-compact-color:        var(--#{$prefix}highlight-fg-color);
+$audio-player-compact-bg:           var(--#{$prefix}highlight-color) !default;
 $audio-player-font-size:            14px !default;
 $audio-player-spacing:              10px !default;
-$audio-player-border-radius:        $default-border-radius !default;
-$audio-player-progress-bg:          $audio-player-color !default;
-$audio-player-progress-border:      1px solid $audio-player-progress-bg !default;
+$audio-player-border-radius:        var(--#{$prefix}border-radius) !default;
+$audio-player-progress-border:      1px solid $audio-player-color !default;
 $audio-player-progress-height:      10px !default;
 
 $media-preview-text-shadow:         1px 1px 1px #000, 0px 0px 1px #000;
-$media-preview-icon-shadow:         1px 1px 1px #000, 0px 0px 5px rgba(0,0,0,0.5);;
+$media-preview-icon-shadow:         1px 1px 1px #000, 0px 0px 5px rgba(0,0,0,0.5);
 
 
 // Privacy policy
 
 $policy-banner-background:          #222 !default;
-$policy-banner-accept-button-color: $btn-default !default;
-$policy-banner-accept-hover-color:  $btn-default-hover !default;
+$policy-banner-accept-button-color: $btn-bg !default;
+$policy-banner-accept-hover-color:  $btn-hover-bg !default;
 $policy-banner-save-button-color:   lighten($policy-banner-background, 10%) !default;
 $policy-banner-save-hover-color:    $policy-banner-accept-hover-color !default;
 $policy-banner-button-min-width:    100px !default;
 $policy-banner-opacity:             0.95 !default;
-$policy-banner-margin:              $default-margin !default;
-$policy-banner-margin-small:        round($policy-banner-margin * 50) * 0.01 !default;
-$policy-banner-margin-verysmall:    round($policy-banner-margin * 25) * 0.01 !default;
 
 $togglebox-height:                  40px !default;
 $togglebox-width:                   200px !default;
 $togglebox-border-color:            $text-dark !default;
 $togglebox-border-size:             1px !default;
-$togglebox-border-radius:           $default-border-radius !default;
 $togglebox-slider-margin:           2px !default;
-$togglebox-enabled-color:           $policy-banner-accept-button-color !default;
-$togglebox-disabled-color:          $grey-light !default;
+$togglebox-disabled-color:          $disabled-color !default;
 $togglebox-slider-color:            $grey-light !default;
 
-$cookie-notice-bg-color:            $grey-lighter !default;
-$cookie-notice-color:               get-text-color($cookie-notice-bg-color) !default;
+$cookie-notice-bg-color:            var(--#{$prefix}highlight-color) !default;
+$cookie-notice-color:               var(--#{$prefix}highlight-fg-color) !default;
 $cookie-notice-alt-color:           $cookie-notice-color !default;
 $cookie-notice-font-size-mobile:    14px !default;
 $cookie-notice-font-size-desktop:   $font-size-base !default;
-$cookie-notice-small-font-size:     85% !default;
 $cookie-notice-large-font-size:     125% !default;
+$cookie-notice-small-font-size:     85% !default;
+$cookie-notice-tiny-font-size:      12px !default;
 $cookie-notice-togglebox-width:     150px !default;
 $cookie-notice-togglebox-height:    20px !default;
 
-$element-hide-bg-color:             $cookie-notice-bg-color !default;
+$placeholder-bg-color:              var(--#{$prefix}highlight-color) !default;
+$placeholder-border-color:          var(--#{$prefix}highlight-border-color) !default;
 
 
 // POI accessible icons
 
-$acc-icon-bg-color:                 $main-theme !default;
-$acc-icon-text-color:               get-text-color($acc-icon-bg-color) !default;
-$acc-icon-border-radius:            $default-border-radius !default;
 $acc-icon-size:                     3.5rem !default;
 
 
 // OSM maps / Google maps
 
-$map-border-radius:                 $default-border-radius !default;
-$map-text-color:                    $body-color !default;
+$map-border-radius:                 var(--#{$prefix}border-radius) !default;
 $map-text-size:                     1.4rem !default;
 $map-header-size:                   1.8rem !default;
 $map-label-color:                   $main-theme !default;
 $map-center-color:                  $main-theme !default;
 $map-cluster-color:                 $main-theme-hover !default;
 $map-hide-buttons-if-not-visible:   false !default;
+$map-popup-color:                   $text-dark !default;
+$map-popup-bg:                      $white !default;
+$map-marker-margin:                 var(--#{$prefix}default-margin-verysmall) !default;
 
 
 // Map colors (for marker groups)
@@ -741,58 +879,55 @@ $map-colors: (
 
 // Webforms
 
+$form-spacing:                      $default-margin !default;
+$form-padding-y:                    $form-spacing !default;
+$form-padding-x:                    calc(#{$form-padding-y} * 1.5) !default;
+$form-section-margin-bottom:        $form-spacing!default;
+$form-compact-spacing:              $default-margin-small !default;
+$form-compact-padding-y:            $form-compact-spacing !default;
+$form-compact-padding-x:            $form-compact-padding-y !default;
+$form-compact-section-margin-bottom:  $form-compact-spacing !default;
 $form-font-size:                    $font-size-base !default;
 $form-line-height:                  $line-height-base !default;
 $form-font-size-input:              $form-font-size !default;
 $form-font-size-input-xs-ph:        $font-size-sm !default;
-$form-text-color:                   inherit !default;
-$form-label-color:                  $form-text-color !default;
-$form-field-padding:                $default-margin;
-$form-field-ver-padding:            $form-field-padding;
-$form-field-hor-padding:            $form-field-padding * 1.5;
-$form-field-ver-padding-xs:         round($form-field-padding * 5) * 0.1 !default;
-$form-field-hor-padding-xs:         $form-field-ver-padding-xs !default;
-$form-border-color:                 $grey !default;
-$form-icon-color:                   $grey-dark !default;
-$form-placeholder-color:            $form-border-color !default;
-$form-radio-unchecked-color:        $grey-dark !default;
-$form-radio-unchecked-border-color: $form-radio-unchecked-color !default;
-$form-radio-checked-color:          $main-theme !default;
-$form-radio-checked-border-color:   $form-radio-unchecked-color !default;
+$form-input-border-radius:          $btn-border-radius !default;  // will inherit btn-border-radius css var if not different
+
+$form-text-color:                   var(--#{$prefix}body-color) !default;
+$form-label-color:                  var(--#{$prefix}form-text-color) !default;
+$form-border-color:                 var(--#{$prefix}grey) !default;
+$form-input-color:                  var(--#{$prefix}text-dark) !default;
+$form-input-background:             var(--#{$prefix}white) !default;
+$form-icon-color:                   var(--#{$prefix}form-input-color) !default;
+$form-placeholder-color:            var(--#{$prefix}form-border-color) !default;
+$form-radio-unchecked-color:        var(--#{$prefix}grey) !default;
+$form-radio-unchecked-border-color: var(--#{$prefix}form-border-color) !default;
+$form-radio-checked-color:          var(--#{$prefix}main-theme) !default; // will inherit main-theme css var if not different
+$form-radio-checked-border-color:   var(--#{$prefix}form-border-color) !default;
 $form-error-background:             #ffeeee !default;
 $form-error-text-color:             #bb2222 !default;
-$form-border:                       1px solid $form-border-color !default;
-$form-background:                   transparent !default;
-$form-input-background:             $body-bg !default;
-$form-captcha-background:           $white !default;
-$form-captcha-border:               1px dashed $grey-light !default;
-$form-border-radius:                $default-border-radius !default;
-$form-input-border-radius:          $btn-border-radius !default;
+$form-border:                       1px solid var(--#{$prefix}form-border-color) !default;
+$form-background:                   var(--#{$prefix}body-bg) !default;
+$form-captcha-background:           var(--#{$prefix}white) !default; // the generated image does have a white background by default
+$form-captcha-border:               1px dashed var(--#{$prefix}form-border-color) !default;
 
 
 // Search
 
-$search-badge-color:                $grey !default;
+$search-badge-color:                var(--#{$prefix}grey) !default;
 $search-badge-background:           transparent !default;
-$search-badge-border-radius:        $btn-border-radius !default;
 $search-badge-border:               1px solid $search-badge-color !default;
 $search-datelastmod-color:          $search-badge-color !default;
 
 
 // Sitemap
 
-$sitemap-top-bg-color:              $main-theme !default;
-$sitemap-top-text-color:            get-text-color($sitemap-top-bg-color) !default;
-$sitemap-sub-bg-color:              $main-theme-hover !default;
-$sitemap-sub-text-color:            get-text-color($sitemap-sub-bg-color) !default;
-$sitemap-hover-bg-color:            $sitemap-top-bg-color !default;
-$sitemap-hover-text-color:          $sitemap-top-text-color !default;
-$sitemap-ver-padding:               0.6rem !default;
-$sitemap-hor-padding:               1rem !default;
-$sitemap-border-radius:             $btn-border-radius !default;
-$sitemap-font-size:                 $font-size-base !default;
-$sitemap-line-height:               $font-size-base * 1.2 !default;
-$sitemap-colors:                    $bg-colors !default;
+$sitemap-spacing:                   $default-margin !default;
+$sitemap-padding-y:                 calc(0.25 * #{$sitemap-spacing}) !default;
+$sitemap-padding-x:                 calc(0.5 * #{$sitemap-spacing}) !default;
+$sitemap-font-size:                 var(--#{$prefix}body-font-size) !default;
+$sitemap-line-height:               1.3 !default;
+$sitemap-border-radius:             var(--#{$prefix}border-radius) !default;
 
 
 // Social network colors
@@ -811,24 +946,32 @@ $color-wallsio:                     #000000 !default;
 $color-slideshare:                  #e98325 !default;
 
 
-// List background colors
+// List of preview background (pbg) colors
 
 $color-pbg-default:                 $black !default;
-$color-pbg-main:                    $main-theme !default;
 $color-pbg-facebook:                $color-facebook !default;
 $color-pbg-twitter:                 $color-twitter !default;
 
 
 // Social links / Shariff
 
-$social-links-bg:                   $grey !default;
-$social-links-color:                $text-dark !default;
+$social-links-bg:                   var(--#{$prefix}grey) !default;
+$social-links-color:                var(--#{$prefix}body-color) !default;
 $social-links-size:                 20px !default;
-$social-links-margin:               $default-margin-verysmall !default;
+$social-links-margin:               var(--#{$prefix}default-margin-small) !default;
 $social-links-size-half:            $social-links-size * 0.5 !default;
 $social-links-box-height:           $social-links-size * 2 !default;
-$social-links-border-radius:        $btn-border-radius !default;
+$social-links-border-radius:        var(--#{$prefix}btn-border-radius) !default;
 $social-links-border-width:         0 !default;
+
+
+// Layout rows
+
+$row-paddings: (
+    small:        50px,
+    medium:       100px,
+    large:        200px
+) !default; // used in settings of layout area "Area - One row"
 
 
 // Map to generate the social icon styles from
@@ -856,14 +999,13 @@ $tooltip-font-size:                 $font-size-sm !default;
 $zindex-tooltip:                    $above-oc-z-index !default;
 $tooltip-padding-y:                 0.75rem !default;
 $tooltip-padding-x:                 1.5rem !default;
-$tooltip-border-radius:             $default-border-radius !default;
+$tooltip-border-radius:             var(--#{$prefix}border-radius) !default;
 
 
 // Link sequence
-$ls-margin-left:                    2.5rem !default;
-$ls-margin:                         $default-margin !default;
-$ls-margin-small:                   round($ls-margin * 50) * 0.01 !default;
-$ls-margin-verysmall:               round($ls-margin * 25) * 0.01 !default;
+
+$ls-li-padding:                     calc(2.5 * var(--#{$prefix}paragraph-margin-bottom)) !default;
+$ls-row-spacing:                    calc(2 * var(--#{$prefix}paragraph-margin-bottom)) !default;
 
 
 // Animations
@@ -882,33 +1024,6 @@ $effect-static-border:              1px solid $grey-light !default;
 $transition-timing:                 $default-transition-time !default; // default timing used for :hover and other transitions
 $transition-function:               ease; // default timing function used for :hover and other transitions
 
-
-// Editor GUI / element containers and markers */
-//
-// The colors for the element containers are considered "system" colors.
-// They should not change if the theme has another color configured, e.g. another orange.
-
-$con-col-cyan:                      #1bb39a !default;
-$con-col-blue:                      #144382 !default;
-$con-col-blue-light:                #2197db !default;
-$con-col-blue-steel-light:          #e8f3f8 !default;
-$con-col-orange:                    #ffa826 !default;
-$con-col-orange-hover:              #ffbf3f !default;
-$con-col-orange-light:              #ffe5bf !default;
-$con-col-red-orange-light:          #ffdac7 !default;
-$con-col-red-light:                 #ff264a !default;
-$con-col-red-lighter:               #ffe3e7 !default;
-$con-col-darker-red-light:          #ffc9d2 !default;
-$con-col-red:                       #b31b34 !default;
-$con-col-red-dark:                  #8b1528 !default;
-$con-col-purple:                    #eed2ee !default;
-$con-col-green-light:               #effab4 !default;
-
-$con-text-col-dark:                 #555 !default;
-$con-text-col-grey:                 #7f8691 !default;
-$con-text-col-light:                #fff !default;
-
-$online-warn-color:                 $highlight-color !default;
 
 // Disabled background-image, used for model group editor and elsewhere to mark "disabled" elements
 $disabled-bg:                       repeating-linear-gradient(135deg,transparent,transparent 10px,rgba(0,0,0,0.1) 10px,rgba(0,0,0,0.1) 20px);
@@ -935,17 +1050,17 @@ $border-sizes:                      () !default;
 $border-radiuses:                   () !default;
 $border-positions:                  () !default;
 $border-styles:                     () !default;
-$border-colors:                     $bg-colors !default;
 
 // Further variables used by generics
 $box-padding:                       20px !default;
-$box-colors:                        $bg-colors !default;
+$box-force-full-buttons:            false !default;
 
 // Spaces used for margins and paddings
 $margins-paddings:                  (0, 5, 10, 20, 30, 40) !default;
 
 // Spaces used for tile margins
 $list-tile-spacers:                 (0, 2, 5, 10, 15) !default;
+$list-tile-spacer-unit:             px !default;
 
 // Start of theme JSON with main colors
 $themeJSON: '"main-theme":"#{$main-theme}"';

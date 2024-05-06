@@ -20,8 +20,11 @@
  */
 
 .detail-page {
+    --#{$prefix}detail-visual-spacer-x: #{$detail-visual-spacer-x};
+    --#{$prefix}detail-visual-spacer-y: #{$detail-visual-spacer-y};
+    --#{$prefix}detail-content-spacer-y: #{$detail-content-spacer-y};
 
-    margin-bottom: $default-margin;
+    margin-bottom: var(--#{$prefix}element-margin);
 
     // visual image overlay as used on detail pages
     .piece > .visual .overlay { // strong selector needed to override .piece defaults
@@ -35,9 +38,6 @@
         .visual-overlay {
             order: 1;
         }
-        .copyright {
-            position: static;
-        }
     }
 
     // text elements that belong to the main detail visual
@@ -45,20 +45,20 @@
 
         .visual-info {
             // applies only to the info labels below the image
-            font-size: $font-size-base;
-            font-weight: $font-weight-base;
+            font-size: var(--#{$prefix}body-font-size);
+            font-weight: var(--#{$prefix}body-font-weight);
             line-height: 1.25;
             display: flex;
             flex-direction: column;
 
             > div + div,
             .infogroup > div + div {
-                margin-top: $default-margin-small;
+                margin-top: var(--#{$prefix}detail-visual-spacer-y);
             }
 
             .location {
                 .locname {
-                    margin-bottom: $default-margin-verysmall;
+                    margin-bottom: calc(0.5 * var(--#{$prefix}detail-visual-spacer-y));
                 }
                 .adressInfo {
                     margin-bottom: 0;
@@ -66,19 +66,20 @@
                         margin-bottom: 0;
                     }
                 }
-                .locname + .address,
-                .address + .adressInfo {
-                    margin-top: $default-margin-small;
+                .locdata > *:not(:first-child) {
+                    margin-top: var(--#{$prefix}detail-visual-spacer-y);
                 }
             }
 
             .info {
+                display: flex;
+
                 &::before {
+                    @include icon-font();
                     vertical-align: top;
                     display: inline-block;
                     width: 2.5rem;
-                    font-family: ForkAwesome;
-                    padding-right: $default-margin-small;
+                    padding-right: var(--#{$prefix}detail-visual-spacer-x);
                 }
                 > div {
                     display: inline-block;
@@ -86,23 +87,23 @@
             }
 
             .date::before {
-                content: "\f133";
+                content: "\f133"; // mercury:icon - fa-calendar-o
             }
 
             .person::before {
-                content: "\f2c0";
+                content: "\f2c0"; // mercury:icon - fa-user-o
             }
 
             .location::before {
-                content: "\f041";
+                content: "\f041"; // mercury:icon - fa-map-marker
             }
 
             .images::before {
-                content: "\f03e";
+                content: "\f03e"; // mercury:icon - fa-picture-o
             }
 
             .type::before {
-                content: "\f05a";
+                content: "\f05a"; // mercury:icon - fa-info-circle
             }
         }
 
@@ -116,7 +117,7 @@
 
     .sub-header {
         @extend .h4;
-        margin-bottom: $headings-margin-bottom;
+        margin-bottom: var(--#{$prefix}headings-margin-bottom);
     }
 
     &.layout-0 {
@@ -133,26 +134,29 @@
         .detail-visual.piece.phv.phh {
             // add larger margin below visual if heading is available
             > .visual {
-                margin-bottom: $headings-margin-bottom;
+                margin-bottom: var(--#{$prefix}headings-margin-bottom);
             }
         }
     }
 
     .detail-visual {
+        // .detail-visual has no bottom margin, add top margin to first detail-content or attachment container
         + .detail-content,
+        + .detail-addition {
+            margin-top: var(--#{$prefix}detail-content-spacer-y);
+        }
         + .attachment-container {
-            // .detail-visual has no bottom margin, add top margin to first detail-content or attachment container
-            margin-top: $detail-piece-margin-bottom;
+            margin-top: var(--#{$prefix}element-margin);
         }
     }
 
     .detail-content {
 
         @include clearfix;
-        @include piece-bottom-margin($detail-piece-margin-bottom);
+        @include piece-bottom-margin(var(--#{$prefix}detail-content-spacer-y));
 
         + div {
-            margin-top: $default-margin;
+            margin-top: var(--#{$prefix}element-margin);
         }
         + div.attachment-container:empty {
             display: none;
@@ -168,13 +172,14 @@
     .detail-addition:last-of-type {
         &.element,
         &.subelement,
+        .detail-page:last-of-type,
         .element:last-of-type,
         .subelement:last-of-type {
             margin-bottom: 0;
         }
     }
 
-    @include media-breakpoint-up(md) {
+    @include media-breakpoint-up($detail-desktop-breakpoint) {
         .overlay {
             display: block;
         }
@@ -200,7 +205,7 @@
                 }
                 > .intro {
                     font-size: $h3-font-size;
-                    margin-bottom: $default-margin-verysmall;
+                    margin-bottom: calc(0.5 * var(--#{$prefix}detail-visual-spacer-y));
                 }
                 > .headline {
                     font-size: $h1-font-size * 1.5;
@@ -254,5 +259,37 @@ html.opencms-page-editor {
     .detail-page.oc-detail-preview {
         opacity: .75;
         background-image: $disabled-bg;
+    }
+}
+
+// meta information display (currently used for jobs only)
+.meta-info-check {
+    &.mi-valid {
+        .ico {
+            color: $con-col-cyan;
+        }
+    }
+    &.mi-invalid {
+        &.mi-required {
+            .mi-notice,
+            .ico {
+                color: $con-col-red;
+            }
+        }
+        &.mi-optional {
+            .mi-notice,
+            .ico {
+                color: $con-col-orange;
+            }
+        }
+    }
+    .ico {
+        min-width: calc(2 * var(--#{$prefix}ws-margin));
+    }
+    .mi-label {
+        font-weight: var(--#{$prefix}font-weight-bold);
+    }
+    .mi-notice {
+        margin-left: var(--#{$prefix}ws-margin);
     }
 }

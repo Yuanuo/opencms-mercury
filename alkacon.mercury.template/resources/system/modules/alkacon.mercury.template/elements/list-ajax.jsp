@@ -12,7 +12,7 @@
 <%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
 
 
-<cms:secureparams />
+<cms:secureparams replaceInvalid="bad_param" />
 
 <mercury:set-siteroot siteRoot="${param.siteroot}" sitePath="${param.sitepath}" />
 

@@ -17,10 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Module implemented using the "revealing module pattern", see
-// https://addyosmani.com/resources/essentialjsdesignpatterns/book/#revealingmodulepatternjavascript
-// https://www.christianheilmann.com/2007/08/22/again-with-the-module-pattern-reveal-something-to-the-world/
-
 // the global objects that must be passed to this module
 var jQ;
 var DEBUG;
@@ -33,7 +29,7 @@ var m_firstInit = true;
 
 function toggleComments(commentData) {
 
-    var open = commentData.$fa.hasClass("open");
+    var open = commentData.$toggle.hasClass("open");
     if (DEBUG) console.info("Comments.toggleComments() " + (open ? "Close " : "Open ") + commentData.type);
     if (open) {
         commentData.$view.slideUp();
@@ -43,7 +39,7 @@ function toggleComments(commentData) {
         }
         commentData.$view.slideDown();
     }
-    commentData.$fa.toggleClass("open");
+    commentData.$toggle.toggleClass("open");
 }
 
 /****** Exported functions ******/
@@ -68,7 +64,6 @@ export function init(jQuery, debug) {
             commentData.$element = $commentElement;
             commentData.$view = $view;
             commentData.$toggle = commentData.$element.find(".btn-toggle");
-            commentData.$fa = commentData.$toggle.find(".fa");
 
             commentData.loaded = false;
             commentData.site = decodeURIComponent(commentData.site);

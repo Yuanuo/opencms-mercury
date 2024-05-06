@@ -11,10 +11,12 @@
         <uuid>d5857fef-f272-4412-8b0f-d09d93442d27</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-webform.description.formatter)]]></Description>
     <Rank><![CDATA[1000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[form]]></ContainerType>
       </Types>
     </Match>
@@ -40,6 +42,9 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[formCssWrapper.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[formModus.default]]></IncludeName>
     </Setting>
   </NewFormatter>
 </NewFormatters>

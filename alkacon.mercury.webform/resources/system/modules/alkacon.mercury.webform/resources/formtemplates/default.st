@@ -216,7 +216,7 @@ $label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=man
 <div class="input$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
 $!      !$$endif$
 $!  !$$endif$
 $!  !$<input type="password" name="$field.name$" id="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
@@ -309,10 +309,67 @@ $label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=man
 <div class="input$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
 $!      !$$endif$
 $!  !$$endif$
 $!  !$<input type="text" id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
+</div>
+$if(errormessage)$
+$!  !$<div class="note note-error" tabindex="0">$errormessage$</div>
+$endif$
+$row_end(field=field,formconfig=formconfig)$
+>>
+
+
+field_date(field,formconfig,attributes,errormessage,mandatory) ::= <<
+$! ###### DATE field ###### !$
+$row_start(field=field)$
+$label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=mandatory)$
+<div class="input$if(errormessage)$ state-error$endif$">
+$!  !$$if(field.parameters)$
+$!      !$$if(field.parameters.icon)$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!      !$$endif$
+$!  !$$endif$
+$!  !$<input type="text" class="datepicker" data-datepicker="{}" id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
+</div>
+$if(errormessage)$
+$!  !$<div class="note note-error" tabindex="0">$errormessage$</div>
+$endif$
+$row_end(field=field,formconfig=formconfig)$
+>>
+
+
+field_time(field,formconfig,attributes,errormessage,mandatory) ::= <<
+$! ###### TIME field ###### !$
+$row_start(field=field)$
+$label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=mandatory)$
+<div class="input$if(errormessage)$ state-error$endif$">
+$!  !$$if(field.parameters)$
+$!      !$$if(field.parameters.icon)$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!      !$$endif$
+$!  !$$endif$
+$!  !$<input type="text" class="datepicker" data-datepicker='{"noCalendar":true,"enableTime":true}' id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
+</div>
+$if(errormessage)$
+$!  !$<div class="note note-error" tabindex="0">$errormessage$</div>
+$endif$
+$row_end(field=field,formconfig=formconfig)$
+>>
+
+
+field_datetime(field,formconfig,attributes,errormessage,mandatory) ::= <<
+$! ###### DATETIME field ###### !$
+$row_start(field=field)$
+$label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=mandatory)$
+<div class="input$if(errormessage)$ state-error$endif$">
+$!  !$$if(field.parameters)$
+$!      !$$if(field.parameters.icon)$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!      !$$endif$
+$!  !$$endif$
+$!  !$<input type="text" class="datepicker" data-datepicker='{"enableTime":true,"dateFormat":"Y-m-d H:i"}' id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
 </div>
 $if(errormessage)$
 $!  !$<div class="note note-error" tabindex="0">$errormessage$</div>
@@ -328,7 +385,7 @@ $row_start(field=field)$
 <div class="textarea$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
 $!      !$$endif$
 $!  !$$endif$
 $!  !$<textarea cols="50" rows="$if(field.parameters.rows)$$field.parameters.rows$$else$5$endif$" id="$field.name$" name="$field.name$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$ $attributes$>$field.valueEscaped$</textarea>
@@ -349,7 +406,7 @@ $! ###### Standard LABEL for a field ###### !$
 row_start(field) ::= <<
 $! ###### Standard start row for a field ###### !$
 $if(field.showRowStart)$
-$!  !$<section>
+$!  !$<section class="form-field-$field.type$">
 $endif$
 >>
 
@@ -482,7 +539,7 @@ $!  !$</footer>
 confirmationpage(formconfig,confirmtext,confirmfields) ::= <<
 $! ###### CONFIRMATION page of the form ###### !$
 $confirmtext$
-<table class="webform-input table table-responsive table-bordered table-striped">
+<table class="webform-input table table-responsive table-bordered table-striped matomo-goal">
 $confirmfields:{$!
     !$<tr>$!
         !$<td class="label">$it.label$</td>$!
@@ -493,20 +550,20 @@ $confirmfields:{$!
 
 fullybooked(headline,text) ::= <<
 $! ###### FULLYBOOKED page hint of the form ###### !$
-<div class="oct-alert oct-alert-warning">
-$!  !$<h3 class="webform_fullybooked_headline">$headline$</h3>
-$!  !$<p class="webform_fullybooked_text">$text$</p>
+<div class="online-warn">
+$!  !$<div class="webform_fullybooked_headline warn-head h2">$headline$</div>
+$!  !$<div class="webform_fullybooked_text warn-text">$text$</div>
 </div>
 >>
 
 waitlist_notification(message) ::= <<
 $! ###### wait list notification used by the FORM template ###### !$
-<div class="oct-alert oct-alert-warning">
-$!  !$$message$
+<div class="online-warn">
+$!  !$<div class="webform_fullybooked_headline warn-head h2">$message$</div>
 </div>
 >>
 
-htmlemail(mailcss,mailtext,errorheadline,errors) ::= <<
+htmlemail(mailcss,mailtext,errorheadline,errors,icalinfo) ::= <<
 $! ###### HTML email for the form ###### !$
 <html><head>
 <style type="text/css">
@@ -531,6 +588,9 @@ $endif$
 </style>
 </head><body>
 $mailtext$
+$if(icalinfo)$
+$!  !$<p><a href="$icalinfo.link$" download="$icalinfo.fileName$">$icalinfo.label$</a></p>
+$endif$
 $if(errorheadline)$
 $!  !$<h1>$errorheadline$</h1>
 $!  !$<p>

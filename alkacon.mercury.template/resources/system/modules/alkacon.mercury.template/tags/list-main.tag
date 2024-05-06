@@ -67,6 +67,10 @@
     multiDayRangeFacet="${multiDayRangeFacet}"
 />
 
+<c:set var="categories">${config.value.Category}</c:set>
+<c:set var="postCreateHandler">org.opencms.file.collectors.CmsAddCategoriesPostCreateHandler|${categories}</c:set>
+<cms:enable-list-add types="${config.valueList.TypesToCollect}" postCreateHandler="${postCreateHandler}" uploadFolder="${cms.getBinaryUploadFolder(config)}" />
+
 <c:if test="${search.numFound > 0}">
 
     <%-- ####### The sort option bar ######## --%>
@@ -94,8 +98,6 @@
 
     <c:set var="currentResult" value="${search.start - 1}" />
 
-    <c:set var="categories">${config.value.Category}</c:set>
-
     <c:if test="${not ajaxCall}">
         <cms:jsonobject var="listGeneratedJson" mode="wrapper" scope="request" />
     </c:if>
@@ -113,7 +115,7 @@
             create="true"
             delete="true"
             postCreateHandler="org.opencms.file.collectors.CmsAddCategoriesPostCreateHandler|${categories}"
-			uploadFolder="${cms.getBinaryUploadFolder(config)}"
+            uploadFolder="${cms.getBinaryUploadFolder(config)}"
             >
 
             <c:forEach var="parameter" items="${settings}">
@@ -133,9 +135,10 @@
             <cms:param name="nglist">true</cms:param>
             <cms:param name="noscriptList">${noscriptCall}</cms:param>
             <cms:param name="ajaxList">${ajaxCall}</cms:param>
+            <cms:param name="_geodist_">${result.fields['_geodist_']}</cms:param>
         </cms:display>
 
-        <c:if test="${not empty listEntryWrapper}"></${listEntryTag}></c:if>
+        <c:if test="${not empty listEntryWrapper}"></${listEntryTag}><mercury:nl /></c:if>
 
     </c:forEach>
 

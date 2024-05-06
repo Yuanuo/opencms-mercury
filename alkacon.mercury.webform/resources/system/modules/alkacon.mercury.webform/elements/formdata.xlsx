@@ -12,15 +12,25 @@
 <c:if test="${not cms.isOnlineProject}">
 
     <mercury:webform-vars webform="${param.f}" bookingInfo="${param.b}">
+    <mercury:location-vars data="${formBookingXml.value.AddressChoice}">
 
     <c:if test="${form.userCanManage}">
 
-        <c:set var="exportBean" value='${cms.getBean("alkacon.mercury.webform.CmsExportBeanExcel")}' />
+        <c:set var="configuredExportBean" value="${not empty param.exportBean ? param.exportBean : 'alkacon.mercury.webform.CmsExportBeanExcel'}" />
+        <c:set var="exportBean" value="${cms.getBean(configuredExportBean)}" />
 
-        ${exportBean.init(form, formTitle, cms.locale)}
+        <c:choose>
+            <c:when test="${empty param.formdata}">
+                ${exportBean.init(form, formTitle, locData, formBookingXml, cms.locale)}
+            </c:when>
+            <c:otherwise>
+                ${exportBean.init(form, formTitle, locData, formBookingXml, cms.locale, param.formdata)}
+            </c:otherwise>
+        </c:choose>
 
     </c:if>
 
+    </mercury:location-vars>
     </mercury:webform-vars>
     <%
         CmsExportBeanExcel exportBean = (CmsExportBeanExcel)pageContext.getAttribute("exportBean");

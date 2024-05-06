@@ -22,14 +22,14 @@
     description="The filename set for the content disposition." %>
 
 <%
-
     String name = (String)getJspContext().getAttribute("name");
     String suffix = (String)getJspContext().getAttribute("suffix");
     Boolean setFilenameOnly = (Boolean)getJspContext().getAttribute("setFilenameOnly");
     boolean setHeader = (setFilenameOnly != null) ? !setFilenameOnly.booleanValue() : true;
 
     if (name.length() > 0) {
-        name = name.replaceAll("[.]","");
+        name = name.trim();
+        name = name.replaceAll("[./]","-");
         name = org.opencms.main.OpenCms.getResourceManager().getFileTranslator().translateResource(name);
     }
 

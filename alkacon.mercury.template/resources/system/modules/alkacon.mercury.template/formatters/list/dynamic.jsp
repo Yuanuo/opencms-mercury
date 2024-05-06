@@ -49,6 +49,8 @@
 %>
 <%-- The ajax link to use with the parameters containing the settings. --%>
 <c:set var="ajaxlink"><%= CmsRequestUtil.appendParameters("/system/modules/alkacon.mercury.template/elements/list-ajax.jsp", settingsParameterMap, true) %></c:set>
+<%-- The ajax link to use for facet count adjustment. --%>
+<c:set var="ajaxFacetCountLink">/system/modules/alkacon.mercury.template/elements/list-facet-ajax.jsp?siteRoot=${cms:encode(siteRoot)}</c:set>
 
 <mercury:init-messages reload="true">
 
@@ -56,18 +58,36 @@
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
 
-<mercury:nl />
-<div class="element type-dynamic-list list-content ${settings.listCssWrapper}${' '}${settings.listPaginationPosition}${' '}${settings.listDisplay}${' '}${settings.cssWrapper}${' '}${cms.isEditMode ? 'oc-point-T-25_L15' : ''}"><%----%>
-<mercury:nl />
-
-    <%-- ####### Check if list formatters are compatible ######## --%>
+<c:set var="listCompatibilityMarkup">
+    <%-- Check if list formatters are compatible. --%>
     <mercury:list-compatibility
         settings="${settings}"
         types="${content.valueList.TypesToCollect}"
+        listType="dynamic"
         listTitle="${value.Title}"
     />
+</c:set>
+
+<mercury:nl />
+<div class="element type-dynamic-list list-content <%--
+--%>${not empty settings.listCssWrapper ? settings.listCssWrapper.concat(' ') : ''}<%--
+--%>${not empty settings.listDisplay ? settings.listDisplay.concat(' ') : ''}<%--
+--%>${not empty settings.cssWrapper ? settings.cssWrapper.concat(' ') : ''}<%--
+--%>${not empty listDisplayType ? 'list-'.concat(listDisplayType).concat(' ') : ''}<%--
+--%>${settings.appendSwitch != 'disable' ? settings.listPaginationPosition : 'pagination-disabled'}${' '}<%--
+--%>${cms.isEditMode ? 'oc-point-T-25_L15' : ''}"><%----%>
+<mercury:nl />
+
+    <c:if test="${not isCompatible}">
+        ${listCompatibilityMarkup}
+    </c:if>
 
     <c:if test="${isCompatible}">
+
+        <cms:enable-list-add
+            types="${content.valueList.TypesToCollect}"
+            postCreateHandler="org.opencms.file.collectors.CmsAddCategoriesPostCreateHandler|${content.value.Category}"
+            uploadFolder="${cms.getBinaryUploadFolder(content)}" />
 
         <mercury:heading level="${wrappedSettings.listHsize.toInteger}" text="${value.Title}" css="heading pivot" />
 
@@ -88,6 +108,7 @@
         </c:if>
 
         <c:set var="ajaxlink"><cms:link>${ajaxlink}</cms:link></c:set>
+        <c:set var="ajaxFacetCountLink"><cms:link>${ajaxFacetCountLink}</cms:link></c:set>
         <c:set var="instanceId"><mercury:idgen prefix="li" uuid="${cms.element.instanceId}" /></c:set>
         <c:set var="elementId"><mercury:idgen prefix="le" uuid="${cms.element.id}" /></c:set>
         <c:set var="isLoadAll" value="${wrappedSettings.loadAll.toBoolean}" />
@@ -120,12 +141,17 @@
         <c:if test="${not empty param['radius']}">
             <c:set var="initparams" value="${initparams}&radius=${param['radius']}" />
         </c:if>
+        <c:if test="${not empty param['geodist']}">
+            <c:set var="initparams" value="${initparams}&geodist=${param['geodist']}" />
+        </c:if>
         <c:if test="${not empty initparams}">
+            <c:set var="initparams">${initparams.replace("'","&#39;")}</c:set>
             <c:set var="initparams" value="reloaded${initparams}" />
         </c:if>
 
         <cms:jsonobject var="listData">
             <cms:jsonvalue key="ajax" value="${ajaxlink}" />
+            <cms:jsonvalue key="ajaxCount" value="${ajaxFacetCountLink}" />
             <cms:jsonvalue key="loadAll" value="${isLoadAll}" />
             <cms:jsonvalue key="teaser" value="${settings.teaserlength}" />
             <cms:jsonvalue key="path" value="${cms.element.sitePath}" />
@@ -179,7 +205,9 @@
                 />
             </c:if>
 
-            ${'<'}${listTag} class="list-entries ${settings.listWrapper}" ${minHeightCss}${'>'}
+            <c:set var="listWrapper" value="${settings.listWrapper}" />
+            <c:set var="listWrapper" value="${fn:replace(listWrapper, 'row-tile', 'row')}" />
+            ${'<'}${listTag} class="list-entries ${listWrapper}" ${minHeightCss}${'>'}
                 <mercury:list-main
                     elementId="${elementId}"
                     instanceId="${instanceId}"
@@ -197,7 +225,9 @@
 
             <%-- ####### Animated list spinner ######## --%>
             <div class="list-spinner hide-noscript"><%----%>
-                <div class="spinnerInnerBox"><span class="fa fa-spinner"></span></div><%----%>
+                <div class="spinnerInnerBox"><%----%>
+                    <mercury:icon icon="spinner" tag="span" cssWrapper="spinner-icon" />
+                </div><%----%>
             </div><%----%>
             <mercury:nl />
 
@@ -215,20 +245,18 @@
                 <mercury:nl />
             </c:if>
 
-            <%-- ####### Boxes to create new entries in case of empty result ######## --%>
-            <c:if test="${cms.isEditMode}">
-                <mercury:list-types types="${content.valueList.TypesToCollect}" var="types" uploadFolder="${cms.getBinaryUploadFolder(content)}" />
-                <c:forEach var="createType" items="${types}">
-                    <div class="list-editbox" style="display: none;" ><%----%>
-                        <mercury:list-messages type="${createType}" defaultCats="${content.value.Category}" uploadFolder="${cms.getBinaryUploadFolder(content)}" />
-                    </div><%----%>
-                    <mercury:nl />
-                </c:forEach>
-            </c:if>
-
+            <%-- ####### Displays notice in case of empty list result ######## --%>
+            <mercury:list-messages
+                search="${search}"
+                types="${content.valueList.TypesToCollect}"
+                uploadFolder="${cms.getBinaryUploadFolder(content)}"
+                dynamic="${true}"
+                reloaded="${not empty param.reloaded}"
+            />
         </div><%----%>
         <mercury:nl />
     </c:if>
+
 </div><%----%>
 <mercury:nl />
 

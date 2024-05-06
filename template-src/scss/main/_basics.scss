@@ -26,6 +26,8 @@ html {
     &.opencms-page-editor {
         // in OpenCms page editor, add a top padding to move the content below the toolbar
         padding-top: $opencms-toolbar-height;
+        // CSS smooth scrolling conflicts with page editor drag & drop
+        scroll-behavior: auto;
     }
 
     *,
@@ -46,7 +48,7 @@ html {
     }
 
     &.keyboard-nav {
-        *,
+        *:not(.mce-edit-focus),
         .dropdown > a,
         .dropdown-menu > a {
 
@@ -57,7 +59,7 @@ html {
         .media-box,
         .focus-within {
             &:focus-within {
-                @include focus-outline();
+                @include focus-outline(true);
             }
         }
     }
@@ -73,10 +75,10 @@ html {
 }
 
 .default-font {
-    font-family: $font-family-base;
-    font-size: $font-size-base;
-    font-weight: $font-weight-base;
-    line-height: $line-height-base;
+    font-family: var(--#{$prefix}body-font-family);
+    font-size: var(--#{$prefix}body-font-size);
+    font-weight: var(--#{$prefix}body-font-weight);
+    line-height: var(--#{$prefix}body-line-height);
 }
 
 .lead {
@@ -86,14 +88,20 @@ html {
 
 // Headings
 h1, h2, h3, h4, h5, h6 {
-    @include heading-base(true);
+    @include heading-base;
+    color: var(--#{$prefix}headings-color);
+    margin-bottom: var(--#{$prefix}headings-margin-bottom);
 }
 
 .h1, .h2, .h3, .h4, .h5, .h6 {
-    @include heading-base(false);
+    @include heading-base;
+    margin-top: 0;
+    margin-bottom: var(--#{$prefix}headings-margin-bottom);
+    color: var(--#{$prefix}headings-color);
+    line-height: $headings-line-height;
 }
 
-@include media-breakpoint-down(md) {
+@include media-breakpoint-down(lg) {
     h1, .h1 {
         font-size: $h1-font-size-mobile;
     }
@@ -105,6 +113,24 @@ h1, h2, h3, h4, h5, h6 {
     }
     h4, .h4 {
         font-size: $h4-font-size-mobile;
+    }
+
+    @container (max-width: 300px) {
+        .adjust-headings {
+            container-type: inline-size;
+            h1, .h1 {
+                font-size: #{fluid-size-container($h1-font-size, $h6-font-size, 300px, 100px, $font-rem-base-mobile-size)};
+            }
+            h2, .h2 {
+                font-size: #{fluid-size-container($h2-font-size, $h6-font-size, 300px, 100px, $font-rem-base-mobile-size)};
+            }
+            h3, .h3 {
+                font-size: #{fluid-size-container($h3-font-size, $h6-font-size, 300px, 100px, $font-rem-base-mobile-size)};
+            }
+            h4, .h4 {
+                font-size: #{fluid-size-container($h4-font-size, $h6-font-size, 300px, 100px, $font-rem-base-mobile-size)};
+            }
+        }
     }
 }
 
@@ -121,6 +147,24 @@ h1, h2, h3, h4, h5, h6 {
     h4, .h4 {
         font-size: $h4-font-size;
     }
+
+    @container (max-width: 300px) {
+        .adjust-headings {
+            container-type: inline-size;
+            h1, .h1 {
+                font-size: #{fluid-size-container($h1-font-size, $h6-font-size, 300px, 100px, $font-rem-base-desktop-size)};
+            }
+            h2, .h2 {
+                font-size: #{fluid-size-container($h2-font-size, $h6-font-size, 300px, 100px, $font-rem-base-desktop-size)};
+            }
+            h3, .h3 {
+                font-size: #{fluid-size-container($h3-font-size, $h6-font-size, 300px, 100px, $font-rem-base-desktop-size)};
+            }
+            h4, .h4 {
+                font-size: #{fluid-size-container($h4-font-size, $h6-font-size, 300px, 100px, $font-rem-base-desktop-size)};
+            }
+        }
+    }
 }
 
 h5, .h5 {
@@ -129,7 +173,6 @@ h5, .h5 {
 h6, .h6 {
     font-size: $h6-font-size;
 }
-
 
 // Links
 a {
@@ -150,7 +193,7 @@ a {
         }
         &:focus,
         &:hover {
-            color: $link-hover-color;
+            color: var(--#{$prefix}link-hover-color);
         }
 
         &.fully {
@@ -162,29 +205,48 @@ a {
     }
 }
 
-@if (($linked-headings-color != none) or ($linked-headings-decoration != none)) {
+%linked-headings {
+    @if ($linked-headings-color != unset) {
+        color: var(--#{$prefix}linked-headings-color);
+    }
+    @if ($linked-headings-decoration != unset) {
+        text-decoration: $linked-headings-decoration;
+    }
+}
+
+%linked-headings-hover {
+    @if ($linked-headings-hover-color != unset) {
+        color: var(--#{$prefix}linked-headings-hover-color);
+    }
+    @if ($linked-headings-hover-decoration != unset) {
+        text-decoration: $linked-headings-hover-decoration;
+    }
+}
+
+a {
+    h1, h2, h3, h4, h5, h6 {
+        @extend %linked-headings;
+    }
+    &:hover {
+        h1, h2, h3, h4, h5, h6 {
+            @extend %linked-headings-hover;
+        }
+    }
+}
+h1, h2, h3, h4, h5, h6 {
     a {
+        @extend %linked-headings;
         &:hover {
-            h1, h2, h3, h4, h5, h6 {
-                @if ($linked-headings-color != none) {
-                    @include media-breakpoint-up(md) {
-                        @include color-transition;
-                    }
-                    color: $linked-headings-color;
-                }
-                @if ($linked-headings-decoration != none) {
-                    text-decoration: $linked-headings-decoration;
-                }
-            }
+            @extend %linked-headings-hover;
         }
     }
 }
 
 @if ($link-external-icon) {
 
-    a.external:after {
-        font-family: ForkAwesome;
-        content: " \f08e";
+    a.external::after {
+        @include icon-font();
+        content: " \f08e"; // mercury:icon - fa-external-link
         margin-left: 2px;
     }
 
@@ -213,18 +275,18 @@ span.badge {
 
 
 // Colored badges
-@each $color-name, $bg-color, $highlight-color in $bg-colors {
+@each $color, $value in $theme-colors {
 
-    span.badge-#{""+$color-name} {
-        color: get-text-color($bg-color);
-        background: $bg-color;
+    span.badge-#{""+$color} {
+        color: get-text-color($value);
+        background: $value;
     }
 }
 
 
 // Screen reader buttons with absolute position
-.sr-only-focusable-fixed {
-    @include sr-only-focusable();
+.visually-hidden-focusable-fixed {
+    @include visually-hidden-focusable();
     &:active,
     &:focus {
         position: fixed;
@@ -234,7 +296,7 @@ span.badge {
 }
 
 html.opencms-page-editor {
-    .sr-only-focusable-fixed {
+    .visually-hidden-focusable-fixed {
         &:active,
         &:focus {
             top: $opencms-toolbar-height;
@@ -244,17 +306,41 @@ html.opencms-page-editor {
 
 #keyboard-toggle {
     &::after {
-         @include awesome-icons();
-         margin-left: 1rem;
-         content: "\f096"
+        @include icon-font();
+        margin-left: 1rem;
+        content: "\f096"; // mercury:icon - fa-square-o
     }
     &[aria-checked="true"] {
         &::after {
-            content: "\f046"
+            content: "\f046"; // mercury:icon - fa-check-square-o
         }
     }
 }
 
+
+// anchor-links, usually after a heading
+.anchor-link-parent {
+    .anchor-link {
+        display: none;
+        &::after {
+            content: " #";
+        }
+    }
+
+    &:hover {
+        .anchor-link {
+            display: inline;
+            text-decoration: none;
+        }
+    }
+}
+html.opencms-editor-active {
+    .anchor-link-parent:hover {
+        .anchor-link {
+            display: none;
+        }
+    }
+}
 
 // Basic Print support
 @media print {

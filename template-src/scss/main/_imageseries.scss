@@ -19,59 +19,123 @@
  * Source file: _imageseries.scss
  */
 
-$pswp-title-size:           1.8rem !default;
-$pswp-copyright-size:       1.1rem !default;
-$pswp-title-height:         $line-height-headings !default;
+$zoomer-title-font-family:          var(--#{$prefix}font-family-headings) !default;
+$zoomer-title-font-weight:          var(--#{$prefix}font-weight-headings) !default;
+$zoomer-title-font-size:            1.8rem !default;
+$zoomer-title-line-height:          $headings-line-height !default;
+$zoomer-copyright-font-size:        1.1rem !default;
+$zoomer-copyright-line-height:      1.2 !default;
 
-$pswp__root-z-index:        $above-oc-toolbar !default;
-$pswp__assets-path:         '../photoswipe/default-skin/' !default;
+$pswp__root-z-index:                $above-oc-toolbar !default;
 
-// import the slick-carousel distribution SCSS
-@import '../../plugins/photoswipe/main';
-@import '../../plugins/photoswipe/default-skin/default-skin';
+// import the photswipe distribution CSS
+@import '../../plugins/photoswipe/photoswipe';
 
-$imageseries-border-radius: ($image-border-radius) * 2 !default;
+$imageseries-square-margin:         2px !default;
+$imageseries-slide-border-size:     0px !default;
+$imageseries-slide-border-color:    var(--#{$prefix}grey) !default;
+$imageseries-slide-bgcolor:         var(--#{$prefix}grey-light) !default;
 
-// Note: This value must be available in _tiles.scss $sq-margins.
-// This value is currently also hardcoded in the imageseries formatter JSP as css class.
-$imageseries-square-margin: 2px !default;
+$zoom-bg:                           rgba($black, 0.5) !default;
+$zoom-fg:                           $text-light !default;
+$zoomer-bg:                         rgba($white, 0.6) !default;
+$zoomer-fg:                         $black !default;
+$zoomer-overlay-size:               35px !default;
+$zoomer-icon:                       "\f002" !default; // magifying glass
 
 // Image series base classes
 
 .type-imageseries {
+    --#{$prefix}is-square-margin:          #{$imageseries-square-margin};
+    --#{$prefix}is-slide-border-size:      #{$imageseries-slide-border-size};
+    --#{$prefix}is-slide-border-color:     #{$imageseries-slide-border-color};
+    --#{$prefix}is-slide-bgcolor:          #{$imageseries-slide-bgcolor};
 
     &.element {
         .images {
-            font-weight: $font-weight-bold;
+            font-weight: var(--#{$prefix}font-weight-bold);
         }
     }
 
     > .series {
-        margin-left: -1 * $imageseries-square-margin;
-        margin-right: -1 * $imageseries-square-margin;
         position: relative;
 
-        > .images {
-            margin-top: -1 * $imageseries-square-margin;
-            margin-bottom: -1 * $imageseries-square-margin;
-        }
-
         > button.btn {
-
-            margin-top: 2 * $imageseries-square-margin;
-            margin-left: $imageseries-square-margin;
-            margin-right: $imageseries-square-margin;
-            width: calc(100% - #{2 * $imageseries-square-margin});
+            margin-top: calc(2 * var(--#{$prefix}is-square-margin));
+            margin-left: var(--#{$prefix}is-square-margin);
+            margin-right: var(--#{$prefix}is-square-margin);
+            width: calc(100% - 2 * var(--#{$prefix}is-square-margin));
         }
 
         .imagedata {
-
             display: none;
         }
     }
 
-    > .detail-visual + .series {
-        margin-top: $default-margin;
+    &.square-list,
+    &.slide-list {
+        > .series {
+            margin-left: calc(-1 * var(--#{$prefix}is-square-margin));
+            margin-right: calc(-1 * var(--#{$prefix}is-square-margin));
+
+            > .images {
+                --#{$prefix}sq-margin: #{var(--#{$prefix}is-square-margin)};
+
+                margin-top: calc(-1 * var(--#{$prefix}is-square-margin));
+                margin-bottom: calc(-1 * var(--#{$prefix}is-square-margin));
+            }
+        }
+    }
+
+    &.slide-list {
+        .image-col {
+            .wrapper {
+                display: flex;
+                height: 100%;
+                width: 100%;
+                position: relative;
+                overflow: hidden;
+                border: var(--#{$prefix}is-slide-border-size) solid var(--#{$prefix}is-slide-border-color);
+                border-radius: var(--#{$prefix}image-border-radius);
+            }
+            .zoom-overlay {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: var(--#{$prefix}is-slide-bgcolor);
+            }
+            img {
+                object-fit: contain;
+                height: 100%;
+                width: 100%;
+                max-height: 100%;
+                max-width: 100%;
+            }
+        }
+    }
+
+    &.masonry-list {
+        .row.images {
+            margin-bottom: 0;
+        }
+    }
+
+    &.detail-page {
+        > .detail-content,
+        > .series {
+            margin-top: var(--#{$prefix}detail-content-spacer-y);
+        }
+        > .detail-visual.no-info  {
+            + .detail-content,
+            + .series {
+                margin-top: 0;
+            }
+        }
+        &.only-series {
+            > .series {
+                margin-top: 0;
+            }
+        }
     }
 
     .effect-box {
@@ -82,13 +146,22 @@ $imageseries-square-margin: 2px !default;
         }
     }
 
-    .square-col {
+    .image-col {
         .content {
             // must always set this because this may reset tile rounding
-            @include round-corners($image-border-radius);
+            border-radius: var(--#{$prefix}image-border-radius);
         }
         .copyright {
             @include image-copyright;
+        }
+    }
+
+    .tile-col {
+        display: flex;
+
+        .zoom {
+            position: relative;
+            width: 100%;
         }
     }
 
@@ -106,51 +179,60 @@ html.noscript .type-imageseries .series {
 
 .pswp {
 
+    --pswp-root-z-index: #{$pswp__root-z-index};
+    --pswp-placeholder-bg: none;
+
+    --#{$prefix}zoomer-title-font-family: #{$zoomer-title-font-family};
+    --#{$prefix}zoomer-title-font-weight: #{$zoomer-title-font-weight};
+    --#{$prefix}zoomer-title-font-size: #{$zoomer-title-font-size};
+    --#{$prefix}zoomer-title-line-height: #{$zoomer-title-line-height};
+    --#{$prefix}zoomer-copyright-font-size: #{$zoomer-copyright-font-size};
+    --#{$prefix}zoomer-copyright-line-height: #{$zoomer-copyright-line-height};
+
+    .pswp__caption {
+        position: absolute;
+        left: 50%;
+        bottom: 16px;
+        transform: translateX(-50%);
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+
+        hyphens: auto;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .caption-wrapper {
+        text-align: center;
+        border-radius: var(--#{$prefix}border-radius);
+        max-width: calc(100% - (2 * var(--#{$prefix}ws-margin)));
+        padding: calc(0.5 * var(--#{$prefix}ws-margin)) var(--#{$prefix}ws-margin);
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
     .title {
         color: #eee;
-        font-family: $font-family-headings;
-        font-weight: $font-weight-headings;
-        font-size: $pswp-title-size;
-        line-height: $pswp-title-height;
+        font-family: var(--#{$prefix}zoomer-title-font-family);
+        font-weight: var(--#{$prefix}zoomer-title-font-weight);
+        font-size: var(--#{$prefix}zoomer-title-font-size);
+        line-height: var(--#{$prefix}zoomer-title-line-height);
         text-shadow: 1px 1px 1px #000;
     }
 
     .copyright {
-        color: #bbb;
-        font-size: $pswp-copyright-size;
-        line-height: 1.2;
+        color: #eee;
+        font-size: var(--#{$prefix}zoomer-copyright-font-size);
+        line-height: var(--#{$prefix}zoomer-copyright-line-height);
         text-shadow: 1px 1px 1px #000;
     }
 
-    @if ($imageseries-border-radius != 0) {
-        img {
-            @include round-corners($imageseries-border-radius);
-        }
-    }
-
-    .pswp__top-bar {
-        background-color: rgba(0,0,0,.25);
-    }
-
-    .pswp__caption {
-        min-height: auto;
-        background-color: transparent;
-    }
-
-    .pswp__caption__center {
-        text-align: center;
-        padding: 0 0 10px 0;
-    }
 
     @include media-breakpoint-up(sm) {
-        .pswp__caption__center {
+        .pswp__caption {
             max-width: 90%;
         }
     }
-}
-
-.pswp__img {
-    background-color: $grey-lighter;
 }
 
 // Image gallery image enter animation, used when the image gallery is displayed
@@ -171,14 +253,7 @@ html.noscript .type-imageseries .series {
 
 // Zoom overlay effect used by image series as well as the 'image zoom' formatter
 
-$zoom-bg:               rgba($black, 0.5) !default;
-$zoom-fg:               $text-light !default;
-$zoomer-bg:             rgba($white, 0.6) !default;
-$zoomer-fg:             $black !default;
-$zoomer-overlay-size:   35px !default;
-$zoomer-icon:           "\f002" !default; // magifying glass
-
-a:focus .zoom-overlay .zoom-icon,
+html.keyboard-nav a:focus .zoom-overlay .zoom-icon,
 .zoom:hover .zoom-overlay .zoom-icon {
     opacity: 1;
     transform: scale(1);
@@ -190,7 +265,6 @@ a:focus .zoom-overlay .zoom-icon,
     cursor: zoom-in;
     position: relative;
     display: block;
-    height: 100%;
     width: 100%;
     transition: all 0.1s ease-in-out 0s;
 
@@ -225,45 +299,74 @@ a:focus .zoom-overlay .zoom-icon,
     }
 }
 
+.square-col .zoom-overlay {
+    height: 100%;
+}
+
 .effect-piece,
 .effect-box {
     .zoomer {
         position: relative;
-        cursor: zoom-in;
         z-index: 1; // required so that floating text divs after the image are not hiding the zoom button
 
         &::after {
-            font-family: ForkAwesome;
+            @include icon-font();
             content: $zoomer-icon;
             @include image-icon-overlay;
         }
     }
 }
 
-a .effect-box .zoomer {
-    cursor: pointer;
-    &::after {
-        content: "";
+.zoom-overlay .zoom-icon,
+.image-src-box,
+.image-src-box > img {
+    border-radius: var(--#{$prefix}image-border-radius);
+}
+
+.effect-box {
+    .zoomer {
+        img {
+            cursor: zoom-in;
+        }
     }
 }
 
-@if ($image-border-radius != 0) {
-    .zoom-overlay .zoom-icon,
-    .zoom-overlay .image-src-box > img,
-    .image-src-box {
-         border-radius: $image-border-radius;
-    }
-
-    .image-src-box {
-        overflow: hidden;
-    }
-
-    // special reset for images in sections
-    .bo-radius-0 {
-        .zoom-overlay .zoom-icon,
-        .zoom-overlay .image-src-box > img,
-        .image-src-box {
-             border-radius: 0;
+a {
+    .effect-box {
+        .zoomer {
+            img,
+            .img {
+                cursor: pointer;
+            }
+        }
+        &::after {
+            content: "";
         }
     }
+}
+
+// remove rounded corners in wide area images
+.area-header.ac-full-size .h-ac,
+.area-wide.area-full-row {
+
+    .type-slider .slider-box,
+    .type-slider .slide-wrapper,
+    .type-slider .slide-container,
+    .type-slider .image-src-box,
+    .piece.full .image-src-box,
+    .element.tile-col .image-src-box,
+    .element.tile-col .content-box {
+        border-radius: 0;
+    }
+    .type-slider .slide-wrapper,
+    .piece.full .image-src-box,
+    .element.tile-col .image-src-box {
+        img {
+            border-radius: 0;
+        }
+    }
+}
+
+.image-src-box > img {
+    overflow: hidden;
 }

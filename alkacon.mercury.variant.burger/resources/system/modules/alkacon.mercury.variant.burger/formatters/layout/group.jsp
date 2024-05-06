@@ -28,6 +28,7 @@
         <c:set var="showConfigElement"          value="${cms.isEditMode and ((cms.element.modelGroup and cms.modelGroupElement) or (not cms.element.modelGroup))}" />
         <c:set var="configElement">
             <c:if test="${showConfigElement}">
+                 <c:set var="headerConfigTypeName"><fmt:message key="function.header-config" /></c:set>
                 <mercury:container type="header-config" name="header-config" title="${value.Title}" />
             </c:if>
         </c:set>
@@ -94,6 +95,7 @@
 
                 <c:set var="metaLinkElement">
                     <c:if test="${showMeta}">
+                        <c:set var="linksequenceTypeName"><fmt:message key="type.m-linksequence.name" /></c:set>
                         <div class="h-meta"><%----%>
                             <mercury:container
                                 type="linksequence-header"
@@ -111,6 +113,7 @@
                 </c:set>
 
                 <c:set var="logoElement">
+                    <c:set var="sectionTypeName"><fmt:message key="type.m-section.name" /></c:set>
                     <mercury:container
                         type="image-minimal"
                         name="header-image"
@@ -126,16 +129,36 @@
                 <c:if test="${showTitle ne 'hide-title'}">
                     <c:set var="imageElements" value="${cms.elementsInContainers['header-image']}" />
                     <c:if test="${not empty imageElements}">
+
                         <c:set var="imageContent" value="${imageElements.get(0).toXml}" />
+
+                        <c:set var="pageTitle" value="${imageContent.value.Title.resolveMacros}" />
                         <c:choose>
-                            <c:when test="${cms.detailRequest and not empty cms.meta.ogTitle}">
-                                <c:set var="pagetitle" value="${cms.meta.ogTitle}" />
+                            <c:when test="${fn:contains(pageTitle, '%(cms.title)')}">
+                                <c:choose>
+                                   <c:when test="${cms.detailRequest and not empty cms.meta.ogTitle}">
+                                        <c:set var="rval" value="${cms.meta.ogTitle}" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="rval" value="${cms.title}" />
+                                    </c:otherwise>
+                                </c:choose>
+                                <c:set var="pageTitle" value="${fn:replace(pageTitle, '%(cms.title)', rval)}" />
                             </c:when>
-                            <c:otherwise>
-                                <c:set var="pagetitle" value="${cms.title}" />
-                            </c:otherwise>
+                            <c:when test="${fn:contains(pageTitle, '%(cms.subSiteTitle)')}">
+                                <c:set var="cS"        value="${cms.vfs.readSubsiteFor(cms.requestContext.uri)}" />
+                                <c:set var="cSP"       value="${cms.vfs.readProperties[cS]}" />
+                                <c:set var="rval"      value="${not empty cSP['mercury.sitename'] ? cSP['mercury.sitename'] : cSP['Title'] }" />
+                                <c:set var="pageTitle" value="${fn:replace(pageTitle, '%(cms.subSiteTitle)', rval)}" />
+                            </c:when>
+                            <c:when test="${fn:contains(pageTitle, '%(cms.siteTitle)')}">
+                                <c:set var="cS"        value="${cms.vfs.readSubsiteFor('/')}" />
+                                <c:set var="cSP"       value="${cms.vfs.readProperties[cS]}" />
+                                <c:set var="rval"      value="${not empty cSP['mercury.sitename'] ? cSP['mercury.sitename'] : cSP['Title'] }" />
+                                <c:set var="pageTitle" value="${fn:replace(pageTitle, '%(cms.siteTitle)', rval)}" />
+                            </c:when>
                         </c:choose>
-                        <c:set var="pageTitle" value="${fn:replace(imageContent.value.Title.resolveMacros, '%(cms.title)', pagetitle)}" />
+
                         <mercury:image-vars image="${imageContent.value.Image}">
                             <c:if test="${not empty imageHeight}">
                                 <c:set var="ir" value="${imageHeight / imageWidth}" />
@@ -170,9 +193,13 @@
                                 <c:if test="${(showTitle eq 'ac-title') and not empty pageTitle}">
                                     <mercury:heading level="${7}" ade="false" text="${pageTitle}" css="h-ac-title container" />
                                 </c:if>
+                                <c:if test="${not acHasPageSize}">
+                                    <c:set var="acParams" value="${{'cssgrid': 'fullwidth'}}" />
+                                </c:if>
                                 <mercury:container
                                     type="row"
                                     name="header-container"
+                                    parameters="${acParams}"
                                     css="h-ac-element"
                                     title="${value.Title}" />
                             </div><%----%>
@@ -203,6 +230,7 @@
 
                 <c:set var="navElement">
                     <mercury:nl />
+                    <c:set var="navTypeName"><fmt:message key="type.m-navigation.name" /></c:set>
                     <div class="h-nav" id="nav-toggle-group"><%----%>
                         <mercury:container
                             type="nav-main"
@@ -270,8 +298,10 @@
 
                                 <div class="h-toggle-col"><%----%>
                                     <span id="nav-toggle-label-open" class="nav-toggle-label"><%----%>
-                                        <button class="nav-toggle" aria-expanded="false" aria-controls="nav-toggle-group"><%----%>
-                                            <span><fmt:message key="msg.page.navigation.toggle" /></span><%----%>
+                                        <button class="nav-toggle-btn" aria-expanded="false" aria-controls="nav-toggle-group"><%----%>
+                                            <span class="nav-toggle"><%----%>
+                                                <span class="nav-burger"><fmt:message key="msg.page.navigation.toggle" /></span><%----%>
+                                            </span><%----%>
                                         </button><%----%>
                                     </span><%----%>
                                 </div><%----%>

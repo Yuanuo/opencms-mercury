@@ -3,6 +3,7 @@
     buffer="none"
     session="false"
     trimDirectiveWhitespaces="true"%>
+<%@page import="org.opencms.main.OpenCms" %>
 
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -16,9 +17,17 @@
 <c:set var="cssWrapper"             value="${setting.cssWrapper}" />
 
 <c:set var="currentSite"            value="${cms.vfs.readSubsiteFor(cms.requestContext.uri)}" />
-
 <c:if test="${cms.detailRequest}">
     <c:set var="sourceSite"         value="${cms.vfs.readSubsiteFor(cms.detailContent.sitePath)}" />
+</c:if>
+<c:set var="sharedFolder"           value="${OpenCms.getSiteManager().getSharedFolder()}" />
+<c:set var="isSharedFolder"         value="${fn:startsWith(sourceSite.rootPath, sharedFolder)}" />
+<c:if test="${isSharedFolder}">
+    <c:set var="sourceSiteProp"     value="${cms.vfs.propertySearch[sourceSite.rootPath]['mercury.sourcesite']}" />
+    <c:if test="${not empty sourceSiteProp and fn:startsWith(sourceSiteProp, cms.site.siteRoot)}">
+        <c:set var="sourceSiteProp" value="${fn:substringAfter(sourceSiteProp, cms.site.siteRoot)}" />
+    </c:if>
+    <c:set var="sourceSite"         value="${empty sourceSiteProp ? '' : cms.vfs.readSubsiteFor(sourceSiteProp)}" />
 </c:if>
 
 <fmt:setLocale value="${cms.locale}" />
@@ -34,6 +43,13 @@
                 <fmt:param><a href="${cms.vfs.link[sourceSite.rootPath]}">${sourceSiteName}</a></fmt:param>
             </fmt:message>
         </div><%----%>
+    </c:when>
+    <c:when test="${isSharedFolder and empty sourceSite and cms.isEditMode}">
+        <mercury:alert-meta icon="info-circle" css="element type-sourcesite pivot ${cssWrapper}">
+            <jsp:attribute name="text">
+                <fmt:message key="msg.page.sourcesite.shared" />
+            </jsp:attribute>
+        </mercury:alert-meta>
     </c:when>
     <c:when test="${empty sourceSite and cms.isEditMode}">
         <mercury:alert-meta icon="info-circle" css="element type-sourcesite pivot ${cssWrapper}">

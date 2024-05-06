@@ -7,54 +7,179 @@
     <ResourceType>
       <TypeName><![CDATA[m-section]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[section-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[cs_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1000]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView/>
+      <CopyInModels>true</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-article]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[article-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[a_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1050]]></Order>
+      <ElementView/>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[askKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-decoy]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[decoy-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[de_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1100]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView/>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[askKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-event]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[event-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[ev_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1150]]></Order>
+      <ElementView/>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[askKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-imageseries]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[imageseries-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[imgseries_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1200]]></Order>
+      <ElementView/>
+      <CopyInModels>false</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-media]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[media-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[media_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1250]]></Order>
+      <ElementView/>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[askKeep]]></ElementDeleteMode>
+    </ResourceType>
+    <ResourceType>
+      <TypeName><![CDATA[m-organization]]></TypeName>
+      <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[organization-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[org_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1290]]></Order>
+      <ElementView/>
+      <CopyInModels>true</CopyInModels>
+    </ResourceType>
+    <ResourceType>
+      <TypeName><![CDATA[m-person]]></TypeName>
+      <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[person-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[per_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1295]]></Order>
+      <ElementView/>
+      <CopyInModels>true</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-contact]]></TypeName>
-      <Disabled><![CDATA[false]]></Disabled>
+      <Disabled><![CDATA[add]]></Disabled>
+      <Folder>
+        <Name><![CDATA[contact-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[ci_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1300]]></Order>
+      <ElementView/>
+      <CopyInModels>true</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-poi]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[poi-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[poi_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1350]]></Order>
+      <ElementView/>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[askKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-map]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
-    </ResourceType>
-    <ResourceType>
-      <TypeName><![CDATA[m-faq]]></TypeName>
-      <Disabled><![CDATA[false]]></Disabled>
-    </ResourceType>
-    <ResourceType>
-      <TypeName><![CDATA[m-job]]></TypeName>
-      <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[map-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[map_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1400]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView/>
+      <CopyInModels>true</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-linksequence]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[linksequence-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[ls_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1450]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView/>
+      <CopyInModels>true</CopyInModels>
+    </ResourceType>
+    <ResourceType>
+      <TypeName><![CDATA[m-faq]]></TypeName>
+      <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[faq-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[faq_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1500]]></Order>
+      <ElementView/>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[askKeep]]></ElementDeleteMode>
+    </ResourceType>
+    <ResourceType>
+      <TypeName><![CDATA[m-job]]></TypeName>
+      <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[job-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[job_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1550]]></Order>
+      <ElementView/>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[askKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-slider]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[slider-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[slider_%(number).xml]]></NamePattern>
+      <Order><![CDATA[1600]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView/>
+      <CopyInModels>true</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[listconfig]]></TypeName>
@@ -63,6 +188,7 @@
         <Name><![CDATA[list-m]]></Name>
       </Folder>
       <NamePattern><![CDATA[list_%(number).xml]]></NamePattern>
+      <Order><![CDATA[2000]]></Order>
       <DetailPagesDisabled>true</DetailPagesDisabled>
       <ElementView>
         <link internal="true" type="WEAK">
@@ -72,48 +198,140 @@
       </ElementView>
     </ResourceType>
     <ResourceType>
-      <TypeName><![CDATA[m-flexible]]></TypeName>
-      <Disabled><![CDATA[false]]></Disabled>
-      <DetailPagesDisabled>true</DetailPagesDisabled>
-    </ResourceType>
-    <ResourceType>
       <TypeName><![CDATA[m-metainfo]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[metainfo-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[meta_%(number).xml]]></NamePattern>
+      <Order><![CDATA[2050]]></Order>
       <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
+          <uuid>2fcbabc9-d6fd-4274-9e0c-4732a6e13769</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>true</CopyInModels>
+      <ElementDeleteMode><![CDATA[askDelete]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
-      <TypeName><![CDATA[m-tab]]></TypeName>
+      <TypeName><![CDATA[m-navigation]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[navigation-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[nav_%(number).xml]]></NamePattern>
+      <Order><![CDATA[2100]]></Order>
       <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
+          <uuid>2fcbabc9-d6fd-4274-9e0c-4732a6e13769</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[askKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-webform]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[webform-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[wf_%(number).xml]]></NamePattern>
+      <Order><![CDATA[2150]]></Order>
       <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
+          <uuid>2fcbabc9-d6fd-4274-9e0c-4732a6e13769</uuid>
+        </link>
+      </ElementView>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-webform-data]]></TypeName>
       <Disabled><![CDATA[add]]></Disabled>
       <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
+          <uuid>2fcbabc9-d6fd-4274-9e0c-4732a6e13769</uuid>
+        </link>
+      </ElementView>
     </ResourceType>
     <ResourceType>
-      <TypeName><![CDATA[m-navigation]]></TypeName>
+      <TypeName><![CDATA[m-tab]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[tab-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[tab_%(number).xml]]></NamePattern>
+      <Order><![CDATA[2200]]></Order>
       <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
+          <uuid>2fcbabc9-d6fd-4274-9e0c-4732a6e13769</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>true</CopyInModels>
+    </ResourceType>
+    <ResourceType>
+      <TypeName><![CDATA[m-flexible]]></TypeName>
+      <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[flexible-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[fc_%(number).xml]]></NamePattern>
+      <Order><![CDATA[2250]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
+          <uuid>2fcbabc9-d6fd-4274-9e0c-4732a6e13769</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>true</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-sitemap]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[sitemap-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[sitemap_%(number).xml]]></NamePattern>
+      <Order><![CDATA[2300]]></Order>
       <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
+          <uuid>2fcbabc9-d6fd-4274-9e0c-4732a6e13769</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>false</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-shariff]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[shariff-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[shariff_%(number).xml]]></NamePattern>
+      <Order><![CDATA[2350]]></Order>
       <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
+          <uuid>2fcbabc9-d6fd-4274-9e0c-4732a6e13769</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>false</CopyInModels>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[modelgroup]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Order><![CDATA[9600]]></Order>
       <ElementView>
         <link internal="true" type="WEAK">
           <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
@@ -124,6 +342,7 @@
     <ResourceType>
       <TypeName><![CDATA[function_config]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Order><![CDATA[9700]]></Order>
       <ElementView>
         <link internal="true" type="WEAK">
           <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/advanced.xml]]></target>
@@ -134,26 +353,97 @@
     <ResourceType>
       <TypeName><![CDATA[m-layout-row-simple]]></TypeName>
       <Disabled><![CDATA[create]]></Disabled>
-    </ResourceType>
-    <ResourceType>
-      <TypeName><![CDATA[m-layout-area-simple]]></TypeName>
-      <Disabled><![CDATA[create]]></Disabled>
+      <Folder>
+        <Name><![CDATA[layout-row-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[lr_%(number).xml]]></NamePattern>
+      <Order><![CDATA[3000]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/template.xml]]></target>
+          <uuid>fff4b5f1-5d6b-4220-86b9-ece3579bda69</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[alwaysKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-layout-group-simple]]></TypeName>
       <Disabled><![CDATA[create]]></Disabled>
+      <Folder>
+        <Name><![CDATA[layout-group-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[lg_%(number).xml]]></NamePattern>
+      <Order><![CDATA[3100]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/template.xml]]></target>
+          <uuid>fff4b5f1-5d6b-4220-86b9-ece3579bda69</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[alwaysKeep]]></ElementDeleteMode>
+    </ResourceType>
+    <ResourceType>
+      <TypeName><![CDATA[m-layout-area-simple]]></TypeName>
+      <Disabled><![CDATA[create]]></Disabled>
+      <Folder>
+        <Name><![CDATA[layout-area-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[la_%(number).xml]]></NamePattern>
+      <Order><![CDATA[3200]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/template.xml]]></target>
+          <uuid>fff4b5f1-5d6b-4220-86b9-ece3579bda69</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[alwaysKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-layout-row-complex]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[layout-row-custom-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[clr_%(number).xml]]></NamePattern>
+      <Order><![CDATA[3300]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/template.xml]]></target>
+          <uuid>fff4b5f1-5d6b-4220-86b9-ece3579bda69</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[alwaysKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-layout-area-complex]]></TypeName>
       <Disabled><![CDATA[false]]></Disabled>
+      <Folder>
+        <Name><![CDATA[layout-area-custom-m]]></Name>
+      </Folder>
+      <NamePattern><![CDATA[cla_%(number).xml]]></NamePattern>
+      <Order><![CDATA[3400]]></Order>
+      <DetailPagesDisabled>true</DetailPagesDisabled>
+      <ElementView>
+        <link internal="true" type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/elementviews/template.xml]]></target>
+          <uuid>fff4b5f1-5d6b-4220-86b9-ece3579bda69</uuid>
+        </link>
+      </ElementView>
+      <CopyInModels>false</CopyInModels>
+      <ElementDeleteMode><![CDATA[alwaysKeep]]></ElementDeleteMode>
     </ResourceType>
     <ResourceType>
       <TypeName><![CDATA[m-privacypolicy]]></TypeName>
       <Disabled><![CDATA[add]]></Disabled>
+      <ElementView/>
     </ResourceType>
     <UseFormatterKeys>true</UseFormatterKeys>
     <RemoveAllFormatters>true</RemoveAllFormatters>
@@ -430,6 +720,84 @@
       </AddFormatter>
       <AddFormatter>
         <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/detail/person.xml]]></target>
+          <uuid>b6a18ce3-72cf-11ec-b443-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/detail/organization.xml]]></target>
+          <uuid>403bfdbe-72d0-11ec-b443-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/detail/organization-ext.xml]]></target>
+          <uuid>607bc394-529d-11ed-993a-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/organization-compact.xml]]></target>
+          <uuid>92878acf-73af-11ec-b443-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/organization-elaborate.xml]]></target>
+          <uuid>a23bed97-73af-11ec-b443-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/organization-masonry.xml]]></target>
+          <uuid>8c3896a6-55df-11ed-8bae-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/organization-text-tile.xml]]></target>
+          <uuid>9a7a2f8e-55df-11ed-8bae-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/person-compact.xml]]></target>
+          <uuid>89abc7eb-73af-11ec-b443-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/person-elaborate.xml]]></target>
+          <uuid>9bb05c43-73af-11ec-b443-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/person-masonry.xml]]></target>
+          <uuid>914b6aaa-55df-11ed-8bae-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/person-text-tile.xml]]></target>
+          <uuid>a0285932-55df-11ed-8bae-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/poi-compact.xml]]></target>
+          <uuid>c1114605-a23e-11ed-b729-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/poi-elaborate.xml]]></target>
+          <uuid>cb421199-a23e-11ed-b729-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
           <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/detail/contact.xml]]></target>
           <uuid>6f8b18ad-dd65-46d9-a3a5-767a3b8cb808</uuid>
         </link>
@@ -468,6 +836,12 @@
         <link type="WEAK">
           <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/linksequence.xml]]></target>
           <uuid>69c7d674-d495-4bfd-b2af-7f9541860cbc</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/linksequence-expand.xml]]></target>
+          <uuid>c75d726c-b44f-11ee-b9b0-0242ac11002b</uuid>
         </link>
       </AddFormatter>
       <AddFormatter>
@@ -514,14 +888,20 @@
       </AddFormatter>
       <AddFormatter>
         <link type="WEAK">
-          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/slider-slick-hero.xml]]></target>
-          <uuid>d26f2818-4516-4e41-88f6-7403d1afa1fe</uuid>
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/slider-hero.xml]]></target>
+          <uuid>16a7b77b-21e9-11ed-a9d9-0242ac11002b</uuid>
         </link>
       </AddFormatter>
       <AddFormatter>
         <link type="WEAK">
-          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/slider-slick-logo.xml]]></target>
-          <uuid>d8f7c725-5cee-4b3d-b57f-16f2e92a4463</uuid>
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/slider-logo.xml]]></target>
+          <uuid>2777d088-22b2-11ed-a9d9-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/slider-timed.xml]]></target>
+          <uuid>5a0429dc-51c6-11ed-993a-0242ac11002b</uuid>
         </link>
       </AddFormatter>
       <AddFormatter>
@@ -534,6 +914,12 @@
         <link type="WEAK">
           <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/tab-accordion.xml]]></target>
           <uuid>1fc27fbd-0af8-4479-81f7-e48cfe4588a5</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/element/tab-tile.xml]]></target>
+          <uuid>bd96ae40-2c87-11ee-a93c-0242ac11002b</uuid>
         </link>
       </AddFormatter>
       <AddFormatter>
@@ -640,19 +1026,25 @@
       </AddFormatter>
       <AddFormatter>
         <link type="WEAK">
-          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/imageflip.xml]]></target>
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/linkbox.xml]]></target>
+          <uuid>9c2fe085-5e93-11ed-bb3c-0242ac11002b</uuid>
+        </link>
+      </AddFormatter>
+      <AddFormatter>
+        <link type="WEAK">
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/imageflip-element.xml]]></target>
           <uuid>d0282fe5-6345-433d-8b56-125c55d1a927</uuid>
         </link>
       </AddFormatter>
       <AddFormatter>
         <link type="WEAK">
-          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/square.xml]]></target>
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/square-rowtile.xml]]></target>
           <uuid>2cb23f51-8108-4c3d-858a-e0cafae44d6c</uuid>
         </link>
       </AddFormatter>
       <AddFormatter>
         <link type="WEAK">
-          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/tile.xml]]></target>
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/tile-rowtile.xml]]></target>
           <uuid>61b96360-be4f-4f40-97d8-02a46e0e3bfb</uuid>
         </link>
       </AddFormatter>
@@ -664,7 +1056,7 @@
       </AddFormatter>
       <AddFormatter>
         <link type="WEAK">
-          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/imageflip-tile.xml]]></target>
+          <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/section/imageflip-rowtile.xml]]></target>
           <uuid>c1d8fdb7-6bdc-4551-bde3-866ec55e5e59</uuid>
         </link>
       </AddFormatter>
@@ -750,6 +1142,12 @@
     </Function>
     <Function>
       <link type="WEAK">
+        <target><![CDATA[/system/modules/alkacon.mercury.template/functions/search-slot.xml]]></target>
+        <uuid>ff714a4e-d294-11ec-ba99-0242ac11002b</uuid>
+      </link>
+    </Function>
+    <Function>
+      <link type="WEAK">
         <target><![CDATA[/system/modules/alkacon.mercury.template/functions/pagetitle.xml]]></target>
         <uuid>6acfc9a8-c9bb-4126-85b8-bcccadc465ee</uuid>
       </link>
@@ -764,6 +1162,12 @@
       <link type="WEAK">
         <target><![CDATA[/system/modules/alkacon.mercury.template/functions/sourcesite.xml]]></target>
         <uuid>66cccaa4-249c-4c10-905b-70008cd62d7f</uuid>
+      </link>
+    </Function>
+    <Function>
+      <link type="WEAK">
+        <target><![CDATA[/system/modules/alkacon.mercury.template/functions/spacer.xml]]></target>
+        <uuid>4e89a118-680d-11ee-998f-0242ac11002b</uuid>
       </link>
     </Function>
     <Function>
@@ -827,9 +1231,19 @@
       <DisplayName><![CDATA[%(key.msg.property.mercury.theme)]]></DisplayName>
       <Widget><![CDATA[string]]></Widget>
     </Property>
+    <AttributeEditorConfig>
+      <link type="WEAK">
+        <target><![CDATA[/system/modules/alkacon.mercury.template/configuration/public-sitemap-attributes.xml]]></target>
+        <uuid>82958d53-bfdd-11ed-9f05-0242ac11002b</uuid>
+      </link>
+    </AttributeEditorConfig>
     <Attribute>
       <Key><![CDATA[template.variant]]></Key>
       <Value><![CDATA[default]]></Value>
+    </Attribute>
+    <Attribute>
+      <Key><![CDATA[template.editor.css]]></Key>
+      <Value><![CDATA[/system/modules/alkacon.mercury.theme/css/editor.min.css]]></Value>
     </Attribute>
     <Attribute>
       <Key><![CDATA[list.use.configured.formatters]]></Key>
@@ -909,6 +1323,10 @@
       <Value/>
     </Attribute>
     <Attribute>
+      <Key><![CDATA[mercury.iconFont.config]]></Key>
+      <Value><![CDATA[awesomeSelection]]></Value>
+    </Attribute>
+    <Attribute>
       <Key><![CDATA[selectOrCombo]]></Key>
       <Value><![CDATA[selectcombo]]></Value>
     </Attribute>
@@ -931,6 +1349,17 @@
         bg-theme:           %(key.msg.setting.bgColor.area.theme)|
         bg-grey-light:      %(key.msg.setting.bgColor.area.grey-light)|
         bg-grey:            %(key.msg.setting.bgColor.area.grey)
+      ]]></Value>
+    </Attribute>
+    <Attribute>
+      <Key><![CDATA[listWrapper.imageTile.config]]></Key>
+      <Value><![CDATA[
+            row-square square-m-0:   0|
+            row-square square-m-2:   4|
+            row-square square-m-5:   10|
+            row-square square-m-10:  20|
+            row-square square-m-15:  30|
+            row-square square-m-20:  40
       ]]></Value>
     </Attribute>
   </SitemapMasterConfiguration>

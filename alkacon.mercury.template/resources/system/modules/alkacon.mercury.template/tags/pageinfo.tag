@@ -38,15 +38,43 @@
 <c:if test="${not empty piwikUrl}">
     <c:set var="piwikId" value="${contentPropertiesSearch['piwik.id']}" />
     <c:set var="piwikAddData" value="${contentPropertiesSearch['piwik.data']}" />
-    <c:set var="piwikData"> data-piwik='{<%--
+    <c:set var="piwikData">data-piwik='{<%--
         --%><c:if test="${not empty piwikId}">"id":"${piwikId}",</c:if><%--
         --%><c:if test="${not empty piwikAddData}">${piwikAddData},</c:if><%--
         --%>"url":"${piwikUrl}"}' <%--
 --%></c:set>
 </c:if>
 
+<%-- Matomo URL --%>
+<c:set var="matomoUrl" value="${contentPropertiesSearch['matomo.url']}" />
+
+<c:if test="${not empty matomoUrl}">
+    <c:set var="matomoId" value="${contentPropertiesSearch['matomo.id']}" />
+    <c:set var="matomoJst" value="${contentPropertiesSearch['matomo.jst']}" />
+    <c:set var="useMatomoJst" value="${not empty matomoJst ? fn:contains(matomoJst, 'true') : false}" />
+    <c:set var="useMatomoDnt" value="${not empty matomoJst ? fn:contains(matomoJst, 'dnt') : false}" />
+    <c:set var="matomoAddData" value="${contentPropertiesSearch['matomo.data']}" />
+    <c:set var="matomoData">data-matomo='{<%--
+        --%><c:if test="${not empty matomoId}">"id":"${matomoId}",</c:if><%--
+        --%>"jst":${useMatomoJst},<%--
+        --%>"dnt":${useMatomoDnt},<%--
+        --%><c:if test="${not empty matomoAddData}">${matomoAddData},</c:if><%--
+        --%>"url":"${matomoUrl}"}' <%--
+--%></c:set>
+</c:if>
+
 <%-- OpenCms project --%>
 <c:set var ="project" value="${cms.isOnlineProject ? 'online' : 'offline'}" />
+
+<%-- Icon configuration --%>
+<c:if test="${fn:contains(cms.sitemapConfig.attribute['mercury.iconFont.config'].toString, 'Selection')}">
+    <c:set var="iconConfig"><cms:link>/system/modules/alkacon.mercury.theme/icons/fa/at.svg</cms:link></c:set>
+    <c:set var="iconConfigBase64"><mercury:obfuscate text="${iconConfig}" type="base64"/></c:set>
+    <c:if test="${fn:contains(cms.sitemapConfig.attribute['mercury.iconFont.config'].toString, 'awesome')}">
+        <c:set var="fullIcons"><mercury:link-resource resource='/system/modules/alkacon.mercury.theme/css/awesome-full.min.css'/></c:set>
+        <c:set var="fullIconsBase64"><mercury:obfuscate text="${fullIcons}" type="base64"/></c:set>
+    </c:if>
+</c:if>
 
 <mercury:nl/>
 <div id="template-info" data-info='{<%--
@@ -56,11 +84,16 @@
     --%><c:if test="${not empty osmApiKey}">"osmSpriteUrl":"<%= CmsWorkplace.getStaticResourceUri("/osm/sprite") %>",</c:if><%--
     --%><c:if test="${not empty osmApiKey and not empty osmStyleUrl}">"osmStyleUrl":"${osmStyleUrl}",</c:if><%--
     --%><c:if test="${not empty googleApiKeyWorkplace}">"googleApiKeyWorkplace":"${googleApiKeyWorkplace}",</c:if><%--
+    --%><c:if test="${not empty iconConfigBase64}">"iconConfig":"${iconConfigBase64}",</c:if><%--
+    --%><c:if test="${not empty fullIconsBase64}">"fullIcons":"${fullIconsBase64}",</c:if><%--
     --%>"editMode":"${cms.isEditMode}",<%--
     --%>"project":"${project}",<%--
     --%>"context":"<cms:link>/</cms:link>",<%--
     --%>"locale":"${cms.locale}"<%--
---%>}'${' '}${piwikData}><%----%>
+--%>}'<%--
+--%>${empty matomoData ? '' : ' '.concat(matomoData)}<%--
+--%>${empty piwikData ? '' : ' '.concat(piwikData)}<%--
+--%>><%----%>
 <mercury:nl/>
 
 <div id="template-grid-info"></div><%----%>

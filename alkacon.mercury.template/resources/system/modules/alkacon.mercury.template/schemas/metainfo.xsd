@@ -21,6 +21,7 @@
             <xsd:element name="Twitter" type="OpenCmsSocialTwitter" minOccurs="0" />
             <xsd:element name="Keywords" type="OpenCmsString" minOccurs="0" />
             <xsd:element name="CanonicalURL" type="OpenCmsString" minOccurs="0" />
+            <xsd:element name="Robots" type="OpenCmsString" minOccurs="0" />
             <xsd:element name="GalleryTitle" type="OpenCmsString" minOccurs="0" />
         </xsd:sequence>
         <xsd:attribute name="language" type="OpenCmsLocale" use="required"/>
@@ -46,7 +47,7 @@
                     <DisplayName><![CDATA[%(key.label.MetaInfo.Description)]]></DisplayName>
                     <Description><![CDATA[%(key.label.MetaInfo.Description.help)]]></Description>
                     <Widget>textarea</Widget>
-                    <WidgetConfig>4</WidgetConfig>
+                    <WidgetConfig>5|proportional</WidgetConfig>
                     <Search>false</Search>
                 </Setting>
                 <Setting>
@@ -84,6 +85,20 @@
                     <Search>false</Search>
                 </Setting>
                 <Setting>
+                    <PropertyName>Robots</PropertyName>
+                    <DisplayName><![CDATA[%(key.label.MetaInfo.Robots)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.MetaInfo.Robots.help)]]></Description>
+                    <Widget>selectcombo</Widget>
+                    <Default><![CDATA[index, follow]]></Default>
+                    <WidgetConfig><![CDATA[
+                        index, follow:%(key.label.MetaInfo.Robots.all)|
+                        noindex, nofollow:%(key.label.MetaInfo.Robots.none)|
+                        index, nofollow:%(key.label.MetaInfo.Robots.nofollow)|
+                        noindex, follow:%(key.label.MetaInfo.Robots.noindex)
+                    ]]></WidgetConfig>
+                    <Search>false</Search>
+                </Setting>
+                <Setting>
                     <PropertyName>GalleryTitle</PropertyName>
                     <DisplayName><![CDATA[%(key.label.GalleryTitle)]]></DisplayName>
                     <Description><![CDATA[%(key.label.GalleryTitle.help)]]></Description>
@@ -95,10 +110,6 @@
                     <Mapping>
                        <MapTo>property:Title</MapTo>
                        <UseDefault>true</UseDefault>
-                    </Mapping>
-                    <Mapping>
-                        <MapTo>urlName</MapTo>
-                        <UseDefault>true</UseDefault>
                     </Mapping>
                 </Setting>
             </FieldSettings>

@@ -1,9 +1,11 @@
+/**********
+ * Source file: _datepicker.scss
+ */
 /*
  * Scss manually converted from .styl (stylus) file.
  * Stylus functions/syntax => sass function/syntax:
  *    alpha => rgba
  */
-
 
 $arrow_hover_color: $main-theme !default;
 $dayForeground: $text-dark !default;
@@ -167,7 +169,7 @@ $invertedBg: invert($calendarBackground);
     display: block;
     pointer-events: none;
     border: solid transparent;
-    content: '';
+    content: "";
     height: 0;
     width: 0;
     left: 22px;
@@ -719,7 +721,6 @@ span.flatpickr-weekday {
 .flatpickr-time {
   text-align: center;
   outline: 0;
-  height: 0; // hide initially
   line-height: $timeHeight;
   max-height: $timeHeight;
   box-sizing: border-box;

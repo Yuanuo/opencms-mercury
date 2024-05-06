@@ -21,20 +21,35 @@
 
 .element,
 .subelement,
-.default-margin {
-    @include clearfix;
+.default-margin,
+.element-margin {
+    margin-bottom: var(--#{$prefix}element-margin);
+}
 
-    margin-bottom: $default-margin;
+.element,
+.subelement {
+    @include clearfix;
 
     &.no-default-margin {
         margin-bottom: 0;
     }
+
+    &.default-margin-small {
+        margin-bottom: var(--#{$prefix}default-margin-small);
+    }
+
+    &.default-margin-verysmall {
+        margin-bottom: var(--#{$prefix}default-margin-verysmall);
+    }
 }
 
-.element > .subelement:last-child {
-    // do not add a margin bottom in a subelement that is the last child in an element
-    // because here the margins would add up in case display:flex is used
-    margin-bottom: 0;
+.detail-page,
+.element {
+    > .subelement:last-child {
+            // do not add a margin bottom in a subelement that is the last child in an element
+            // because here the margins would add up in case display:flex is used
+            margin-bottom: 0;
+    }
 }
 
 // Hyphenation for generic element headings
@@ -42,27 +57,5 @@
     // piece already has handling for hyphens
     > .heading {
         @include use-hyphens-headings(true);
-    }
-}
-
-// special margin adjustments for section pieces
-.element.piece.type-section:not(.box) {
-    &.only-heading {
-        // if piece element has only a header, set margin the same height as normally used by the headers
-        margin-bottom: $piece-headings-margin-bottom;
-    }
-    &.only-text,
-    &.phb:not(.phl) {
-        // if a text-only piece element fowllows a text-only piece element, reduce top margin
-        // goal: make text from 2nd element apperar as if it belongs to first element
-        + .element.piece.type-section:not(.box) {
-            &.only-text {
-                @if (comparable($piece-text-margin, $default-margin)) {
-                    margin-top: $piece-text-margin - $default-margin;
-                } @else {
-                    margin-top: calc(#{$piece-text-margin} - #{$default-margin});
-                }
-            }
-        }
     }
 }

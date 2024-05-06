@@ -22,46 +22,60 @@
 // Calendar sheet base
 
 .calendar-sheet {
+    --#{$prefix}cs-color: var(--#{$prefix}text-dark);
+    --#{$prefix}cs-accent-color: var(--#{$prefix}main-theme-base);
+    --#{$prefix}cs-bg-color: var(--#{$prefix}grey-lighter);
+    --#{$prefix}cs-border-color: var(--#{$prefix}grey-light);
 
-    background: $calendar-sheet-bgcolor;
-    font-family: $font-family-headings;
+    --#{$prefix}cs-side-margin: #{$calendar-sheet-side-margin};
+    --#{$prefix}cs-bar-height: #{$calendar-sheet-bar-height};
+    --#{$prefix}cs-bar-width: #{$calendar-sheet-bar-width};
+}
+
+.calendar-sheet-piece {
+    --#{$prefix}cs-width: #{$calendar-sheet-width};
+    --#{$prefix}cs-border-radius: var(--#{$prefix}border-radius);
+}
+
+.calendar-sheet {
+    background-color: var(--#{$prefix}cs-bg-color);
+    font-family: var(--#{$prefix}font-family-headings);
 
     > span {
-        color: get-text-color($calendar-sheet-bgcolor);
+        color: var(--#{$prefix}cs-color);
     }
 
     > .day-number {
         font-size: 24px;
         font-weight: $font-weight-bold;
-        color: $main-theme;
+        color: var(--#{$prefix}cs-accent-color);
         line-height: 30px;
     }
 }
 
 @mixin calendar-sheet-base {
 
-    .calendar-sheet-piece,
-    .calendar-sheet-parent {
-        .image-src-box.presized {
+    .calendar-sheet-piece {
+        .visual .image-src-box.presized {
             padding-bottom: 0 !important;
             height: auto;
         }
     }
 
     .calendar-sheet {
-        border-bottom: 2px solid $calendar-sheet-barcolor;
+        border-bottom: 2px solid var(--#{$prefix}cs-accent-color);
         display: inline-block;
         width: 100%;
         padding: 10px 0;
 
         .day-name {
-            margin-right: $grid-gutter-width-half;
+            margin-right: calc(0.5 * var(--#{$prefix}cs-side-margin));
             float: right;
         }
 
         .month-year,
         .day-number {
-            margin-left: $grid-gutter-width-half;
+            margin-left: calc(0.5 * var(--#{$prefix}cs-side-margin));
             float: left;
         }
 
@@ -75,7 +89,7 @@
 
 .area-wide {
 
-    @include media-breakpoint-down(breakpoint-prev($piece-desktop-breakpoint)) {
+    @include media-breakpoint-down($piece-desktop-breakpoint) {
 
         @include calendar-sheet-base();
     }
@@ -87,18 +101,18 @@
                 > .visual {
                     // .piece will add a padding of (0.5 * $grid-gutter-width) to the visual
                     // to get the wanted calendar sheet size we must add this
-                    min-width: #{$calendar-sheet-width + (0.5 * $grid-gutter-width)};
-                    max-width: #{$calendar-sheet-width + (0.5 * $grid-gutter-width)};
+                    min-width: calc(var(--#{$prefix}cs-width) + (0.5 * var(--#{$prefix}gutter-x)));
+                    max-width: calc(var(--#{$prefix}cs-width) + (0.5 * var(--#{$prefix}gutter-x)));
                 }
                 > .body {
-                    flex: 0 0 calc(100% - #{$calendar-sheet-width + (0.5 * $grid-gutter-width)});
-                    max-width: calc(100% - #{$calendar-sheet-width + (0.5 * $grid-gutter-width)});
+                    flex: 0 0 calc(100% - (var(--#{$prefix}cs-width) + (0.5 * var(--#{$prefix}gutter-x))));
+                    max-width: calc(100% - (var(--#{$prefix}cs-width) + (0.5 * var(--#{$prefix}gutter-x))));
                 }
             }
             &.float {
                 > .visual {
-                    min-width: $calendar-sheet-width;
-                    max-width: $calendar-sheet-width;
+                    min-width: var(--#{$prefix}cs-width);
+                    max-width: var(--#{$prefix}cs-width);
                 }
             }
         }
@@ -110,26 +124,22 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            border:     1px solid $calendar-sheet-border;
-            @include round-corners($calendar-sheet-border-radius);
-            box-shadow: $panel-shadow;
+            border: 1px solid var(--#{$prefix}cs-border-color);
+            border-radius: var(--#{$prefix}cs-border-radius);
             text-align: center;
+            overflow: hidden;
 
             &::before {
                 display: block;
-                content: '';
+                content: "";
                 position: absolute;
                 top: 0;
-                left: $calendar-sheet-margin;
-                height: $calendar-sheet-bar-height;
+                left: calc(0.5 * (100% - var(--#{$prefix}cs-bar-width)));
+                height: var(--#{$prefix}cs-bar-height);
                 border-bottom: none;
                 margin: 0;
-                background-color: $calendar-sheet-barcolor;
-                width: calc(100% - #{2 * $calendar-sheet-margin});
-                @if ($calendar-sheet-margin == 0) {
-                    border-top-left-radius: $calendar-sheet-border-radius;
-                    border-top-right-radius: $calendar-sheet-border-radius;
-                }
+                background-color: var(--#{$prefix}cs-accent-color);
+                width: var(--#{$prefix}cs-bar-width);
             }
             & > span {
                 display: block;
@@ -149,30 +159,12 @@
     @include calendar-sheet-base();
 
     .calendar-sheet-piece.piece.flex {
+        --#{$prefix}piece-visual-size: 100%;
+        --#{$prefix}piece-body-size: 100%;
         > .visual,
         > .body {
             padding-left: 0;
             padding-right: 0;
-        }
-    }
-}
-
-
-// Colored calendar sheets
-
-@each $type-name, $bg-color, $highlight-color in $calendar-sheet-colors {
-
-    .color-#{""+$type-name} {
-
-        .calendar-sheet {
-            &:before {
-                background-color: $bg-color;
-                border-color: $bg-color;
-            }
-
-            .day-number {
-                color: $bg-color;
-            }
         }
     }
 }
@@ -193,9 +185,22 @@ table.submissions {
     }
 
     td {
-        padding-bottom: $default-margin-verysmall;
+        padding-bottom: var(--#{$prefix}default-margin-verysmall);
         vertical-align: top;
     }
+}
+
+.submission-actions .buttons {
+    text-align: right;
+}
+
+.submission-actions .buttons button {
+    margin-left: var(--#{$prefix}default-margin-verysmall);
+}
+
+.submission-actions > button {
+    float: right;
+    margin-left: var(--#{$prefix}default-margin-verysmall);
 }
 
 // Event booking status information
@@ -207,21 +212,25 @@ table.submissions {
     }
 
     .book-msg {
-        background-color: $calendar-sheet-bgcolor;
-        font-weight: normal;
-        @include round-corners($default-border-radius);
+        background-color: var(--#{$prefix}highlight-color);
+        color: var(--#{$prefix}highlight-fg-color);
+    }
 
-        + .oct-meta-info {
-            margin-left: 10px;
+    .book-msg,
+    .oct-meta-info {
+        border-radius: var(--#{$prefix}border-radius);
+        font-weight: normal;
+
+        &:not(.last-child) {
+            margin-right: var(--#{$prefix}ws-margin);
         }
     }
 }
 
-
 .detail-page .book-info {
 
-    .oct-meta-info,
-    .book-msg {
+    .book-msg,
+    .oct-meta-info {
         padding: $btn-def-padding;
     }
 }
@@ -229,23 +238,65 @@ table.submissions {
 .teaser .book-info,
 .accordion .book-info {
 
-    font-size: round($font-size-base * 8) * 0.1 ;
-    line-height: round($line-height-base * 8) * 0.1;
-    margin: 8px 0;
+    font-size: 80%;
+    line-height: 1.2;
+    margin-top: 8px;
 
-    .oct-meta-info,
-    .book-msg {
+    .book-msg,
+    .oct-meta-info {
         display: inline-block;
         padding: 1px 8px;
+        margin-bottom: 8px;
     }
 }
 
-.accordion .book-info {
-    .oct-meta-info {
-        margin-right: $default-margin-small;
+.formdata-manage {
 
-        &:last-of-type {
-            margin-right: 0;
+    .acco-header {
+
+        .acco-toggle {
+            padding-right: calc(6rem + var(--my-at-spacing-x)) !important;
+        }
+    }
+
+    .acco-item-select {
+        text-align: right;
+    }
+
+    .acco-item-select > a {
+        margin-left: var(--#{$prefix}default-margin-verysmall);
+        margin-bottom: var(--#{$prefix}default-margin-verysmall);
+        vertical-align: bottom;
+    }
+
+    .acco-item-select-all, .acco-item-select-none {
+        display: none;
+    }
+
+    .acco-item-check-wrapper {
+        line-height: 1;
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        top: 0;
+        height: 100%;
+        right: calc(3rem + var(--#{$prefix}at-spacing-x));
+        z-index: calc($overflow-z-index + 20);
+    }
+
+    .acco-item-check {
+        scale: 1.4;
+        display: none;
+    }
+}
+
+@include media-breakpoint-up(md) {
+
+    .formdata-manage {
+
+        .acco-item-select {
+            margin-top: var(--#{$prefix}default-margin-small);
         }
     }
 }
@@ -257,8 +308,51 @@ table.submissions {
             white-space: pre;
         }
     }
-    .oct-meta-info {
-        margin-top: 5px;
-        margin-left: 0;
+}
+
+// Event consts
+
+.cost-table {
+    .ct-category {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
+    }
+
+    .ct-price {
+        font-weight: var(--#{$prefix}font-weight-bold);
+    }
+}
+
+@include media-breakpoint-up(lg) {
+
+    .event-costs {
+        display: flow-root;
+        width: 100%;
+    }
+
+    .cost-table {
+        display: table;
+
+        .ct-category {
+            display: table-row;
+            margin-bottom: calc(0.5 * var(--#{$prefix}paragraph-margin-bottom));
+        }
+
+        .ct-price {
+            display: table-cell;
+            font-weight: var(--#{$prefix}font-weight-bold);
+        }
+
+        .ct-class {
+            display: table-cell;
+            width: 50%;
+            padding-left: var(--#{$prefix}ws-margin);
+        }
+
+        .ct-link {
+            display: table-cell;
+            padding-left: var(--#{$prefix}ws-margin);
+        }
     }
 }

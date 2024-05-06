@@ -27,13 +27,15 @@
 
     <c:set var="searchLabel"    value="${setting.searchlabel.toString}" />
     <c:set var="showSearch"     value="${setting.showsearch.toBoolean}" />
+    <c:set var="showReset"     value="${setting.showresetbutton.toBoolean}" />
 
     <c:set var="categoryLabel"  value="${setting.headline.toString}" />
     <c:set var="categoryVal"    value="${setting.showcategories.toString}" />
     <c:set var="categoriesOpen" value="${categoryVal eq 'opened'}" />
     <c:set var="categoriesResp" value="${categoryVal.contains('op-')}" />
     <c:set var="showCategories" value="${(categoriesOpen || categoriesResp || categoryVal eq 'closed') and not empty categoryFacetResult and cms:getListSize(categoryFacetResult.values) > 0}" />
-    <c:set var="showCatCount"   value="${setting.showCatCount.useDefault('true').toBoolean}" />
+    <c:set var="showCatCount"   value="${not fn:contains(setting.showCatCount.useDefault('true').toString, 'false')}" />
+    <c:set var="showAllOption"  value="${not fn:contains(setting.showCatCount.useDefault('true').toString, 'hide-all')}" />
 
     <c:set var="archiveLabel"   value="${setting.archivelabel.toString}" />
     <c:set var="archiveVal"     value="${setting.showarchive.toString}" />
@@ -47,12 +49,11 @@
     <c:set var="foldersResp"    value="${folderVal.contains('op-')}" />
     <c:set var="showFolders"    value="${(foldersOpen || foldersResp || setting.showfolders.toString eq 'closed') and not empty folderFacetResult and cms:getListSize(folderFacetResult.values) > 0}" />
 
+    <c:set var="showDirectLink" value="${cms.isEditMode and 'true' eq cms.readAttributeOrProperty[cms.requestContext.uri]['mercury.list.filter.directlink']}" />
+
     <c:set var="combine"        value="${setting.combine.toBoolean}" />
 
     <c:set var="targetUri"      value="${setting.targetUri.toString}" />
-
-    <%-- This setting is supported, but currently not shown in the dialog to reduce the number of options. --%>
-    <c:set var="showAllOption"  value="${setting.showalloption.useDefault('true').toBoolean}" />
 
     <c:set var="elementId"><mercury:idgen prefix="le" uuid="${cms.element.id}" /></c:set>
     <c:set var="filterId"><mercury:idgen prefix="la" uuid="${cms.element.instanceId}" /></c:set>
@@ -76,23 +77,29 @@
         <c:set var="initparams" value="${initparams}&facet_parent-folders=${param['facet_parent-folders']}" />
        </c:if>
     <c:if test="${not empty initparams}">
+        <c:set var="initparams">${initparams.replace("'","&#39;")}</c:set>
         <c:set var="initparams" value="reloaded${initparams}" />
     </c:if>
 
+    <c:set var="resetButtonTitle"><fmt:message key="msg.page.list.resetbutton.title" /></c:set>
+
     <mercury:nl />
-    <div class="element type-list-filter ${cssWrapper}" <%--
+    <div class="element type-list-filter pivot ${cssWrapper}" <%--
     --%>id="${filterId}" <%--
     --%>data-id="${elementId}" <%--
     --%>data-filter='{<%--
         --%>"search":"${showSearch}", <%--
+        --%>"reset":"${showReset}", <%--
         --%>"categories":"${showCategories}", <%--
         --%>"archive":"${showArchive}", <%--
+        --%>"folders":"${showFolders}", <%--
         --%>"searchstatebase":"${search.controller.common.config.reloadedParam}", <%--
         --%>"catparamkey":"${categoryFacetController.config.paramKey}", <%--
         --%>"archiveparamkey":"${rangeFacetController.config.paramKey}", <%--
         --%>"folderparamkey":"${folderFacetController.config.paramKey}", <%--
         --%>"combinable": true, <%--
-        --%>"combine": ${combine}<%--
+        --%>"combine": ${combine},<%--
+        --%>"resetbuttontitle": "${resetButtonTitle}"<%--_
         --%><c:if test="${not empty targetUri}">, "target":"<cms:link>${targetUri}</cms:link>"</c:if><%--
         --%><c:if test="${not empty initparams}">, "initparams":"${initparams}"</c:if><%--
         --%>}'><%----%>
@@ -102,6 +109,7 @@
             <c:if test="${empty searchLabel}">
                 <c:set var="searchLabel"><fmt:message key="msg.page.search.inlist" /></c:set>
             </c:if>
+            <c:set var="searchResetLabel"><fmt:message key="msg.page.search.inlist.resetlabel" /></c:set>
             <div class="filterbox search"><%----%>
             <mercury:nl />
 
@@ -117,17 +125,23 @@
                         <input type="hidden" name="${search.controller.common.config.reloadedParam}" /><%----%>
                         <label for="${fieldId}" class="input"><%----%>
                             <span class="sr-only"><c:out value="${searchLabel}" /></span><%----%>
-                            <span class="icon-prepend fa fa-search"></span><%----%>
+                            <mercury:icon icon="search" tag="span" cssWrapper="icon-prepend" inline="${false}" />
                             <input <%--
                             --%>name="${search.controller.common.config.queryParam}" <%--
                             --%>id="${fieldId}" <%--
                             --%>type="text" <%--
                             --%>value="${escapedQuery}" <%--
+                            --%>data-label="${fn:replace(searchResetLabel,'"','&quot;')}" <%--
                             --%>placeholder="<c:out value="${searchLabel}" />"><%----%>
                         </label><%----%>
                 </form><%----%>
             </div><%----%>
             <mercury:nl />
+        </c:if>
+
+        <c:if test="${showReset}">
+            <%-- IMPORTANT: The div must really be empty. Otherwise CSS style :empty does not match. --%>
+            <div id="resetbuttons_${filterId}" class="filterbox resetbuttons"><%-- Filled dynamically via JavaScript. --%></div>
         </c:if>
 
         <c:if test="${showCategories}">
@@ -145,10 +159,10 @@
 
                 <button type="button" <%--
                 --%>class="btn btn-block li-label ${categoriesOpen ? '' : 'collapsed'}${categoriesResp ? ' resp' : ''}" <%--
-                --%>data-target="#cats_${filterId}" <%--
+                --%>data-bs-target="#cats_${filterId}" <%--
+                --%>data-bs-toggle="collapse" <%--
                 --%>aria-controls="cats_${filterId}" <%--
-                --%>aria-expanded="${categoriesOpen}" <%--
-                --%>data-toggle="collapse"><%--
+                --%>aria-expanded="${categoriesOpen}"><%--
                 --%><c:out value="${categoryLabel}" /><%--
              --%></button><%----%>
                 <div id="cats_${filterId}" class="collapse${categoriesOpen ? ' show' : ''}${categoriesResp ? ' '.concat(categoryVal) : ''}"><%----%>
@@ -183,10 +197,10 @@
 
                 <button type="button" <%--
                 --%>class="btn btn-block li-label ${foldersOpen ? '' : 'collapsed'}" <%--
-                --%>data-target="#folder_${filterId}" <%--
+                --%>data-bs-target="#folder_${filterId}" <%--
+                --%>data-bs-toggle="collapse" <%--
                 --%>aria-controls="folder_${filterId}" <%--
-                --%>aria-expanded="${foldersOpen}" <%--
-                --%>data-toggle="collapse"><%--
+                --%>aria-expanded="${foldersOpen}"><%--
                 --%><c:out value="${folderLabel}" /><%--
              --%></button><%----%>
 
@@ -208,7 +222,7 @@
                         <%-- If multiple folders are present, prepend an "all" folder. --%>
                         <c:if test="${hasMultiplePaths}">
                             <c:set var="folderId">folder_${filterId}_0</c:set>
-                            <c:out escapeXml='false' value='<li id="${folderId}" data-param="" class="currentpage">' />
+                            <c:out escapeXml='false' value='<li id="${folderId}" data-param="" class="currentpage enabled">' />
                                 <c:set var="onclick">onclick="DynamicList.archiveFilter(<%--
                                                 --%>'${filterId}', <%--
                                                 --%>'${folderId}'<%--
@@ -217,10 +231,10 @@
                                 <a ${onclick} href="<cms:link>${targetUri}?${basicSearchParameters}</cms:link>" class="nav-label"><fmt:message key="msg.page.list.facet.folder.all"/></a><%--
                             --%><a href="<cms:link>${targetUri}?${basicSearchParameters}</cms:link>" <%--
                                 --%>class="collapse show" <%--
-                                --%>data-toggle="collapse" <%--
+                                --%>data-bs-toggle="collapse" <%--
+                                --%>data-bs-target="#${collapseId}" <%--
                                 --%>aria-expanded="true" <%--
-                                --%>aria-controls="${collapseId}" <%--
-                                --%>data-target="#${collapseId}">&nbsp;</a><%----%>
+                                --%>aria-controls="${collapseId}">&nbsp;</a><%----%>
                                 <c:out escapeXml='false' value='<ul class="collapse show" id="${collapseId}">' />
                         </c:if>
 
@@ -258,7 +272,7 @@
 
                                 <%-- There has been an item before - show it. --%>
                                 <c:otherwise>
-                                    <c:set var="liAttrs">id="${folderId}" data-value="${previousFolder}" ${isCurrentPage ? ' class="currentpage"' : ''}</c:set>
+                                    <c:set var="liAttrs">id="${folderId}" data-value="${previousFolder}" ${isCurrentPage ? ' class="currentpage enabled"' : 'class="enabled"'} data-label="${label.replace('"','&quot;')}"</c:set>
                                     <c:out escapeXml='false' value='<li ${liAttrs}>' />
                                     <a ${onclick} href="<cms:link>${targetUri}?${folderParameterMap[previousFolder]}</cms:link>" class="nav-label">${label}</a><%----%>
                                     <mercury:nl />
@@ -283,9 +297,9 @@
                                         <c:set var="collapseId">${collapseIdPrefix}_${status.count}</c:set>
                                         <a href="#${collapseId}" <%--
                                         --%>class="collapse${foldersOpen || isCurrentPage ? ' show' : ' collapsed'}" <%--
-                                        --%>data-toggle="collapse"  <%--
+                                        --%>data-bs-toggle="collapse"  <%--
+                                        --%>data-bs-target="#${collapseId}"  <%--
                                         --%>aria-controls="${collapseId}" <%--
-                                        --%>data-target="#${collapseId}"  <%--
                                         --%>aria-expanded="${foldersOpen || isCurrentPage}">&nbsp;</a><%----%>
                                         <mercury:nl />
                                         <c:set var="collapseIn" value="${foldersOpen || isCurrentPage ? ' show' : ''}" />
@@ -338,7 +352,7 @@
 
                         <%-- Check, if some item has been rendered at all and, if yes, if some nesting levels have to be closed. --%>
                         <c:if test="${not empty startFolderPath}">
-                            <li id="${folderId}" data-value="${previousFolder}"${isCurrentPage ? ' class=\"currentpage\"' : ''}><%----%>
+                            <li id="${folderId}" data-value="${previousFolder}"${isCurrentPage ? ' class="currentpage enabled"' : ' class="enabled"'}><%----%>
                                 <a ${onclick} href="<cms:link>${targetUri}?${folderParameterMap[previousFolder]}</cms:link>" class="nav-label">${label}</a><%----%>
                             </li><%----%>
                             <c:if test="${previousDeps > startDeps}">
@@ -371,10 +385,10 @@
 
                 <button type="button" <%--
                 --%>class="btn btn-block li-label ${archiveOpen ? '' : 'collapsed'}" <%--
-                --%>data-target="#arch_${filterId}" <%--
+                --%>data-bs-target="#arch_${filterId}" <%--
+                --%>data-bs-toggle="collapse" <%--
                 --%>aria-controls="arch_${filterId}" <%--
-                --%>aria-expanded="${archiveOpen}" <%--
-                --%>data-toggle="collapse"><%--
+                --%>aria-expanded="${archiveOpen}"><%--
                 --%><c:out value="${archiveLabel}" /><%--
             --%></button><%----%>
 
@@ -396,7 +410,7 @@
                         </c:otherwise>
                     </c:choose>
                     <c:forEach var="facetItem" items="${rangeFacet.counts}" varStatus="status">
-                        <c:set var="active">${rangeFacetController.state.isChecked[facetItem.value] ? ' class="active"' : ''}</c:set>
+                        <c:set var="active">${rangeFacetController.state.isChecked[facetItem.value] ? ' class="active enabled"' : ' class="enabled"'}</c:set>
                         <fmt:parseDate var="fDate" pattern="yyyy-MM-dd'T'HH:mm:ss'Z'" value="${facetItem.value}" timeZone="UTC"/>
                         <c:set var="currYear"><fmt:formatDate value="${fDate}" pattern="yyyy" /></c:set>
                         <c:set var="activeYear" value="${currYear eq showedYear}" />
@@ -411,10 +425,10 @@
                             <c:set var="yearHtml">
                                 <button type="button" <%--
                                 --%>class="btn btn-block year li-label ${activeYear ? '' : 'collapsed'}" <%--
-                                --%>data-target="#${yearId}" <%--
+                                --%>data-bs-target="#${yearId}" <%--
+                                --%>data-bs-toggle="collapse" <%--
                                 --%>aria-controls="${yearId}" <%--
-                                --%>aria-expanded="${activeYear}" <%--
-                                --%>data-toggle="collapse"><%--
+                                --%>aria-expanded="${activeYear}"><%--
                                 --%>${currYear}<%--
                             --%></button><%----%>
                                 <c:set var="in" value="${activeYear ? 'show' : ''}" />
@@ -429,7 +443,7 @@
                         <c:set var="yearHtml">
                             ${yearHtml}
                             <mercury:nl />
-                            <li id="${monthId}" ${active} tabindex="0" data-value="${facetItem.value}" onclick="DynamicList.archiveFilter(<%--
+                            <li id="${monthId}" ${active} tabindex="0" data-value="${facetItem.value}" data-label="${currMonth}${' '}${currYear}" onclick="DynamicList.archiveFilter(<%--
                                     --%>'${filterId}', <%--
                                 --%>'${monthId}'<%--
                                 --%>); return false;"><%----%>
@@ -448,6 +462,15 @@
                     ${archiveHtml}
                 </div><%----%>
 
+            </div><%----%>
+            <mercury:nl />
+        </c:if>
+
+        <c:if test="${showDirectLink}">
+            <div class="directlink"><%----%>
+                <mercury:link link="${cms.site.url}${cms.requestContext.uri}" css="btn btn-block oct-meta-info external" newWin="${true}">
+                    <fmt:message key="msg.page.list.directlink.label" />
+                </mercury:link>
             </div><%----%>
             <mercury:nl />
         </c:if>

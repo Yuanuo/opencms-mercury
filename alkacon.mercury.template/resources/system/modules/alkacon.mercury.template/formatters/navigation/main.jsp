@@ -24,8 +24,10 @@
 <c:set var="metaLinks"                  value="${setting.metaLinks.useDefault('top').toString}" />
 <c:set var="showImageLink"              value="${setting.showImageLink.toBoolean}" />
 
-<c:set var="searchPageUrl" value="${cms.functionDetail['Search page']}" />
-<c:set var="showSearch" value="${showSearch and not fn:startsWith(searchPageUrl,'[')}" />
+
+<c:if test="${showSearch}">
+    <c:set var="searchPageUri" value="${cms.functionDetailPageExact['Search page']}" />
+</c:if>
 
 <c:set var="logoElements" value="${cms.elementsInContainers['header-image']}" />
 <c:if test="${not empty logoElements}">
@@ -85,7 +87,7 @@
                             <cms:include file="${metaLinksPlugin.path}" cacheable="false" />
                         </c:when>
                         <c:otherwise>
-                            <li id="nav-main-addition" class="expand hidden-lg hidden-xl"><%----%>
+                            <li id="nav-main-addition" class="expand hidden-lg-up"><%----%>
                                 <a href="#" aria-controls="nav_nav-main-addition" id="label_nav-main-addition">${metaLinksContent.value.Title}</a><%----%>
                                 <ul class="nav-menu" id="nav_nav-main-addition" aria-labelledby="label_nav-main-addition"><%----%>
                                     <mercury:nl />
@@ -120,7 +122,7 @@
             <c:set var="startSubMenu" value="${nextLevel > navElem.navTreeLevel}" />
             <c:set var="isTopLevel" value="${navElem.navTreeLevel eq navStartLevel}" />
             <c:set var="nextIsTopLevel" value="${nextLevel eq navStartLevel}" />
-            <c:set var="navTarget" value="${fn:trim(navElem.info)eq 'extern' ? ' target=\"_blank\"' : ''}" />
+            <c:set var="navTarget" value="${fn:trim(navElem.info) eq 'extern' ? ' target=\"_blank\"' : ''}" />
 
             <c:set var="isCurrentPage" value="${fn:startsWith(currentPageUri, cms.sitePath[navElem.resource.rootPath])}" />
             <c:set var="isFinalCurrentPage" value="${isCurrentPage and currentPageFolder eq cms.sitePath[navElem.resource.rootPath]}" />
@@ -133,15 +135,26 @@
             <%-- ###### Check for mega menu ######--%>
             <c:set var="megaMenu" value="" />
             <c:if test="${isTopLevel}">
-                <c:set var="megaMenuVfsPath" value="${navElem.resourceName}mega.menu" />
-                <c:if test="${navElem.navigationLevel}">
-                    <%-- ###### Path correction needed if navLevel ###### --%>
-                    <c:set var="megaMenuVfsPath" value="${fn:replace(megaMenuVfsPath, navElem.fileName, '')}" />
+
+                <c:if test="${empty navTarget and not fn:startsWith(navElem.info, '#')}">
+                    <%-- Append navInfo as CSS class, make sure this contains no invalid characters by running it through file translation --%>
+                    <mercury:set-content-disposition name="${fn:toLowerCase(fn:trim(navElem.info))}" suffix="" setFilenameOnly="${true}"/>
+                    <c:set var="menuType" value="${menuType.concat(contentDispositionFilename)}" />
                 </c:if>
+
+                <c:set var="megaMenuFile" value="${cms.sitemapConfig.attribute['template.mega.menu.filename'].isSetNotNone ? cms.sitemapConfig.attribute['template.mega.menu.filename'] : 'mega.menu'}" />
+                <c:choose>
+                    <c:when test="${navElem.navigationLevel}">
+                        <c:set var="megaMenuVfsPath" value="${cms.wrap(navElem.resource).toResource.getFolder().sitePath}${megaMenuFile}" />
+                    </c:when>
+                    <c:otherwise>
+                        <c:set var="megaMenuVfsPath" value="${navElem.resourceName}${megaMenuFile}" />
+                    </c:otherwise>
+                </c:choose>
                 <c:set var="megaMenuRes" value="${cms.vfs.xml[megaMenuVfsPath]}" />
                 <c:if test="${not empty megaMenuRes}">
                     <c:set var="megaMenu" value=' data-megamenu="${megaMenuRes.resource.link}"' />
-                    <c:set var="menuType" value="${menuType.concat('mega')}" />
+                    <c:set var="menuType" value="${menuType.concat(' ').concat('mega')}" />
                     <c:choose>
                         <c:when test="${megaMenuRes.resource.property['mercury.mega.display'] eq 'mobile'}">
                             <c:set var="menuType" value="${menuType.concat(' mega-mobile')}" />
@@ -194,7 +207,7 @@
                     --%>role="button"${' '}<%--
                     --%>aria-expanded="false"${' '}<%--
                     --%>aria-controls="${targetMenuId}"${' '}<%--
-                    --%>aria-labelledby="${parentLabelId}"<%--
+                    --%>aria-labelledby="${parentLabelId}"${' '}<%--
                     --%>title="<fmt:message key="msg.page.navigation.sublevel" />"<%--
                     --%>${'>'}&nbsp;</a><%----%>
                 </c:when>
@@ -245,22 +258,18 @@
             ${metaLinksHtml}
         </c:if>
 
-        <c:if test="${not empty navPluginHtml}">
-            ${navPluginHtml}
-        </c:if>
-
-        <c:if test="${showSearch}">
+        <c:if test="${not empty searchPageUri}">
             <li id="nav-main-search" class="expand"><%----%>
-                <a href="${searchPageUrl}" title="<fmt:message key="msg.page.search" />" role="button" aria-controls="nav_nav-main-search" aria-expanded="false" id="label_nav-main-search" class="click-direct"><%----%>
-                    <span class="search search-btn fa fa-search"></span><%----%>
+                <a href="${searchPageUri}" title="<fmt:message key="msg.page.search" />" role="button" aria-controls="nav_nav-main-search" aria-expanded="false" id="label_nav-main-search" class="click-direct"><%----%>
+                    <mercury:icon icon="search" tag="span" cssWrapper="search search-btn" />
                 </a><%----%>
                 <ul class="nav-menu" id="nav_nav-main-search" aria-labelledby="label_nav-main-search"><%----%>
                     <li><%----%>
                         <div class="styled-form search-form"><%----%>
-                            <form action="${searchPageUrl}" method="post"><%----%>
+                            <form action="${searchPageUri}" method="post"><%----%>
                                 <div class="input button"><%----%>
                                     <label for="searchNavQuery" class="sr-only"><fmt:message key="msg.page.search" /></label><%----%>
-                                    <input id="searchNavQuery" name="q" type="text" class="blur-focus" autocomplete="off" placeholder='<fmt:message key="msg.page.search.enterquery" />' /><%----%>
+                                    <input id="searchNavQuery" name="q" type="text" autocomplete="off" placeholder='<fmt:message key="msg.page.search.enterquery" />' /><%----%>
                                     <button class="btn" type="button" title="<fmt:message key="msg.page.search" />" onclick="this.form.submit(); return false;"><%----%>
                                         <fmt:message key="msg.page.search.submit" /><%----%>
                                     </button><%----%>
@@ -270,6 +279,10 @@
                     </li><%----%>
                 </ul><%----%>
             </li><%----%>
+        </c:if>
+
+        <c:if test="${not empty navPluginHtml}">
+            ${navPluginHtml}
         </c:if>
 
         <mercury:nl />

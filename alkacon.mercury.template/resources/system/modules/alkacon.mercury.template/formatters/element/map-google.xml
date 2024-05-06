@@ -12,25 +12,18 @@
         <uuid>cca8d42a-827a-11ec-90e1-0242ac11002b</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-map.description.formatter.google)]]></Description>
     <Rank><![CDATA[1000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[map]]></ContainerType>
       </Types>
     </Match>
     <AutoEnabled>false</AutoEnabled>
     <SearchContent>true</SearchContent>
     <StrictContainers>true</StrictContainers>
-    <Plugin>
-      <Group><![CDATA[css]]></Group>
-      <Target>
-        <link internal="true" type="WEAK">
-          <target><![CDATA[/system/modules/alkacon.mercury.template/osmviewer/map.css]]></target>
-          <uuid>bb1e189e-24ab-11e9-bcf4-0242ac11002b</uuid>
-        </link>
-      </Target>
-    </Plugin>
     <IncludeSettings>
       <link type="WEAK">
         <target><![CDATA[/system/modules/alkacon.mercury.template/configuration/shared-settings.xml]]></target>
@@ -66,7 +59,16 @@
       ]]></WidgetConfig>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[mapMarkerCluster.default]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[showDescription.true]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showLink.true]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showFacilities.false]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showGroupButtons.true]]></IncludeName>

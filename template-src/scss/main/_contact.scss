@@ -20,6 +20,8 @@
  */
 
 .type-contact {
+    --#{$prefix}contact-spacer-x: #{$contact-spacer-x};
+    --#{$prefix}contact-spacer-y: #{$contact-spacer-y};
 
     @if $use-hyphens {
         overflow-wrap: anywhere;
@@ -35,22 +37,33 @@
     .note,
     .mail,
     .vcard {
-        margin-top: $contact-margins;
-        margin-bottom: $contact-margins;
+        margin-top: var(--#{$prefix}contact-spacer-y);
+        margin-bottom: var(--#{$prefix}contact-spacer-y);
     }
 
     .mail {
         // make sure emails are NOT changed with "-" when line break is inserted
+        hyphenate-character: " ";
         -webkit-hyphenate-character: " ";
     }
 
     > * > .image-src-box {
-        // this will not add bottom margin if piece grid is used
-        margin-bottom: 2 * $contact-margins;
+        // this will only add bottom margin if piece grid is not used
+        margin-bottom: calc(2 * var(--#{$prefix}contact-spacer-y));
     }
 
     .contactlink {
-        margin-top: $contact-margins;
+        margin-top: var(--#{$prefix}contact-spacer-y);
+    }
+
+    .body .text-box > * {
+        // first / last element in text-box must not add margins
+        &:first-child {
+            margin-top: 0;
+        }
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 
     &.compact {
@@ -96,7 +109,7 @@
         word-break: normal;
 
         > span {
-            padding-right: $default-margin-verysmall;
+            padding-right: var(--#{$prefix}contact-spacer-x);
             display: table-cell;
 
             &.icon-label {
@@ -114,15 +127,46 @@
     }
 
     .only-icon {
-        padding-left: $default-margin-verysmall;
+        padding-left: var(--#{$prefix}contact-spacer-x);
     }
 
+    .ico,
     .fa {
-       margin-right: $default-margin-verysmall;
-       width: $default-margin;
+       margin-right: var(--#{$prefix}contact-spacer-x);
+       width: calc(4 * var(--#{$prefix}contact-spacer-x));
     }
 
     .img-responsive {
         width: 100%;
+    }
+
+    .note {
+        > * {
+            // add margins for all elements in text piece
+            margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
+            &:last-child {
+                // last element in text must not add margin
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    .suborg-list {
+        .teaser:last-of-type {
+            margin-bottom: 0;
+        }
+    }
+
+    .piece.full {
+        // do NOT center visual in case the full width is not used
+        > .visual {
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+
+    &.box {
+        // required because if a float layout is used the box background may not extend over the image otherwise
+        @include clearfix;
     }
 }

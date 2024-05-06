@@ -19,18 +19,20 @@
  * Source file:_tiles.scss
  */
 
-$tile-border-radius:        $default-border-radius !default;
-
 $ti-maxCols:    12 !default;
 $ti-margin:     0 !default;
 
 //                2       3       4       6
 $ti-cols:       ((8, 8), (6, 6), (4, 4), (3, 3), (2,2)) !default;
 
-$sq-maxCols:    12 !default;
 $sq-margin:     0 !default;
-$sq-margins:    (2, 20) !default;
+$sq-margins:    (0, 1, 2, 5, 10, 15, 20) !default;
 $sq-padding:    20 !default;
+
+$square-spacing:                $default-margin !default;
+$square-text-overlay-padding-v: calc(0.5 * $square-spacing) !default;
+$square-text-overlay-padding-h: $square-spacing !default;
+$square-paragraph-margin:       calc(0.5 * $paragraph-margin-bottom) !default;
 
 $square-overlay-h1-size:        2.0rem !default;
 $square-overlay-h2-size:        1.6rem !default;
@@ -38,33 +40,25 @@ $square-overlay-h3-size:        1.2rem !default;
 $square-overlay-h4-size:        $square-overlay-h3-size !default;
 $square-overlay-text-size:      1.2rem !default;
 $square-overlay-line-height:    1.2 !default;
-$tile-overlay-bg-color:         rgba(0, 0, 0, 0.15) !default;
-$square-overlay-bg-color:       rgba(0, 0, 0, 0.65) !default;
+
+$square-overlay-bg-color:       #000 !default;
+$square-overlay-bg-opacity:     0.65 !default;
+$square-overlay-boxbg-opacity:  0.75 !default;
+
 $square-overlay-bg-color-xs:    #272727 !default;
 $square-overlay-text-color:     $white !default;
 $square-overlay-text-shadow:    1px 1px 1px #000 !default;
+
+$tile-overlay-bg-color:         rgba(0, 0, 0, 0.3) !default;
+$tile-overlay-text-color:       $square-overlay-text-color !default;
+$tile-overlay-text-shadow:      $square-overlay-text-shadow !default;
 
 // 75 required by list download display formatter
 // 125, 150 required by list calendar sheet
 $fix-cols:      (75, 125, 150) !default;
 
-$sq-cols-xs:       () !default;
-$sq-cols-sm:       ((12, 12), (6, 6)) !default;
-$sq-cols-md:       ((12, 12), (6, 6), (4, 4)) !default;
-$sq-cols-lg:       ((12, 12), (6, 6), (4, 4), (3, 3)) !default;
-$sq-cols-xl:       ((12, 12), (8, 8), (6, 6), (4, 4), (3, 3)) !default;
-
-@function get-square-cols($size) {
-  @if ($size == "xs") {
-     @return $sq-cols-sm;
-  } @else if ($size == "sm") {
-     @return $sq-cols-md;
-  } @else if ($size == "md") {
-     @return $sq-cols-lg;
-  } @else {
-     @return $sq-cols-xl;
-  }
-}
+// supported square col sizes
+$sq-cols-sizes:    (12, 9, 8, 6, 4, 3, 2) !default;
 
 //                1/6            1/4           1/3           1/2          1.5           2
 // $sq-heights: ((0o16, 0.166), (0o25, 0.25), (0o33, 0.332), (0o5, 0.5), (1o5, 1.499), (2, 2)) !default;
@@ -76,17 +70,65 @@ $sq-heights-lg:    () !default;
 $sq-heights-xl:    () !default;
 
 @function get-square-heights($size) {
-  @if ($size == "xs") {
-     @return $sq-heights-xs;
-  } @else if ($size == "sm") {
-     @return $sq-heights-sm;
-  } @else if ($size == "md") {
-     @return $sq-heights-md;
-  } @else if ($size == "lg") {
-     @return $sq-heights-lg;
-  } @else {
-     @return $sq-heights-xl;
-  }
+    @if ($size =="xs") {
+        @return $sq-heights-xs;
+    } @else if ($size =="sm") {
+        @return $sq-heights-sm;
+    } @else if ($size =="md") {
+        @return $sq-heights-md;
+    } @else if ($size =="lg") {
+        @return $sq-heights-lg;
+    } @else {
+        @return $sq-heights-xl;
+    }
+}
+
+// creates a fixed width column
+@mixin make-fixcol($size)   {
+    @each $i in $fix-cols {
+        $fixsize: ($i + $grid-gutter-width);
+        // the fixed with column
+        .fixcol-#{$size}-#{$i} {
+            // add the gutter so that the column pixel size is what the class says
+            width: $fixsize;
+            max-width: $fixsize;
+            flex: 0 0 $fixsize;
+        }
+        // if fixed size ($i) is 0 we use the default 100%, otherwise the gutter would be subtracted
+        @if ($i > 0) {
+            // the rest of the column
+            .fixcol-#{$size}-#{$i}-rest {
+                width: calc(100% - #{$fixsize});
+                max-width: calc(100% - #{$fixsize});
+                flex: 0 0 calc(100% - #{$fixsize});
+            }
+        }
+    }
+}
+@function calc-square-height($cols) {
+    @return calc(
+        (100% - 2 * var(--#{$prefix}sq-margin)) * divide($cols, 12, $divide-precision) * var(--#{$prefix}sq-ratio)
+        + 2 * divide($cols, 12, $divide-precision) * var(--#{$prefix}sq-ratio) * var(--#{$prefix}sq-margin)
+    );
+}
+
+@mixin make-square-col($size)   {
+
+    @each $col-size in $sq-cols-sizes {
+        .square-#{$size}-#{$col-size} {
+           // creates the media query square versions like .square-lg-5 etc.
+            width: #{100% * divide($col-size, $grid-columns, $divide-precision)};
+            padding-bottom: calc-square-height($col-size) !important;
+        }
+    }
+
+    @each $h, $sq-h in get-square-heights($size) {
+        .square-#{$size}-h-#{$h} {
+            // allows adjustments of square height
+            --#{$prefix}sq-ratio: #{$sq-h};
+        }
+    }
+
 }
 
 // Squares
@@ -96,121 +138,133 @@ $sq-heights-xl:    () !default;
 // Base square definition
 
 .square-col {
+    --#{$prefix}sq-ratio: 1;
 
     float: left;
     position: relative;
     width: 100%;
-    padding: 0 0 100% 0 !important; // !important because the "padding-bottom: 100%" is what makes the squares square
+    padding-bottom: calc-square-height(12) !important;
+
     .content {
-        @include round-corners($tile-border-radius, true);
-    }
-}
+        position: absolute !important; // !important because otherwise OpenCms ADE will mix up the grid
+        overflow: auto; // show overflow content with scrolling
+        z-index: $overflow-z-index;
+        border-radius: var(--#{$prefix}border-radius);
 
-.square-m-0 .square-col .content {
-    // if these is no border between the tiles, round corners are removed
-    border-radius: 0;
-}
+        height: calc(100% - 2 * var(--#{$prefix}sq-margin));
+        width:  calc(100% - 2 * var(--#{$prefix}sq-margin));
+        margin: var(--#{$prefix}sq-margin);
 
-@mixin make-square-col($size)   {
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
 
-    @each $i, $sq-i in get-square-cols($size) {
-        $sq-width: divide(100%, divide($sq-maxCols, $sq-i));
+        @include media-breakpoint-up(md) {
+            .effect-box {
+                height: 100%;
 
-        .square-#{$size}-#{$i} {
-           // creates the media query square versions like .square-lg-5 etc.
-            width: $sq-width;
-            padding-bottom: $sq-width !important;
+                .image-src-box {
+                    padding-bottom: unset !important;
+                    height: 100%;
 
-            @each $h, $sq-h in get-square-heights($size) {
-                @if ($h != 99) {
-                    &-h-#{$h} {
-                        // allows adjustments of square height
-                        width: $sq-width;
-                        padding-bottom: #{$sq-width * $sq-h} !important;
+                    img {
+                        object-fit: cover;
                     }
                 }
             }
         }
     }
-}
 
-@mixin fix-square-container($size) {
-    @each $m in $sq-margins  {
-        $sq-min: floor((container-useable-width($size) + 2*$m) * 0.25) * 4;
-        .square-m-#{$m}-parent .container {
-            width: $sq-min;
-            padding: 0;
-        }
-    }
-}
-
-// Required inner square class, the "position: absolute" does the trick
-
-.square-col .content {
-
-    position: absolute !important; // !important because otherwise OpenCms ADE will mix up the grid
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    overflow: auto; // show overflow content with scrolling
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    z-index: $overflow-z-index;
-}
-
-.square-col-list .square-col {
-    // special "image tile" list adjustments
-    .content {
-        overflow: hidden; // no overflow to be shown on lists of type .square-col-list
-
-        .list-badge {
-            // position of event series badges in this list
-            position: absolute;
-            display: inline-block;
-            padding: 2px 4px;
-            top: 5px;
-            right: 5px;
-            text-shadow: none;
-
-            &::after {
-                // remove noise image background
-                content: none;
-            }
-        }
+    &.square-1-1 {
+        --#{$prefix}sq-ratio: 1;
     }
 
-    &.square-small {
-        .preface {
-            // special handling of preface text in small image tiles
-            @include media-breakpoint-up(md) {
-                display: none; // in md tiles are col-6 but are to small to show the preface text
-            }
-            @include media-breakpoint-up(lg) {
-                display: block; // in lg tiles are still col-6 and large enough to show the text
-            }
-            @include media-breakpoint-up(xl) {
-                display: none; // in xl the tiles are col-3/4 and to small to show the preface text
-            }
-        }
+    &.square-16-9 {
+        --#{$prefix}sq-ratio: #{divide(960, 1600, $divide-precision)}; // this gives better results in case of small elements with margins
+    }
+
+    &.square-4-3 {
+        --#{$prefix}sq-ratio: #{divide(3, 4, $divide-precision)};
+    }
+
+    &.clear-row {
+        clear: both;
+    }
+
+    // Table needed for alignment of content inside square
+    // Table cell needed for alignment of content inside square
+    .table-square {
+        display: table;
+        height: 100%;
+        width: 100%;
+        margin-bottom: 0;
+        color: inherit;
+    }
+
+    .table-cell {
+        display: table-cell;
+        vertical-align: middle;
+        height: 100%;
+        width: 100%;
     }
 }
-
 
 // Allows to set the margin in the squares
 
 @each $m in $sq-margins  {
     .square-m-#{$m} {
-        .square-col .content {
-            height: calc(100% - #{$m * 2}px);
-            width:  calc(100% - #{$m * 2}px);
-            margin: #{$m}px;
+        --#{$prefix}sq-margin: #{$m}px;
+    }
+}
+
+.square-col-list ul.list-entries.row-square,
+.row-square {
+    margin: calc(-1 * var(--#{$prefix}sq-margin));
+    padding-bottom: var(--#{$prefix}element-margin);
+}
+
+.square-m-0 .square-col .content,
+.square-m-0 .square-col .content .image-src-box,
+.square-m-0 .square-col .content .image-src-box img {
+    // if these is no border between the tiles, round corners are removed
+    border-radius: 0;
+}
+
+.square-col-list {
+    .square-col {
+        // special "image tile" list adjustments
+        .content {
+            overflow: hidden; // no overflow to be shown on lists of type .square-col-list
+
+            .list-badge {
+                // position of event series badges in this list
+                position: absolute;
+                display: inline-block;
+                padding: 2px 4px;
+                top: 5px;
+                right: 5px;
+                text-shadow: none;
+
+                &::after {
+                    // remove noise image background
+                    content: none;
+                }
+            }
         }
 
-        &.row-square {
-            margin-left: -#{$m}px;
-            margin-right: -#{$m}px;
-            padding-bottom: #{$grid-gutter-width - (2px * $m)};
+        &.square-small {
+            .preface {
+                // special handling of preface text in small image tiles
+                @include media-breakpoint-up(md) {
+                    display: none; // in md tiles are col-6 but are to small to show the preface text
+                }
+                @include media-breakpoint-up(lg) {
+                    display: block; // in lg tiles are still col-6 and large enough to show the text
+                }
+                @include media-breakpoint-up(xl) {
+                    display: none; // in xl the tiles are col-3/4 and to small to show the preface text
+                }
+            }
         }
     }
 }
@@ -237,29 +291,6 @@ $sq-heights-xl:    () !default;
     }
 }
 
-// creates a fixed width column
-@mixin make-fixcol($size)   {
-    @each $i in $fix-cols {
-        $fixsize: ($i + $grid-gutter-width);
-        // the fixed with column
-        .fixcol-#{$size}-#{$i} {
-            // add the gutter so that the column pixel size is what the class says
-            width: $fixsize;
-            max-width: $fixsize;
-            flex: 0 0 $fixsize;
-        }
-        // if fixed size ($i) is 0 we use the default 100%, otherwise the gutter would be subtracted
-        @if ($i > 0) {
-            // the rest of the column
-            .fixcol-#{$size}-#{$i}-rest {
-                width: calc(100% - #{$fixsize});
-                max-width: calc(100% - #{$fixsize});
-                flex: 0 0 calc(100% - #{$fixsize});
-            }
-        }
-    }
-}
-
 
 // xs screen size squares
 @include make-square-col(xs);
@@ -271,7 +302,6 @@ $sq-heights-xl:    () !default;
 
     // sm screen size squares
     @include make-square-col(sm);
-    @include fix-square-container(sm);
 
     // sm screen size fixcols
     @include make-fixcol(sm);
@@ -281,7 +311,6 @@ $sq-heights-xl:    () !default;
 
     // md screen size squares
     @include make-square-col(md);
-    @include fix-square-container(md);
 
     // md screen size fixcols
     @include make-fixcol(md);
@@ -291,7 +320,6 @@ $sq-heights-xl:    () !default;
 
     // lg screen size squares
     @include make-square-col(lg);
-    @include fix-square-container(lg);
 
     // lg screen size fixcols
     @include make-fixcol(lg);
@@ -301,195 +329,30 @@ $sq-heights-xl:    () !default;
 
     // xl screen size squares
     @include make-square-col(xl);
-    @include fix-square-container(xl);
 
     // xl screen size fixcols
     @include make-fixcol(xl);
 }
 
-// hand optimized specials for 4x3 and 16x9 square tiles
-$ratio4-3: 0.75; // =300/400;
-$ratio16-9: divide(900, 1670); // this gives better results than 9/16
-$sq-margin: 20px;
-
-@function calc-square-height($container, $margin, $ratio, $cols, $just:false) {
-
-    $width: ($container + 2*$margin) * divide($cols, 12);
-    $height: (($width - ($margin *2)) * $ratio) + ($margin *  2);
-    @if ($just) {
-         @return $height - ($height % 2);
-    }
-    @return floor($height);
-}
-
-
-
-.square-col.square-16-9 {
-    &.square-xs-12 {
-        padding-bottom: calc(56.25% + 20px) !important; // assuming m-20 on tiles here
-    }
-}
-
-.square-col.square-4-3 {
-    &.square-xs-12 {
-        padding-bottom: calc(75% + 10px) !important; // assuming m-20 on tiles here
-    }
-}
-
-.list-content.square-col-list .square-item-20 {
-    // this is used by square image tile lists
-    // make sure in XS the box does not extend over the container width
-    margin-left: -0.5 * $grid-gutter-width !important;
-    margin-right: -0.5 * $grid-gutter-width !important;
-    margin-top: -20px !important;
-    margin-bottom: 20px !important;
-
-    @include media-breakpoint-up(md) {
-        margin-left: -20px !important;
-        margin-right: -20px !important;
-    }
-}
-
-@include media-breakpoint-only(md) {
-    .square-col.square-4-3 {
-        &.square-xs-12,
-        &.square-md-12 {
-            padding-bottom: calc-square-height(container-useable-width(md), $sq-margin, $ratio4-3, 12) !important;
-        }
-        &.square-md-6 {
-            padding-bottom: calc-square-height(container-useable-width(md), $sq-margin, $ratio4-3, 6) !important;
-        }
-    }
-    .square-col.square-16-9 {
-        &.square-xs-12,
-        &.square-md-12 {
-            padding-bottom: calc-square-height(container-useable-width(md), $sq-margin, $ratio16-9, 12) !important;
-        }
-        &.square-md-6 {
-            padding-bottom: calc-square-height(container-useable-width(md), $sq-margin, $ratio16-9, 6) !important;
-        }
-        &.square-md-4 {
-            padding-bottom: calc-square-height(container-useable-width(md), $sq-margin, $ratio16-9, 4) !important;
-        }
-    }
-}
-
-@include media-breakpoint-only(lg) {
-    .square-col.square-4-3 {
-        &.square-xs-12,
-        &.square-md-12,
-        &.square-lg-12 {
-            padding-bottom: calc-square-height(container-useable-width(lg), $sq-margin, $ratio4-3, 12) !important;
-        }
-        &.square-md-6,
-        &.square-lg-6 {
-            padding-bottom: calc-square-height(container-useable-width(lg), $sq-margin, $ratio4-3, 6) !important;
-        }
-    }
-    .square-col.square-16-9 {
-        &.square-xs-12,
-        &.square-md-12,
-        &.square-lg-12 {
-            padding-bottom: calc-square-height(container-useable-width(lg), $sq-margin, $ratio16-9, 12) !important;
-        }
-        &.square-lg-8 {
-            padding-bottom: calc-square-height(container-useable-width(lg), $sq-margin, $ratio16-9, 4) * 2 !important;
-        }
-        &.square-md-6,
-        &.square-lg-6 {
-            padding-bottom: calc-square-height(container-useable-width(lg), $sq-margin, $ratio16-9, 6) !important;
-        }
-        &.square-md-4,
-        &.square-lg-4 {
-            padding-bottom: calc-square-height(container-useable-width(lg), $sq-margin, $ratio16-9, 4) !important;
-        }
-    }
-}
-
-@include media-breakpoint-up(xl) {
-    .square-col.square-4-3 {
-        &.square-md-12,
-        &.square-lg-12,
-        &.square-xl-12 {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio4-3, 12) !important;
-        }
-        &.square-md-8,
-        &.square-lg-8,
-        &.square-xl-8 {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio4-3, 8, true) !important;
-        }
-        &.square-md-6,
-        &.square-lg-6,
-        &.square-xl-6 {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio4-3, 6, true) !important;
-        }
-        &.square-md-4,
-        &.square-lg-4,
-        &.square-xl-4  {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio4-3, 8, true) * 0.5 !important;
-        }
-        &.square-md-3,
-        &.square-lg-3,
-        &.square-xl-3  {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio4-3, 6, true) * 0.5 !important;
-        }
-    }
-    .square-col.square-16-9 {
-        &.square-md-12,
-        &.square-lg-12,
-        &.square-xl-12 {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio16-9, 12) !important;
-        }
-        &.square-md-8,
-        &.square-lg-8,
-        &.square-xl-8 {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio16-9, 4) * 2 !important;
-        }
-        &.square-md-6,
-        &.square-lg-6,
-        &.square-xl-6 {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio16-9, 3) * 2 !important;
-        }
-        &.square-md-4,
-        &.square-lg-4,
-        &.square-xl-4  {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio16-9, 4) !important;
-        }
-        &.square-md-3,
-        &.square-lg-3,
-        &.square-xl-3  {
-            padding-bottom: calc-square-height(container-useable-width(xl), $sq-margin, $ratio16-9, 3) !important;
-        }
-    }
-}
-
-
-// Table needed for alignment of content inside square
-// Table cell needed for alignment of content inside square
-
-.square-col {
-    .table {
-        display: table;
-        height: 100%;
-        width: 100%;
-        margin-bottom: 0;
-        color: inherit;
-    }
-
-    .table-cell {
-        display: table-cell;
-        vertical-align: middle;
-        height: 100%;
-        width: 100%;
-    }
-}
 
 .content-box {
     position: relative;
-    @include round-corners($tile-border-radius, true);
+    border-radius: var(--#{$prefix}border-radius);
+    overflow: hidden;
+    z-index: $overflow-z-index;
 }
 
 .tile-col {
+    position: relative;
+
+    .boxbg-overlay {
+        --#{$prefix}square-text-overlay-bg: #{$highlight-color};
+        --#{$prefix}square-text-overlay-bg-rgb: #{to-rgb($highlight-color)};
+        --#{$prefix}square-text-overlay-fg: #{$highlight-fg-color};
+        --#{$prefix}square-text-overlay-bg-opacity: #{$square-overlay-boxbg-opacity};
+        --#{$prefix}square-text-overlay-fg-shadow: none;
+    }
+
     .full-overlay {
         position: absolute;
         height: 100%;
@@ -498,42 +361,68 @@ $sq-margin: 20px;
         left: 0;
         z-index: #{$overflow-z-index + 4}; // 2 above copyright z-index
         overflow: auto; // shows scrollbars on demand
-        background: $tile-overlay-bg-color;
+        display: flex;  // required otherwise text alignment 'center' and 'right' will not work with short headings
+        flex-direction: column;
 
-        .piece {
-            margin: $default-margin-small;
+        &:not(.boxbg-overlay) {
+            background-color: $tile-overlay-bg-color;
+            h1, h2, h3, h4, div.body, a.piece-text-link {
+                color: $tile-overlay-text-color;
+                text-shadow: $tile-overlay-text-shadow;
+            }
         }
 
-        h1, h2, h3, h4, div.body, a.piece-text-link {
-            color: $square-overlay-text-color;
-            text-shadow: $square-overlay-text-shadow;
+        &.boxbg-overlay {
+            .piece {
+                color: var(--#{$prefix}square-text-overlay-fg);
+                background-color: rgba(var(--#{$prefix}square-text-overlay-bg-rgb), var(--#{$prefix}square-text-overlay-bg-opacity));
+
+                display: inline-block;
+                padding: calc(0.5 * var(--#{$prefix}box-padding));
+                border-radius: var(--#{$prefix}image-border-radius);
+            }
+        }
+
+        .piece {
+            margin: calc(0.5 * var(--#{$prefix}box-padding));
         }
     }
 }
 
 .tile-col.element .copyright,
 .tile-col.freefloat .copyright,
-.square-col .square-copyright {
-    // selector must not be named 'image-copyright' here, otherwise there will be problems for image flipping tiles
+.list-entry .square-col .copyright {
+    --#{$prefix}copyright-color: #{$square-overlay-text-color};
+    --#{$prefix}copyright-bg-color: transparent;
+    --#{$prefix}copyright-text-shadow: #{$square-overlay-text-shadow};
     @include image-copyright;
-    color: $square-overlay-text-color;
-    text-shadow: $square-overlay-text-shadow;
-    background-color: transparent;
 }
 
 .tile-col,
 .square-col {
+
+    --#{$prefix}square-text-overlay-bg: #{$square-overlay-bg-color};
+    --#{$prefix}square-text-overlay-bg-rgb: #{to-rgb($square-overlay-bg-color)};
+    --#{$prefix}square-text-overlay-bg-opacity: #{$square-overlay-bg-opacity};
+    --#{$prefix}square-text-overlay-fg: #{$square-overlay-text-color};
+    --#{$prefix}square-text-overlay-fg-shadow: #{$square-overlay-text-shadow};
+    --#{$prefix}square-text-overlay-padding-v: #{$square-text-overlay-padding-v};
+    --#{$prefix}square-text-overlay-padding-h: #{$square-text-overlay-padding-h};
+    --#{$prefix}square-paragraph-margin: #{$square-paragraph-margin};
+
     .text-overlay {
         position: absolute;
         bottom: 0;
-        padding: $default-margin-small $default-margin;
-        background: $square-overlay-bg-color;
+        padding: var(--#{$prefix}square-text-overlay-padding-v) var(--#{$prefix}square-text-overlay-padding-h);
+        background-color: rgba(var(--#{$prefix}square-text-overlay-bg-rgb), var(--#{$prefix}square-text-overlay-bg-opacity, 1));
+        text-decoration: none;
         width: 100%;
         z-index: $overflow-z-index;
+        @include use-hyphens-text();
 
         h1, h2, h3, h4, div {
-            color: $square-overlay-text-color;
-            text-shadow: $square-overlay-text-shadow;
+            color: var(--#{$prefix}square-text-overlay-fg);
+            text-shadow: var(--#{$prefix}square-text-overlay-fg-shadow);
             line-height: $square-overlay-line-height;
             margin: 0;
         }
@@ -556,14 +445,17 @@ $sq-margin: 20px;
         .heading + .body,
         h2 + h3,
         div.teaser-date + h2 {
-            margin-top: $default-margin-verysmall;
+            margin-top: var(--#{$prefix}square-paragraph-margin);
         }
     }
     a:hover {
         text-decoration: none;
+        h1, h2, h3, h4, h5, h6 {
+            text-decoration: none;
+        }
     }
 
-    @include media-breakpoint-down(sm) {
+    @include media-breakpoint-down(md) {
 
         &.text-below-on-xs:not(.revealed) {
             // reset tiles so that the overlay is below the image
@@ -595,13 +487,15 @@ $sq-margin: 20px;
             }
 
             .text-overlay {
-                background: $square-overlay-bg-color-xs;
+                --#{$prefix}square-text-overlay-bg: #{$square-overlay-bg-color-xs};
+                --#{$prefix}square-text-overlay-bg-rgb: #{to-rgb($square-overlay-bg-color-xs)};
+                --#{$prefix}square-text-overlay-bg-opacity: 1;
             }
         }
     }
 
     &.min-height-px .text-overlay {
-        min-height: calc(#{2 * $square-overlay-h2-size * $square-overlay-line-height} + #{2 * $default-margin-small});
+        min-height: calc(#{2 * $square-overlay-h2-size * $square-overlay-line-height} + var(--#{$prefix}default-margin-small));
     }
 
     @include media-breakpoint-up(md) {
@@ -613,7 +507,6 @@ $sq-margin: 20px;
 
         &.square-large {
             .text-overlay {
-                padding: $default-margin;
                 h2 {
                     font-size: 2.0rem;
                 }
@@ -648,7 +541,6 @@ $sq-margin: 20px;
             }
             &.square-large {
                 .text-overlay {
-                    padding: $default-margin-small $default-margin;
                     min-height: 18.5%;
                 }
             }

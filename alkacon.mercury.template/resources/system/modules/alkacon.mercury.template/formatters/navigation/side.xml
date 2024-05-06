@@ -11,10 +11,12 @@
         <uuid>a954bfd2-0765-4882-873d-561a8dd3a10e</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-navigation.description.formatter) %(key.type.general.description.navigation)]]></Description>
     <Rank><![CDATA[1500]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[nav-side]]></ContainerType>
       </Types>
     </Match>
@@ -41,6 +43,9 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[cssVisibility.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[allOpen.false]]></IncludeName>
     </Setting>
   </NewFormatter>
 </NewFormatters>

@@ -11,10 +11,12 @@
         <uuid>ca78b9bc-dce0-42fe-a498-db78cbe5f295</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-sitemap.description.formatter)]]></Description>
     <Rank><![CDATA[1000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[sitemap]]></ContainerType>
       </Types>
     </Match>

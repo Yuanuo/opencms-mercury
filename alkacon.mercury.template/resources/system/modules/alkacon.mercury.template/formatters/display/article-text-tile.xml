@@ -11,6 +11,7 @@
         <uuid>2d77eb9d-2fb0-4d2b-a52d-9bf8efdbf7ff</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-article.description.formatter) %(key.type.general.description.teaser.text-tile) %(key.type.general.description.teaser.list-only)]]></Description>
     <Rank><![CDATA[18000]]></Rank>
     <Match>
       <Types>
@@ -51,6 +52,9 @@
       <IncludeName><![CDATA[dateFormat.default]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[cssWrapper2.tile]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[titleOption.default]]></IncludeName>
     </Setting>
     <Setting>
@@ -64,6 +68,9 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[linkOption.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[detailLinkWin.listTeaser]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[buttonText.default]]></IncludeName>

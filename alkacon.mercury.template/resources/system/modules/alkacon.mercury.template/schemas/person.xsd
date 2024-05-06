@@ -4,7 +4,7 @@
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/image.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/link.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/contact-name.xsd" />
-    <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/contact-item.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/contact-data.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/availability.xsd" />
 
     <xsd:element name="ContactData" type="OpenCmsContactData" />
@@ -23,6 +23,7 @@
             <xsd:element name="LinkToOrganization" type="OpenCmsVfsFile" minOccurs="0" />
             <xsd:element name="Contact" type="OpenCmsContactItem" />
             <xsd:element name="Title" type="OpenCmsString" minOccurs="0" />
+            <xsd:element name="Notice" type="OpenCmsHtml" minOccurs="0" />
             <xsd:element name="Description" type="OpenCmsHtml" minOccurs="0" />
             <xsd:element name="Link" type="OpenCmsNestedLink" minOccurs="0" />
             <xsd:element name="Category" type="OpenCmsDynamicCategory" />
@@ -112,8 +113,16 @@
                     <Widget>string</Widget>
                 </Setting>
                 <Setting>
+                    <PropertyName>Notice</PropertyName>
+                    <DisplayName><![CDATA[%(key.label.Contact.Notice)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.Contact.Notice.help)]]></Description>
+                    <Widget>HtmlWidget</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:editorConfigLimited:%(param:editorConfigLimited))]]></WidgetConfig>
+                </Setting>
+                <Setting>
                     <PropertyName>Description</PropertyName>
-                    <DisplayName><![CDATA[%(key.label.Description)]]></DisplayName>
+                    <DisplayName><![CDATA[%(key.label.Contact.Description)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.Contact.Description.help)]]></Description>
                     <Widget>HtmlWidget</Widget>
                     <WidgetConfig><![CDATA[%(attribute:editorConfigLimited:%(param:editorConfigLimited))]]></WidgetConfig>
                 </Setting>

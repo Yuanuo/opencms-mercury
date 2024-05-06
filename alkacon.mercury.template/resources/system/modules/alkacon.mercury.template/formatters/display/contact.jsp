@@ -21,11 +21,13 @@
 
 <c:set var="compactLayout"          value="${setting.compactLayout.toBoolean ? ' compact' : ''}" />
 
-<c:set var="showOrganization"       value="${setting.showOrganization.toBoolean}" />
+<c:set var="showOrganization"       value="${setting.showOrganization.toBoolean or (setting.showOrganization.toString eq 'link')}" />
+<c:set var="showOrganizationLink"   value="${showOrganization and (setting.showOrganization.toString eq 'link')}" />
 <c:set var="showPosition"           value="${setting.showPosition.toBoolean}" />
 <c:set var="showAddress"            value="${setting.showAddress.toString eq 'true'}" />
 <c:set var="showAddressAlways"      value="${setting.showAddress.toString eq 'always'}" />
 <c:set var="showTitle"              value="${setting.showTitle.toBoolean}" />
+<c:set var="showNotice"             value="${setting.showNotice.toString}" />
 <c:set var="showDescription"        value="${setting.showDescription.toBoolean}" />
 <c:set var="showPhone"              value="${setting.showPhone.toBoolean}" />
 <c:set var="showWebsite"            value="${setting.showWebsite.toBoolean}" />
@@ -48,7 +50,7 @@
 <c:set var="linkTarget"             value="${(setLinkOption ne 'none') and (linkTarget ne 'none') ? (linkTarget eq 'detail' ? linkToDetail : value.Link) : null}" />
 
 <mercury:teaser-piece
-    cssWrapper="type-contact ${kindCss}${compactLayout}${setCssWrapper}${setEffect}"
+    cssWrapper="type-contact ${kindCss}${compactLayout}${setCssWrapperAll}"
     attrWrapper="${kind}"
     headline="${showTitle ? title : null}"
     pieceLayout="${setPieceLayout}"
@@ -66,7 +68,7 @@
             <mercury:contact
                 kind="${valKind}"
                 image="${value.Image}"
-                name="${valName}"
+                name="${valKind eq 'org' ? null : valName}"
                 organization="${valOrganization}"
                 imageRatio="${setRatio}"
                 hsize="${hsize}"
@@ -82,16 +84,20 @@
             name="${valName}"
             position="${valPosition}"
             organization="${valOrganization}"
+            notice="${value.Notice}"
             description="${value.Description}"
             data="${value.Contact}"
             address="${valAddress}"
             labelOption="${labelOption}"
+            linkToRelated="${showOrganizationLink ? valLinkToRelated : null}"
+            linkToDetail="${linkToDetail}"
             hsize="${hsize}"
             showName="${setShowName}"
             showPosition="${setShowPosition}"
             showAddress="${showAddress}"
             showAddressAlways="${showAddressAlways}"
             showOrganization="${setShowOrganization}"
+            showNotice="${showNotice}"
             showDescription="${showDescription}"
             showPhone="${showPhone}"
             showWebsite="${showWebsite}"

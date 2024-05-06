@@ -20,7 +20,7 @@
  */
 
 @function calc-abs-col($breakpoint, $size, $max-widths: $container-max-widths, $columns: $grid-columns) {
-    @return floor(map-get($max-widths, $breakpoint) * divide($size, $columns));
+    @return floor(map-get($max-widths, $breakpoint) * divide($size, $columns, $divide-precision));
 }
 
 @function calc-abs-col-rest($breakpoint, $offset, $max-widths: $container-max-widths) {
@@ -73,7 +73,7 @@
                 }
             }
 
-            #{conditional-value($nav-setting-fixheader != false, ".sticky.csssetting", ".sticky.default")},
+            #{if($nav-setting-fixheader != false, ".sticky.csssetting", ".sticky.default")},
             .sticky.always,
             .sticky.upscroll {
                 // this requires JavaScript found in script-navigation.js to work properly
@@ -95,7 +95,7 @@
         html.opencms-page-editor {
             // fix head below toolbar in edit mode
             .area-header#{$selector} {
-                #{conditional-value($nav-setting-fixheader != false, ".sticky.csssetting", ".sticky.default")},
+                #{if($nav-setting-fixheader != false, ".sticky.csssetting", ".sticky.default")},
                 .sticky.always,
                 .sticky.upscroll {
                     > .isfixed {
@@ -173,10 +173,10 @@
                 li::before,
                 li::after,
                 a {
-                    color: check-text-color($fh-meta-bg-color, $fh-meta-color);
+                    color: get-text-color($fh-meta-bg-color, $fh-meta-color);
                 }
                 a:hover {
-                    color: check-text-color($fh-meta-bg-color, $fh-meta-hover-color);
+                    color: get-text-color($fh-meta-bg-color, $fh-meta-hover-color);
                 }
             }
         }
@@ -184,14 +184,14 @@
 }
 
 // Flexible header with desktop menu
-@if($feature-use-flexible-header) {
+@if ($feature-header-type == 'flexible') {
 
     // Special header containers
     @if ($nav-breakpoint-sticky-header != xs) {
         // sticky header is not enabled for mobile devices (this is the default)
         .co-sm-md {
             // container only for screen size SM And MD
-            @include media-breakpoint-between(sm, md) {
+            @include media-breakpoint-between(sm, lg) {
                 @include make-container(0);
                 max-width: map-get($container-max-widths, sm);
             }
@@ -209,11 +209,14 @@
             @include media-breakpoint-up(xl) {
                 max-width: map-get($container-max-widths, xl);
             }
+            @include media-breakpoint-up(xxl) {
+                max-width: map-get($container-max-widths, xxl);
+            }
         }
     } @else {
         .co-lg-xl {
             // sticky header is enabled for all devices (also mobile)
-            @include media-breakpoint-between(sm, md) {
+            @include media-breakpoint-between(sm, lg) {
                 @include make-container(0);
                 max-width: map-get($container-max-widths, sm);
             }
@@ -227,6 +230,9 @@
             @include media-breakpoint-up(xl) {
                 max-width: map-get($container-max-widths, xl);
             }
+            @include media-breakpoint-up(xxl) {
+                max-width: map-get($container-max-widths, xxl);
+            }
         }
     }
 
@@ -238,8 +244,8 @@
 
         .h-logo {
             width: 100%;
-            padding-top: $default-margin-verysmall;
-            padding-bottom: $default-margin-verysmall;
+            padding-top: var(--#{$prefix}default-margin-verysmall);
+            padding-bottom: var(--#{$prefix}default-margin-verysmall);
             padding-right: $fh-grid-gutter-width-half;
             padding-left: $fh-grid-gutter-width-half;
         }
@@ -298,7 +304,7 @@
             }
         }
 
-        @include media-breakpoint-down(md) {
+        @include media-breakpoint-down(lg) {
             @include hide-mega-menu-content;
 
             &.title-mobile {
@@ -322,14 +328,14 @@
 
                 %format-title {
                     @include use-hyphens-headings(true);
-                    @include heading-base(false);
+                    @include heading-base;
                     line-height: 1.2;
                     font-size: $bh-title-font-size-mobile;
                     text-align: left;
                     display: block;
 
                     @include add-bg-color($fh-title-bg-color) {
-                        color: check-text-color($fh-title-bg-color, $fh-title-color);
+                        color: get-text-color($fh-title-bg-color, $fh-title-color);
                     }
                     @include make-container();
                     @include media-breakpoint-up(sm) {
@@ -442,7 +448,7 @@
                 }
 
                 > .h-title {
-                    color: check-text-color($fh-header-bg-color, $fh-title-color);
+                    color: get-text-color($fh-header-bg-color, $fh-title-color);
                     background-color: transparent;
                 }
             }
@@ -481,9 +487,9 @@
                 flex-direction: column;
                 flex-basis: auto;
                 flex-grow: 1000;
-                @include heading-base(false);
-                padding-top: $default-margin-verysmall;
-                padding-bottom: $default-margin-verysmall;
+                @include heading-base;
+                padding-top: var(--#{$prefix}default-margin-verysmall);
+                padding-bottom: var(--#{$prefix}default-margin-verysmall);
                 color: $fh-title-color;
                 @if ($fh-title-bg-color != none) {
                     background-color: $fh-title-bg-color;
@@ -512,7 +518,7 @@
                 &.nav-aside {
                     // add padding above nav if title sits directly over it
                     .h-nav {
-                        padding-top: $default-margin-verysmall;
+                        padding-top: var(--#{$prefix}default-margin-verysmall);
                     }
                 }
             }
@@ -595,13 +601,13 @@
                             background-color: $fh-nav-bg-color;
                             padding-top: $nav-header-ver-padding;
                             .nav-main-items > li > a {
-                                $color-nav-text: check-text-color($fh-nav-bg-color, $nav-header-text);
+                                $color-nav-text: get-text-color($fh-nav-bg-color, $nav-header-text);
                                 color: $color-nav-text;
                                 &::after {
                                     color: $color-nav-text;
                                 }
                                 &:hover {
-                                    $color-nav-hover: check-text-color($fh-nav-bg-color, $nav-header-text-hover);
+                                    $color-nav-hover: get-text-color($fh-nav-bg-color, $nav-header-text-hover);
                                     color: $color-nav-hover;
                                     &::after {
                                         color: $color-nav-hover;
@@ -688,7 +694,7 @@
                     .nav-main-items {
                         > li {
                             > a {
-                                font-size: $nav-header-font-size + 4px;
+                                font-size: add-values($nav-header-font-size, 4px);
                             }
                         }
                     }
@@ -726,7 +732,7 @@
                     order: 2;
                     @if ($fh-ac-bg-color == none) {
                         // add top margin only if no bg color is set, colored bg and top margin looks crappy
-                        margin-top: $default-margin-verysmall;
+                        margin-top: var(--#{$prefix}default-margin-verysmall);
                     }
                 }
 
@@ -769,8 +775,8 @@
                 .h-bc {
                     background-color: $nav-breadcrumb-bg-color;
                     .nav-breadcrumbs {
-                        padding-top: $default-margin-small;
-                        padding-bottom: $default-margin-small;
+                        padding-top: var(--#{$prefix}default-margin-small);
+                        padding-bottom: var(--#{$prefix}default-margin-small);
                     }
                 }
             }
@@ -875,11 +881,11 @@
                                     }
                                 }
                             }
-                            &.ac-below-nav {
-                                .h-ac {
-                                    margin-bottom: $logo-padding;
-                                    @if ($fh-nav-bg-color != none) {
-                                        // colored navigation above additional container
+                            @if ($fh-nav-bg-color != none) {
+                                &.ac-below-nav {
+                                    .h-ac {
+                                        // colored navigation above and below additional container
+                                        margin-bottom: $logo-padding;
                                         margin-top: $logo-padding;
                                     }
                                 }
@@ -1063,6 +1069,9 @@
                     }
                 }
                 @include media-breakpoint-up(lg) {
+                    .h-logo {
+                        @include make-abs-col(lg, $logo-size);
+                    }
                     &.header-isfixed {
                         &.fix-compact {
                             .h-logo {
@@ -1084,6 +1093,18 @@
                         &.fix-overlay {
                             .nav-main-container {
                                 max-width: calc(100% - #{calc-abs-col(xl, $logo-size)});
+                            }
+                        }
+                    }
+                }
+                @include media-breakpoint-up(xxl) {
+                    .h-logo {
+                        @include make-abs-col(xxl, $logo-size);
+                    }
+                    &.header-isfixed {
+                        &.fix-overlay {
+                            .nav-main-container {
+                                max-width: calc(100% - #{calc-abs-col(xxl, $logo-size)});
                             }
                         }
                     }
@@ -1153,8 +1174,8 @@
 
 @mixin mobile-menu-globals($logo-position) {
 
-    $toggle-position: conditional-value($logo-position == left, right, left);
-    $position-selector: conditional-value($logo-position == left, "lp-l", "lp-r");
+    $toggle-position: if($logo-position == left, right, left);
+    $position-selector: if($logo-position == left, "lp-l", "lp-r");
 
     header.bh.#{$position-selector} {
         // nav menu is hidden
@@ -1213,7 +1234,7 @@
 
 
 // Header that always displays the"burger" menu
-@if ($feature-use-burger-header) {
+@if ($feature-header-type == 'burger') {
 
     @include sticky-header-globals(xs, '.fix-xs');
     @include sticky-header-globals(sm, '.fix-sm');
@@ -1272,7 +1293,7 @@
             @include add-bg-color($fh-title-bg-color) {
                 padding-top: $bh-header-padding-small;
                 .h-title {
-                    color: check-text-color($fh-title-bg-color, $fh-title-color);
+                    color: get-text-color($fh-title-bg-color, $fh-title-color);
                 }
             }
         }
@@ -1298,7 +1319,7 @@
 
                 .h-title {
                     width: 100%;
-                    color: check-text-color($fh-header-bg-color, $fh-title-color);
+                    color: get-text-color($fh-header-bg-color, $fh-title-color);
                 }
             }
         }
@@ -1573,6 +1594,7 @@
                         padding-right: 0;
                         margin-right: round($nav-mobile-line-height * 0.5);
 
+                        .ico,
                         .fa {
                             min-width: $nav-mobile-line-height;
                         }
@@ -1588,7 +1610,7 @@
         // hide content elements in mega menu (mega menu may be from a site using a different header type)
         @include hide-mega-menu-content;
 
-        @include media-breakpoint-down(xs) {
+        @include media-breakpoint-down(sm) {
             // reduce nav menu padding on very small screens
 
             .nav-menu-header {
@@ -1778,8 +1800,7 @@
                 .h-bc {
                     background-color: $nav-breadcrumb-bg-color;
                     .nav-breadcrumbs {
-                        padding-top: $default-margin-small;
-                        padding-bottom: $default-margin-small;
+                        padding: $nav-breadcrumb-colored-padding;
                     }
                 }
             }
@@ -1788,7 +1809,7 @@
     }
 }
 
-@if($feature-use-flexible-header or $feature-use-burger-header) {
+@if (($feature-header-type == 'burger') or ($feature-header-type == 'flexible')) {
 
     .area-header {
         @if ($nav-header-margin-bottom > 0) {
@@ -1859,7 +1880,7 @@
     }
 }
 
-@if($feature-use-flexible-header) {
+@if ($feature-header-type == 'flexible') {
 
     // Deprecated "logo-left" header - CSS comes with flexible header
     .area-header {
@@ -1879,8 +1900,8 @@
             }
 
             .col-head-logo {
-                padding-top: $default-margin-verysmall;
-                padding-bottom: $default-margin-verysmall;
+                padding-top: var(--#{$prefix}default-margin-verysmall);
+                padding-bottom: var(--#{$prefix}default-margin-verysmall);
 
                 @include make-col(9);
                 max-width: $header-logo-xs-width;
@@ -1898,7 +1919,7 @@
                 background-color: $header-image-ribbon-bg;
             }
 
-            @include media-breakpoint-down(md) {
+            @include media-breakpoint-down(lg) {
                 @include hide-mega-menu-content;
             }
 
@@ -1952,16 +1973,16 @@
                 }
 
                 .col-head-info {
-                    padding-top: $default-margin-verysmall;
+                    padding-top: var(--#{$prefix}default-margin-verysmall);
                     padding-left: 0; // remove bootstrap gutter here to extend space available for menu items
                     display: flex;
                     flex-direction: column;
                 }
 
                 .header-title {
-                    @include heading-base(false);
-                    padding-top: $default-margin-verysmall;
-                    padding-bottom: $default-margin-verysmall;
+                    @include heading-base;
+                    padding-top: var(--#{$prefix}default-margin-verysmall);
+                    padding-bottom: var(--#{$prefix}default-margin-verysmall);
                     flex-basis: auto;
                     flex-grow: 10;
                     justify-content: center;
@@ -2013,7 +2034,7 @@
     background: $fh-header-bg-color;
 }
 
-@if (not $feature-use-burger-header) {
+@if ($feature-header-type == 'flexible') {
     // sticky / fixed header
     @include sticky-header-globals($nav-breakpoint-sticky-header);
 }
@@ -2035,7 +2056,7 @@ html.opencms-group-editor {
             }
         }
 
-        @include media-breakpoint-down(md) {
+        @include media-breakpoint-down(lg) {
 
             .area-header {
                 .hidden-xs,

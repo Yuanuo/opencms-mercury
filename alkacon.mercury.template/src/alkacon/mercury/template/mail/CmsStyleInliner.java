@@ -19,16 +19,21 @@
 
 package alkacon.mercury.template.mail;
 
+import org.opencms.main.CmsLog;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jsoup.select.Selector.SelectorParseException;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
@@ -42,6 +47,9 @@ import com.steadystate.css.parser.SACParserCSS3;
 /** Utility class to inline CSS styles into HTML. */
 public class CmsStyleInliner {
 
+    /** The log object for this class. */
+    private static final Log LOG = CmsLog.getLog(CmsStyleInliner.class);
+
     /** HTML attribute "style". */
     private static final String STYLE_ATTR = "style";
     /** HTML attribute "class". */
@@ -49,6 +57,7 @@ public class CmsStyleInliner {
 
     /**
      * Inlines the provided styles in the given HTML and returns the resulting HTML.
+     *
      * @param html the HTML to inline styles for.
      * @param css reader for the styles to inline.
      * @param removeClasses flag, indicating if class attribures should be removed after inlining styles.
@@ -71,20 +80,29 @@ public class CmsStyleInliner {
             if (item instanceof CSSStyleRule) {
                 CSSStyleRule styleRule = (CSSStyleRule)item;
                 String cssSelector = styleRule.getSelectorText();
-                //Skip rules with meta-selectors since they can't be inlined.
-                if (cssSelector.contains(":")) {
-                    continue;
-                }
-                Elements elements = document.select(cssSelector);
-                for (Element element : elements) {
-                    Map<String, String> elementStyles = allElementsStyles.computeIfAbsent(
-                        element,
-                        k -> new LinkedHashMap<>());
-                    CSSStyleDeclaration style = styleRule.getStyle();
-                    for (int propertyIndex = 0; propertyIndex < style.getLength(); propertyIndex++) {
-                        String propertyName = style.item(propertyIndex);
-                        String propertyValue = style.getPropertyValue(propertyName);
-                        elementStyles.put(propertyName, propertyValue);
+                try {
+                    Elements elements = document.select(cssSelector);
+                    for (Element element : elements) {
+                        Map<String, String> elementStyles = allElementsStyles.computeIfAbsent(
+                            element,
+                            k -> new LinkedHashMap<>());
+                        CSSStyleDeclaration style = styleRule.getStyle();
+                        for (int propertyIndex = 0; propertyIndex < style.getLength(); propertyIndex++) {
+                            String propertyName = style.item(propertyIndex);
+                            String propertyValue = style.getPropertyValue(propertyName);
+                            elementStyles.put(propertyName, propertyValue);
+                        }
+                    }
+                } catch (SelectorParseException e) {
+                    if (LOG.isInfoEnabled()) {
+                        String errorMessage = "CSS selector "
+                            + styleRule.getSelectorText()
+                            + " cannot be inlined and thus is ignored.";
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(errorMessage, e);
+                        } else {
+                            LOG.info(errorMessage);
+                        }
                     }
                 }
             }
@@ -103,6 +121,8 @@ public class CmsStyleInliner {
             }
         }
 
+        document.outputSettings().prettyPrint(true);
+        document.outputSettings().indentAmount(0);
         return document.html();
     }
 }

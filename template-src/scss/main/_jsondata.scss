@@ -29,7 +29,7 @@
     // see https://css-tricks.com/making-sass-talk-to-javascript-with-json/
     &::before {
         display: none;
-        content: '{#{$themeJSON}}';
+        content: "{#{$themeJSON}}";
     }
 }
 
@@ -37,40 +37,47 @@
 
     &::before {
         display: none;
-        content: 'xs';
+        content: "xs";
     }
     @include media-breakpoint-up(sm) {
         &::before {
-            content: 'sm';
+            content: "sm";
         }
     }
     @include media-breakpoint-up(md) {
         &::before {
-            content: 'md';
+            content: "md";
         }
     }
     @include media-breakpoint-up(lg) {
         &::before {
-            content: 'lg';
+            content: "lg";
         }
     }
     @include media-breakpoint-up(xl) {
         &::before {
-            content: 'xl';
+            content: "xl";
+        }
+    }
+    @include media-breakpoint-up(xxl) {
+        &::before {
+            content: "xxl";
         }
     }
 
     &::after {
         display: none;
         content: '{' +
-            '"xsMax":' + breakpoint-max(xs) + ', ' +
+            '"xsMax":' + (breakpoint-min(sm) - 0.02px ) + ', ' +
             '"smMin":' + breakpoint-min(sm) + ', ' +
-            '"smMax":' + breakpoint-max(sm) + ', ' +
+            '"smMax":' + breakpoint-max(md) + ', ' +
             '"mdMin":' + breakpoint-min(md) + ', ' +
-            '"mdMax":' + breakpoint-max(md) + ', ' +
+            '"mdMax":' + breakpoint-max(lg) + ', ' +
             '"lgMin":' + breakpoint-min(lg) + ', ' +
-            '"lgMax":' + breakpoint-max(lg) + ', ' +
+            '"lgMax":' + breakpoint-max(xl) + ', ' +
             '"xlMin":' + breakpoint-min(xl) + ', ' +
+            '"xlMax":' + breakpoint-max(xxl) + ', ' +
+            '"xxlMin":' + breakpoint-min(xxl) + ', ' +
             '"bhTogTop":' + '"' + $bh-nav-mobile-toggle-top + '",' +
             '"navMobMax":' + breakpoint-mobile-max() + ', ' +
             '"navDeskMin":' + breakpoint-desktop-min() + ', ' +
@@ -85,7 +92,7 @@
 
     &.bg-colors {
 
-        $JSON: get-json($bg-colors);
+        $JSON: get-json($theme-colors);
         &::before {
             display: none;
             content: '[#{$JSON}]';

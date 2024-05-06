@@ -27,7 +27,7 @@
     description="The description of the download resource.
     Not required in case a CmsResource is provided - in this case the information can be read from the resource properties." %>
 
-<%@ attribute name="resCoypright" type="java.lang.String" required="false"
+<%@ attribute name="resCopyright" type="java.lang.String" required="false"
     description="The copyright of the download resource.
     Not required in case a CmsResource is provided - in this case the information can be read from the resource properties." %>
 
@@ -88,7 +88,7 @@
         <c:set var="resTitle"           value="${empty resTitle ? propertiesLocale['Title'] : resTitle}" />
         <c:set var="resDescription"     value="${empty resDescription ? propertiesLocale['Description'] : resDescription}" />
         <c:set var="resCopyright"       value="${empty resCopyright ? propertiesLocale['Copyright'] : resCopyright}" />
-        <c:set var="resDate"            value="${empty resDate ? res.dateLastModified : resDate}" />
+        <c:set var="resDate"            value="${empty resDate ? (res.dateReleased != 0 ? res.dateReleased : res.dateLastModified) : resDate}" />
     </c:when>
     <c:otherwise>
         <%
@@ -124,37 +124,37 @@
 
     <c:choose>
         <c:when test="${resSuffix eq 'TXT'}">
-            <c:set var="icon">fa-file-text-o</c:set>
+            <c:set var="icon">file-text-o</c:set>
         </c:when>
-        <c:when test="${fn:startsWith(mimeType, 'image')}">
-            <c:set var="icon">fa-file-image-o</c:set>
+        <c:when test="${fn:startsWith(mimeType, 'image') or resSuffix eq 'AI' or resSuffix eq 'EPS'}">
+            <c:set var="icon">file-image-o</c:set>
         </c:when>
         <c:when test="${fn:startsWith(mimeType, 'video')}">
-            <c:set var="icon">fa-file-video-o</c:set>
+            <c:set var="icon">file-video-o</c:set>
         </c:when>
         <c:when test="${fn:startsWith(mimeType, 'audio')}">
-            <c:set var="icon">fa-file-audio-o</c:set>
+            <c:set var="icon">file-audio-o</c:set>
         </c:when>
         <c:when test="${resSuffix eq 'PDF'}">
-            <c:set var="icon">fa-file-pdf-o</c:set>
+            <c:set var="icon">file-pdf-o</c:set>
         </c:when>
         <c:when test="${resSuffix eq 'HTML' or resSuffix eq 'HTM'}">
-            <c:set var="icon">fa-html5</c:set>
+            <c:set var="icon">html5</c:set>
         </c:when>
         <c:when test="${resSuffix eq 'DOC' or resSuffix eq 'DOCX'}">
-            <c:set var="icon">fa-file-word-o</c:set>
+            <c:set var="icon">file-word-o</c:set>
         </c:when>
         <c:when test="${resSuffix eq 'XLS' or resSuffix eq 'XLSX'}">
-            <c:set var="icon">fa-file-excel-o</c:set>
+            <c:set var="icon">file-excel-o</c:set>
         </c:when>
         <c:when test="${resSuffix eq 'PPT' or resSuffix eq 'PPTX'}">
-            <c:set var="icon">fa-file-powerpoint-o</c:set>
+            <c:set var="icon">file-powerpoint-o</c:set>
         </c:when>
         <c:when test="${resSuffix eq 'ZIP' or resSuffix eq 'RAR'}">
-            <c:set var="icon">fa-file-archive-o</c:set>
+            <c:set var="icon">file-archive-o</c:set>
         </c:when>
         <c:otherwise>
-            <c:set var="icon">fa-file-o</c:set>
+            <c:set var="icon">file-o</c:set>
         </c:otherwise>
     </c:choose>
 
@@ -180,7 +180,7 @@
             <%-- ###### Compact / Minimal display format ###### --%>
             <div class="dl-teaser dl-teaser-compact${showFileName ? ' dl-show-file' : ''}${showDescription ? ' dl-show-desc' : ''}">
                 <a href="${resLink}" class="dl-link dl-link-disp" target="_blank" rel="noopener" rel="noopener" title="<fmt:message key="msg.page.display"/>"><%----%>
-                    <span class="dl-type fa ${icon}"></span><%----%>
+                    <mercury:icon icon="${icon}" tag="span" cssWrapper="dl-type" />
                     <span class="dl-content"><%----%>
                         <mercury:heading level="${hsize}" text="${title}" css="dl-title" ade="${false}" />
                         <c:if test="${showFileName and not empty resTitle}">
@@ -205,7 +205,7 @@
                             <span class="dl-size"><span>${resSize}</span></span><%----%>
                             <span class="dl-date"><span>${resDateStr}</span></span><%----%>
                         </span><%----%>
-                        <span class="dl-dl fa fa-cloud-download"></span><%----%>
+                        <mercury:icon icon="cloud-download" tag="span" cssWrapper="dl-dl" />
                     </a><%----%>
                 </c:if>
             </div><%----%>
@@ -244,7 +244,7 @@
                             <div class="dl-desc">${resDescription}</div><%----%>
                         </c:if>
                         <a href="${resLink}" download class="btn dl-btn"><%----%>
-                            <span class="fa fa-cloud-download"></span><%----%>
+                            <mercury:icon icon="cloud-download" tag="span" />
                             <fmt:message key="msg.page.download"/><%----%>
                         </a><%----%>
                     </div><%----%>

@@ -16,49 +16,53 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /**********
- * Source file: _sections.scss
+ * Source file: _section.scss
  */
 
 // Icon box formatter
 
+.type-iconbox,
+.imageflip {
+    @include set-box-colors($main-theme, true, true);
+}
+
 .type-iconbox {
-    $color: check-text-color($main-theme);
-    $color-link: check-text-color($main-theme, $link-color);
-    $color-hover: check-text-color($main-theme, $link-hover-color);
+    color: var(--#{$prefix}body-color);
+    background-color: var(--#{$prefix}body-bg);
 
-    background-color: $main-theme;
-    color: $color;
-
-    padding: $default-margin $default-margin-small;
+    padding: var(--#{$prefix}box-padding);
     text-align: center;
     display: flex;
     flex-direction: column;
 
-    @include round-corners($iconbox-border-radius, true);
+    border-radius: $iconbox-border-radius;
+    overflow: hidden;
+    z-index: $overflow-z-index;
+
+    @if ($icon-box-use-colored-a) {
+        @include colored-a(inherit, var(--#{$prefix}link-color));
+    } @else {
+        @include colored-a(inherit, none);
+    }
 
     &:only-child {
         flex-grow: 1;
         flex-shrink: 1;
     }
 
-    @include colored-a($color-link, $color-hover);
-    &.box {
-        // overwrite box link and hover colors
-        @include colored-a(inherit, inherit);
-        padding: $default-margin $default-margin-small;
-    }
-
     .icon-title {
         color: inherit;
         flex-grow: 1;
-        margin-bottom: $default-margin;
-        font-size: $h4-font-size;
-        line-height: $line-height-headings;
+        margin-bottom: var(--#{$prefix}box-padding);
+        line-height: $headings-line-height;
+        @if ($icon-box-fix-heading-size) {
+            font-size: $h4-font-size;
+        }
         @include use-hyphens-headings(true);
     }
 
     .icon-text {
-        margin-top: $default-margin;
+        margin-top: var(--#{$prefix}box-padding);
         margin-bottom: 0;
         > p {
             overflow-wrap: anywhere; // dont use hyphens: auto
@@ -75,6 +79,8 @@
         // no rem based font size here, we want the icon to be same size over all devices
         flex-grow: 2;
         font-size: 32px;
+        display: flex;
+        justify-content: center;
     }
 
     .icon-link {
@@ -84,18 +90,59 @@
         text-decoration: none;
         &:hover {
             text-decoration: none;
+            h1, h2, h3, h4, h5, h6 {
+                text-decoration: none;
+            }
         }
     }
 
-    @include media-breakpoint-up(md) {
-        // making the icon box padding larger on large screens
-        padding: $default-margin; // extending the margin
-        &.box {
-            padding: $default-margin;
+    @if ($icon-box-fix-heading-size) {
+        @include media-breakpoint-up(md) {
+            .icon-title {
+                font-size: $h3-font-size;
+            }
         }
-        .icon-title {
-            font-size: $h3-font-size;
-            line-height: $line-height-headings;
+    }
+}
+
+.type-linkbox {
+    flex-grow: 1;
+    @include text-tile(false);
+
+    > a {
+        &,
+        &:focus,
+        &:hover {
+            color: var(--#{$prefix}body-color);
+            text-decoration: none;
+        }
+        &:hover {
+            span.piece-text-link {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .linkbox-link,
+    .linkbox-content.piece.full,
+    .linkbox-content.piece.full .body {
+        display: flex;
+        flex-basis: auto;
+        flex-direction: column;
+        flex-grow: 100000;
+    }
+    .linkbox-content.piece.full .heading  {
+        flex-grow: 1;
+    }
+
+    &.valign-center {
+        .linkbox-link,
+        .linkbox-content.piece.full {
+            justify-content: center;
+        }
+        .linkbox-content.piece.full .body,
+        .linkbox-content.piece.full .heading {
+            flex-grow: initial;
         }
     }
 }
@@ -103,6 +150,8 @@
 // Image / text flip animation, see https://davidwalsh.name/css-flip#ieflip
 
 .imageflip {
+    color: var(--#{$prefix}body-color);
+
     perspective: 1000px;
     transform-style: preserve-3d;
     position: relative;
@@ -158,11 +207,13 @@
     }
 
     .text-section {
-        @include round-corners($image-border-radius);
-        padding: $default-margin;
+        border-radius: var(--#{$prefix}image-border-radius);
+        padding: var(--#{$prefix}box-padding);
         height: 100%; // works because .flipper has the height fixed with padding-bottom
         overflow: auto; // shows scrollbars on demand
-        background-color: $grey-lighter;
+
+        color: var(--#{$prefix}body-color);
+        background-color: var(--#{$prefix}body-bg);
 
         &.front:not(.noflip) {
             overflow: hidden; // if text is shown on front with flip, we can't scroll anyway
@@ -174,62 +225,35 @@
             position: absolute;
             top: 0;
             left: 0;
-            padding: $default-margin-small;
+            padding: calc(0.5 * var(--#{$prefix}box-padding));
             z-index: #{$overflow-z-index + 4}; // 2 above copyright z-index
 
             .text-heading {
-                @include round-corners($image-border-radius);
                 @include use-hyphens-headings(true);
-                background-color: transparentize($grey-lighter, 0.25);
-                padding: $default-margin-small;
+                border-radius: var(--#{$prefix}image-border-radius);
+                background-color: rgba(var(--#{$prefix}highlight-color-rgb), .75);
+                padding: calc(0.5 * var(--#{$prefix}box-padding));
                 margin-bottom: 0;
             }
         }
     }
 
     &.color-white {
-        color: get-text-color($body-bg);
+        @include set-box-colors($body-bg);
 
         .text-section {
-            background-color: $body-bg;
-            border: 1px solid $grey-lighter;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            // required in order to override colors set with 'box'
-            color: get-text-color($body-bg);
+            border: 1px solid var(--#{$prefix}body-color);
         }
     }
 
     &.color-grey {
-        color: get-text-color($grey-lighter);
-        h1, h2, h3, h4, h5, h6 {
-            color: get-text-color($grey-lighter);
-        }
+        @include set-box-colors($grey-lighter);
     }
 
     &.color-theme {
-        color: get-text-color($main-theme);
-
-        .text-section {
-            background-color: $main-theme;
-
-            *:not(a):not(span) {
-                color: get-text-color($main-theme);
-            }
-
-            .btn {
-                border-color: $white;
-                background-color: $white;
-                color: $text-dark;
-            }
-        }
+        // set-box-colors($main-theme) is not required because the default is set to $main-theme
         .image-section .heading .text-heading {
-            background-color: transparentize($main-theme, 0.35);
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            color: get-text-color($main-theme);
+            background-color: rgba(var(--#{$prefix}body-bg-rgb), .75);
         }
     }
 }
@@ -241,13 +265,13 @@
         .effect-flipraise.imageflip {
             &:hover {
                 .back {
-                    top: #{-2 * $default-margin};
-                    left: #{-2 * $default-margin};;
+                    top: calc(-2 * var(--#{$prefix}box-padding));
+                    left: calc(-2 * var(--#{$prefix}box-padding));
                     box-shadow: 0 0 15px 0 rgba(0,0,0,0.25);
-                    width: calc(100% + #{4 * $default-margin});
-                    height: calc(100% + #{4 * $default-margin});
+                    width: calc(100% + (4 * var(--#{$prefix}box-padding)));
+                    height: calc(100% + (4 * var(--#{$prefix}box-padding)));
                     &.text-section {
-                        padding: $default-margin;
+                        padding: var(--#{$prefix}box-padding);
                     }
                 }
             }

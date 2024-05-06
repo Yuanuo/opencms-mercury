@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import PhotoSwipe   from 'photoswipe';
-import PhotoSwipeUi from 'photoswipe/dist/photoswipe-ui-default';
+
+import PhotoSwipe from 'photoswipe';
 
 // the global objects that must be passed to this module
 var jQ;
@@ -31,69 +31,36 @@ var m_autoLoadSeries = [];
 // all image galleries that have been initialized as object
 var m_galleries = {};
 
-function appendPhotoSwipeToBody() {
-
-jQ('body').append(
-'<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">' +
-    '<div class="pswp__bg"></div>' +
-    '<div class="pswp__scroll-wrap">' +
-        '<div class="pswp__container">' +
-            '<div class="pswp__item"></div>' +
-            '<div class="pswp__item"></div>' +
-            '<div class="pswp__item"></div>' +
-        '</div>' +
-        '<div class="pswp__ui pswp__ui--hidden">' +
-            '<div class="pswp__top-bar">' +
-                '<div class="pswp__counter"></div>' +
-                '<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>' +
-                '<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>' +
-                '<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>' +
-                '<div class="pswp__preloader">' +
-                    '<div class="pswp__preloader__icn">' +
-                        '<div class="pswp__preloader__cut">' +
-                            '<div class="pswp__preloader__donut"></div>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">' +
-                '<div class="pswp__share-tooltip"></div>' +
-            '</div>' +
-            '<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>' +
-            '<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>' +
-            '<div class="pswp__caption">' +
-                '<div class="pswp__caption__center"></div>' +
-            '</div>' +
-        '</div>' +
-    '</div>' +
-'</div>'
-);}
-
 
 function openPhotoSwipe(index, id) {
 
-    var pswpElement = document.querySelectorAll('.pswp')[0];
     var options = {
-        barsSize : {top:0, bottom:0},
-        history : false,
-        focus : true,
-        showHideOpacity : true,
-        getThumbBoundsFn : false,
-        showAnimationDuration : 0,
+        bgOpacity: 0.9,
         index : index,
-        closeEl : true,
-        counterEl : true
+        showHideAnimationType: 'none'
     };
 
-    var images = m_galleries[id].images;
-    var photoSwipe = new PhotoSwipe(pswpElement, PhotoSwipeUi, images, options);
-    // images could use .msrc pohotoswipe attribute but currently don't
-    // would have to calculate small image for series and large for fullscreen
-    // see http://photoswipe.com/documentation/getting-started.html#creating-slide-objects-array
-    // for possible resonsive image support see
-    // see http://photoswipe.com/documentation/responsive-images.html
+    options.dataSource = m_galleries[id].images;
+    var photoSwipe = new PhotoSwipe(options);
+
+    photoSwipe.on('uiRegister', function() {
+        photoSwipe.ui.registerElement({
+            name: 'caption',
+            order: 9,
+            isButton: false,
+            appendTo: 'root',
+            onInit: (el, pswp) => {
+                photoSwipe.on('change', () => {
+                    const currSlideData = photoSwipe.currSlide.data;
+                    el.innerHTML = '<div class="caption-wrapper">' + currSlideData.title + '</div>';
+                });
+            }
+        });
+    });
+
     photoSwipe.init();
 }
+
 
 function handleAutoLoaders() {
     if (m_autoLoadSeries != null) {
@@ -109,7 +76,6 @@ function handleAutoLoaders() {
 
 
 function render(imageSeries, page) {
-
     // disable the image series 'more' button
     var $moreButton = imageSeries.element.find(".more");
     $moreButton.off("click");
@@ -176,7 +142,11 @@ function render(imageSeries, page) {
         imageSeries.loaded = true;
         $moreButton.finish().fadeOut(1000);
     }
+
+    // trigger "imageseries:loaded" event
+    jQ('#' + imageSeries.id)[0].dispatchEvent(new CustomEvent("imageseries:loaded", { bubbles: true, cancelable: true }));
 }
+
 
 function collect(imageSeries) {
 
@@ -193,13 +163,14 @@ function collect(imageSeries) {
             imageData.id = imageSeries.id;
             imageData.index = index;
             imageData.title = decodeURIComponent(imageData.caption);
+            imageData.alt = decodeURIComponent(imageData.alt);
             imageData.page = 0;
 
             // calculate image width and height by parsing the property string
             if (imageData.size.indexOf(',') >= 0 && imageData.size.indexOf(':') >= 0) {
                 var size = imageData.size.split(',');
-                imageData.w = size[0].split(':')[1];
-                imageData.h = size[1].split(':')[1];
+                imageData.width  = size[0].split(':')[1];
+                imageData.height = size[1].split(':')[1];
             }
             imageSrc.push(imageData.tilesrc);
             images.push(imageData);
@@ -210,6 +181,7 @@ function collect(imageSeries) {
     imageSeries.images = images;
     render(imageSeries, 0);
 }
+
 
 function initImageSeries($elements) {
 
@@ -237,11 +209,16 @@ function initImageSeries($elements) {
     }
 }
 
+
 function initZoomers($elements) {
 
     var images = [];
     var imageSrc = [];
     var indexCount = -1;
+
+    const winWidth  = window.innerWidth  || document.documentElement.clientWidth  || document.body.clientWidth;
+    const winHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
     $elements.each(function(){
 
         var $this = jQ(this);
@@ -249,7 +226,7 @@ function initZoomers($elements) {
 
         var imageData = $this.data("imagezoom");
         if (typeof imageData.src !== 'undefined') {
-            if (DEBUG) console.info("Image zoom element found with direct path=" + imageData.src);
+            // if (DEBUG) console.info("Image zoom element found with direct path=" + imageData.src);
             addClick = ($this.closest('a').length == 0);
         } else if ($this.is("a")) {
             imageData.src = $this.attr("href");
@@ -267,8 +244,23 @@ function initZoomers($elements) {
             if (typeof imageData.caption !== 'undefined') {
                 imageData.title = decodeURIComponent(imageData.caption);
             }
+            if (typeof imageData.alt !== 'undefined') {
+                imageData.alt = decodeURIComponent(imageData.alt);
+            }
             if (existingIndex < 0) {
                 images.push(imageData);
+            }
+            if (imageData.src.indexOf('.svg') > 0) {
+                if (imageData.width < (0.75 * winWidth) && (imageData.height < (0.75 * winHeight))) {
+                    var factor;
+                    if (imageData.width > imageData.height) {
+                        factor = (0.75 * winWidth) / imageData.width;
+                    } else {
+                        factor = (0.75 * winHeight) / imageData.height;
+                    }
+                    imageData.width = imageData.width * factor;
+                    imageData.height = imageData.height * factor;
+                }
             }
             imageSrc.push(imageData.src);
             if (addClick) {
@@ -284,7 +276,7 @@ function initZoomers($elements) {
                 });
             }
 
-            if (DEBUG) console.info("Image zoom element added path=" + imageData.src + ", index=" + imageData.index);
+            // if (DEBUG) console.info("Image zoom element added path=" + imageData.src + ", index=" + imageData.index);
         }
     });
 
@@ -320,7 +312,6 @@ export function init(jQuery, debug) {
 
     if ($imageSeriesElements.length > 0 || $imageZoomElements.length > 0) {
         // We have found image for a series, append the PhotoSwipe markup
-        appendPhotoSwipeToBody();
         if ($imageSeriesElements.length > 0) {
             initImageSeries($imageSeriesElements);
         }

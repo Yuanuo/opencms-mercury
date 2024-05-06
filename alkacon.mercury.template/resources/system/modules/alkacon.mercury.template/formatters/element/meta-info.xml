@@ -11,10 +11,12 @@
         <uuid>bfcede8b-81b3-462d-a663-9a158c2317c3</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-metainfo.description.formatter)]]></Description>
     <Rank><![CDATA[1000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
       </Types>
     </Match>
     <AutoEnabled>false</AutoEnabled>
@@ -34,6 +36,11 @@
     <MetaMapping>
       <Key><![CDATA[canonicalURL]]></Key>
       <Element><![CDATA[CanonicalURL]]></Element>
+      <Order><![CDATA[9000]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[Robots]]></Key>
+      <Element><![CDATA[Robots]]></Element>
       <Order><![CDATA[9000]]></Order>
     </MetaMapping>
     <MetaMapping>

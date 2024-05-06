@@ -19,106 +19,23 @@
  * Source file: _slider.scss
  */
 
-// import the slick-carousel distribution SCSS
-@import '../../plugins/slick-carousel/slick-theme';
-@import '../../plugins/slick-carousel/slick';
-
 // Slider settings
+
+$slider-button-position: 20px !default;
+$slider-button-size: 40px !default;
+$slider-dot-size: 20px !default;
+$slider-opacity-inactive: 0.5 !default;
+$slider-opacity-active: 1 !default;
+$slider-text-below-breakpoint: md !default;
 
 .type-slider {
 
-    // add fade in/out effects to text in slider
-    // this must not be active in general because for just on slide there is no effect required
-
-    // slide that is not visible
-    %slide-not-active {
-        .slide-wrapper {
-            .caption {
-                &.foreground,
-                &.background {
-                    opacity: 0;
-                }
-            }
-        }
-    }
-
-    // slide that is currently visible
-    %slide-is-active {
-        .slide-wrapper {
-            .caption {
-                &.foreground,
-                &.background {
-                    transition: opacity 1.5s linear;
-                }
-                &.foreground {
-                    opacity: 1.0;
-                }
-                &.background {
-                    opacity: $slider-background-opacity;
-                }
-            }
-        }
-    }
-
-    // hero slider - activate slides not visible before the slider is initialized
-    %show-hidden-slides-after-init {
-        .slide-wrapper.hide-noscript {
-            visibility: visible;
-            max-height: none;
-        }
-    }
-
-    // logo slider - activate all slides not visible before the slider is initialized
-    %show-hidden-logos-after-init {
-        overflow: visible;
-        max-height: none;
-    }
-
-    // slick slider special requirements
-    &.type-slick-slider {
-        .slick-slide {
-            @extend %slide-not-active;
-        }
-
-        .slick-slide.slick-current.slick-active   {
-            @extend %slide-is-active;
-        }
-
-        .slick-slide > div {
-            // removes strange 5px extra bottom margin
-            display: flex;
-        }
-
-        &.hero-slider {
-            .slide-definitions.slick-initialized {
-                @extend %show-hidden-slides-after-init;
-            }
-        }
-
-        &.logo-slider {
-            .slide-definitions.slick-initialized {
-                @extend %show-hidden-logos-after-init;
-            }
-        }
-
-        @include media-breakpoint-down(sm) {
-            &.text-below-on-xs {
-                // adjust slick slider controls for small screen sizes
-
-                .slick-dots {
-                    bottom: -10px;
-                }
-
-                .slick-arrow {
-                    display: none !important;
-                }
-
-                .slider-box.custom .slick-list {
-                    background-color: transparent;
-                }
-            }
-        }
-    }
+    --#{$prefix}slider-slide-border-radius: #{$slider-slide-border-radius};
+    --#{$prefix}slider-caption-border-radius: #{$slider-caption-border-radius};
+    // --#{$prefix}slider-bg: var(--#{$prefix}main-theme-rgb);
+    // --#{$prefix}slider-fg: var(--#{$prefix}main-theme-fg);
+    // --#{$prefix}slider-caption-top: var(--#{$prefix}slider-bg);
+    // --#{$prefix}slider-caption-sub: var(--#{$prefix}slider-bg);
 
     &.hero-slider {
         // make sure not visible slides are hidden while loading
@@ -130,16 +47,9 @@
     }
 
     &.logo-slider {
-
-        // hide all the logo slides before the slider is initialized
-        .slide-definitions {
-            overflow: hidden;
-            max-height: 0;
-        }
-
         // optional paddings for logo sliders
         @each $space in $logo-slider-paddings {
-            > .lm-#{$space} {
+            .slider-box.lm-#{$space} {
                 margin-left: -#{$space}px;
                 margin-right: -#{$space}px;
                 .slide-wrapper .visual {
@@ -150,15 +60,176 @@
     }
 
     .slider-box {
+        position: relative;
+        overflow: hidden;
         // must set round corner here in case a custom bg color for caption has been set
-        // JSP does this as inline style attribute
-        // can not hide overflow because of dot buttons in XS view
-        @include round-corners($slider-slide-border-radius, false);
+        border-radius: var(--#{$prefix}slider-slide-border-radius);
+        // slider will be using the text over and below the image with full background color
+        // changing the --main-theme variables (e.g. when using "box" classes) should NOT change the slider colors
+        --#{$prefix}slider-bg: #{to-rgb($main-theme)};
+        --#{$prefix}slider-fg: #{$main-theme-fg};
+        --#{$prefix}slider-caption-top: var(--#{$prefix}slider-bg);
+        --#{$prefix}slider-caption-sub: var(--#{$prefix}slider-bg);
+
+        &.custom .caption {
+            // custom colored caption
+            background-color: transparent !important;
+            padding: 0;
+            border-radius: 0;
+
+            strong,
+            small {
+                display: inline-block; // important - do not remove even if next lines shows a warning
+                float: left;
+                clear: both;
+            }
+            &.right {
+                strong,
+                small {
+                    float: right;
+                }
+            }
+            &.center {
+                strong,
+                small {
+                    float: none;
+                }
+            }
+            strong {
+                background-color: rgb(var(--#{$prefix}slider-caption-top), $slider-background-opacity);
+                padding-top: var(--#{$prefix}default-margin-verysmall);
+                padding-bottom: var(--#{$prefix}default-margin-verysmall);
+            }
+            small {
+                background-color: rgb(var(--#{$prefix}slider-caption-sub), $slider-background-opacity);
+                padding-top: 2px;
+                padding-bottom: 2px;
+                margin-top: var(--#{$prefix}default-margin-verysmall);
+                &:nth-of-type(2) {
+                    margin-top: 0;
+                }
+            }
+
+            @include media-breakpoint-up(md) {
+                &.center .subcaption br {
+                    display: block;
+                }
+                strong,
+                small {
+                    border-radius: var(--#{$prefix}slider-caption-border-radius);
+                }
+            }
+        }
+    }
+
+    .slide-definitions {
+        display: flex;
+    }
+
+    .slide-container,
+    .slide-wrapper {
+        border-radius: var(--#{$prefix}slider-slide-border-radius);
+        overflow: hidden;
+        z-index: $overflow-z-index;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 10;
     }
 
     .slide-wrapper {
-        position: relative;
-        @include round-corners($slider-slide-border-radius, true);
+        .caption {
+            @include use-hyphens-headings;
+            padding: $slider-caption-padding;
+            position: absolute;
+            max-width: calc(100% - (2 * var(--#{$prefix}default-margin)));
+            background-color: rgb(var(--#{$prefix}slider-bg), $slider-background-opacity);
+            border-radius: var(--#{$prefix}slider-caption-border-radius);
+            overflow: hidden;
+            z-index: $overflow-z-index;
+
+            &.bottom {
+                bottom: var(--#{$prefix}default-margin);
+            }
+            &.top {
+                top: var(--#{$prefix}default-margin);
+            }
+            &.middle {
+                top: 50%;
+                transform: translate(0,-50%);
+            }
+
+            &.left {
+                left: var(--#{$prefix}default-margin);
+            }
+            &.right {
+                right: var(--#{$prefix}default-margin);
+                text-align: right;
+            }
+            &.center {
+                text-align: center;
+                white-space: nowrap;
+                left: 50%;
+                transform: translate(-50%,0);
+            }
+
+            &.middle.center {
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%,-50%);
+            }
+
+            .subcaption br {
+                display: none;
+            }
+
+            strong,
+            small {
+                display: block;
+                margin: 0;
+                padding: 0 var(--#{$prefix}default-margin-small);
+                color: var(--#{$prefix}slider-fg);
+                text-shadow: $slider-text-shadow;
+                font-family: var(--#{$prefix}font-family-headings);
+                font-weight: var(--#{$prefix}font-weight-headings);
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
+            strong {
+                font-size: $h4-font-size;
+                line-height: $headings-line-height;
+            }
+
+            strong + .subcaption small:first-of-type {
+                margin-top: var(--#{$prefix}default-margin-verysmall);
+            }
+
+            small {
+                font-family: var(--#{$prefix}body-font-family);
+                font-size: var(--#{$prefix}body-font-size);
+                line-height: var(--#{$prefix}body-line-height);
+                &:nth-of-type(2) {
+                    margin-top: 0;
+                }
+            }
+
+            @include media-breakpoint-up(sm) {
+                strong {
+                    font-size: $h2-font-size;
+                }
+            }
+
+            @include media-breakpoint-up(md) {
+                strong {
+                    font-size: $h1-font-size;
+                }
+                small {
+                    font-size: $h3-font-size;
+                    line-height: $headings-line-height;
+                }
+            }
+        }
 
         .visual {
             position: relative;
@@ -186,233 +257,50 @@
             text-decoration: none;
         }
 
-        .caption {
-            padding: $slider-caption-padding;
-            position: absolute;
-            max-width: calc(100% - #{$default-margin * 3});
-            background-color: $main-theme;
-            @include round-corners($slider-caption-border-radius, true);
-
-            &.background {
-                opacity: 0.75;
-                background-color: $main-theme;
-                // background-image: linear-gradient($main-theme, $main-theme); // tricks WCAG test
-            }
-
-            &.foreground {
-                background-color: transparent;
-            }
-
-            &.bottom {
-                bottom: $default-margin;
-            }
-            &.top {
-                top: $default-margin;
-            }
-            &.middle {
-                top: 50%;
-                transform: translate(0,-50%);
-            }
-
-            &.left {
-                left: $default-margin;
-            }
-            &.right {
-                right: $default-margin;
-                text-align: right;
-            }
-            &.center {
-                text-align: center;
-                white-space: nowrap;
-                left: 50%;
-                transform: translate(-50%,0);
-            }
-
-            &.middle.center {
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%,-50%);
-            }
-
-            .subcaption br {
-                display: none;
-            }
-
-            strong,
-            small {
-                display: block;
-                margin: 0;
-                padding: 0 $default-margin-small;
-                color: transparent;
-                font-family: $font-family-headings;
-                font-weight: $font-weight-headings;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-            }
-
-            &.foreground {
-                strong,
-                small {
-                    color: get-text-color($main-theme);
-                    text-shadow: $slider-text-shadow;
-                }
-            }
-
-            strong {
-                font-size: $h4-font-size;
-                line-height: $line-height-headings;
-            }
-
-            strong + .subcaption small {
-                margin-top: $default-margin-verysmall;
-            }
-
-            small {
-                font-family: $font-family-base;
-                font-size: $font-size-base;
-                line-height: $line-height-base;
-
-                ~ small {
-                    margin-top: 0;
-                }
-            }
-
-            @include media-breakpoint-up(sm) {
-                strong {
-                    font-size: $h2-font-size;
-                }
-            }
-
-            @include media-breakpoint-up(md) {
-                strong {
-                    font-size: $h1-font-size;
-                }
-                small {
-                    font-size: $h3-font-size;
-                    line-height: $line-height-headings;
-                }
-            }
-        }
-
-        &.custom .caption {
-            background-color: transparent !important;
-            background-image: none !important;
-            padding: 0;
-            border-radius: 0;
-
-            strong,
-            small {
-                display: inline-block;
-                float: left;
-                clear: both;
-            }
-            &.right {
-                strong,
-                small {
-                    float: right;
-                }
-            }
-            &.center {
-                strong,
-                small {
-                    float: none;
-                }
-            }
-            &.background {
-                strong,
-                small {
-                    background-color: $main-theme;
-                    // background-image: linear-gradient($main-theme, $main-theme); // tricks WCAG test
-                }
-            }
-            strong {
-                padding-top: $default-margin-verysmall;
-                padding-bottom: $default-margin-verysmall;
-            }
-            small {
-                padding-top: 2px;
-                padding-bottom: 2px;
-                margin-top: $default-margin-verysmall;
-                &:nth-of-type(2) {
-                    margin-top: 0;
-                }
-            }
-
-            @include media-breakpoint-up(md) {
-                &.center .subcaption br {
-                    display: block;
-                }
-                strong,
-                small {
-                    @include round-corners($slider-caption-border-radius, false);
-                }
-            }
-        }
-
         .copyright {
              @include image-copyright;
         }
     }
 
-    @include media-breakpoint-down(sm) {
+
+    @include media-breakpoint-down($slider-text-below-breakpoint) {
         &.text-below-on-xs {
 
+            .slider-dots {
+                bottom: 2px;
+            }
+
+            .slider-nav-btn {
+                display: none !important;
+            }
+
             .slide-wrapper,
-            .image-src-box {
+            .image-src-box,
+            .image-src-box img {
                 border-bottom-left-radius: 0;
                 border-bottom-right-radius: 0;
             }
 
-            .slider-box {
-                background-color: $main-theme;
+            .captions {
+                background-color: rgb(var(--#{$prefix}slider-bg));
+                width: 100%;
+                display: flex;
+                flex-grow: 10;
             }
 
-            .slide-wrapper {
-                .caption {
-                    border-top-left-radius: 0;
-                    border-top-right-radius: 0;
-                    position: static;
-                    max-width: initial;
-                    min-height: calc(#{ceil($h2-font-size * 2)} + 10px);
-                    background-color: $main-theme;
-                    opacity: 1 !important;
-                    text-align: initial !important;
-                    white-space: initial !important;
-                    transform: initial !important;
-
-                    &.background {
-                        display: none;
-                    }
-                    &.foreground {
-                        strong,
-                        small {
-                            color: get-text-color($main-theme);
-                            text-shadow: $slider-text-shadow;
-                        }
-                    }
-                }
-                strong {
-                    font-size: $h2-font-size;
-                    line-height: $line-height-headings;
-                    font-weight: $font-weight-headings;
-                }
-                small {
-                    display: inline;
-                    padding: 0;
-                }
-                small ~ small {
-                    &::before {
-                        display: inline-block;
-                        content: "\00a0";
-                        // content: "\2013"; // ndash
-                    }
-                }
+            .slider-box {
                 &.custom {
+                    .captions {
+                        width: 100%;
+                        background-color: rgb(var(--#{$prefix}slider-caption-sub));
+                    }
                     .caption {
-                        background-color: transparent;
+                        width: 100%;
                         strong {
                             display: block;
-                            padding: $default-margin-verysmall $default-margin-small;
+                            width: 100%;
+                            padding: var(--#{$prefix}default-margin-verysmall) var(--#{$prefix}default-margin-small);
+                            background-color: rgb(var(--#{$prefix}slider-caption-top));
                         }
                         strong, small {
                             float: none;
@@ -424,25 +312,303 @@
                         }
                     }
                 }
+            }
+
+            .slide-wrapper {
+                .caption {
+                    border-top-left-radius: 0;
+                    border-top-right-radius: 0;
+                    position: static;
+                    max-width: initial;
+                    min-height: calc(#{ceil($h2-font-size * 2)} + 10px);
+                    background-color: rgb(var(--#{$prefix}slider-bg));
+                    opacity: 1 !important;
+                    text-align: initial !important;
+                    white-space: initial !important;
+                    transform: initial !important;
+                }
+                strong {
+                    font-size: $h2-font-size;
+                    line-height: $headings-line-height;
+                    font-weight: var(--#{$prefix}font-weight-headings);
+                }
+                small {
+                    display: inline;
+                    padding: 0;
+                }
+                small:nth-of-type(2) {
+                    &::before {
+                        display: inline-block;
+                        content: "\00a0";
+                    }
+                }
                 .subcaption {
                     display: block;
-                    padding: $default-margin-verysmall $default-margin-small;
+                    padding: var(--#{$prefix}default-margin-verysmall) var(--#{$prefix}default-margin-small);
                 }
             }
         }
     }
 }
 
+// styles that apply only in case it an Embla / JS controlled slider instance with multiple slides
+.use-embla-slider {
 
-// Width restrictions for slick slider
-html.noscript  {
-    .slide-count {
-        float: left;
+    &.hero-slider {
+        .slider-initialized {
+            // activate slides not visible before the slider was initialized
+            .slide-wrapper.hide-noscript {
+                visibility: visible;
+                max-height: none;
+            }
+        }
+        .mw-0 .slide-wrapper {
+            margin-right: 0;
+        }
+        .mw-sm .slide-wrapper {
+            margin-right: var(--#{$prefix}default-margin-small);
+        }
+        .mw-md .slide-wrapper {
+            margin-right: var(--#{$prefix}default-margin);
+        }
+        .mw-lg .slide-wrapper {
+            margin-right: calc(2 * var(--#{$prefix}default-margin));
+        }
+        .slide-wrapper {
+            flex: 0 0 100%;
+
+            // fade in/out effect for slide captions (only on hero slider with multiple slides)
+            .caption {
+                transition: opacity 1.5s linear;
+                opacity: 0;
+            }
+
+            &.slide-active {
+                .caption {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .tr-timed {
+            &:not(.slider-initialized) {
+                * {
+                    visibility: hidden;
+                }
+            }
+        }
+
+        .tr-fade:not(.is-dragging) {
+            &.slider-initialized {
+                z-index: 0;
+
+                .slide-definitions {
+                    transform: none !important;
+                    display: grid;
+                }
+
+                .slide-wrapper {
+                    transform: none !important;
+                    grid-row: 1;
+                    grid-column: 1;
+                    opacity: 0;
+                    z-index: 1;
+                    transition: opacity 2s;
+
+                    &.slide-active {
+                        opacity: 1;
+                        z-index: 10;
+                        transition: opacity 1.5s;
+                    }
+                }
+            }
+
+            &.sp-slow {
+                .slide-wrapper {
+                    transition: opacity 2.5s;
+
+                    &.slide-active {
+                        transition: opacity 3s;
+                    }
+                }
+            }
+
+            &.sp-fast {
+                .slide-wrapper {
+                    transition: opacity 1s;
+
+                    &.slide-active {
+                        transition: opacity 0.75s;
+                    }
+                }
+            }
+        }
     }
-    @for $cols from 1 through 12 {
-        .slide-count-#{$cols} {
-            @extend .slide-count;
-            width: divide(100%, $cols);
+
+    &.logo-slider {
+        .all-in-view {
+            .slide-definitions {
+                justify-content: center;
+            }
+            .slider-nav-btn {
+                display: none;
+            }
+        }
+    }
+}
+
+.slider-box {
+    button,
+    [type="button"] {
+        -webkit-appearance: auto; // important for safari
+        border: none;
+        color: transparent;
+        background-color: transparent;
+        display: block;
+        line-height: 0px;
+        font-size: 0px;
+        cursor: pointer;
+    }
+}
+
+.slider-nav-btn {
+    display: flex;
+    position: absolute;
+    bottom: 50%;
+    transform: translateY(50%);
+    z-index: 1100;
+
+    padding: 0;
+    margin: 0;
+
+    opacity: 0;
+    transition: opacity 0.5s linear;
+
+    &:hover,
+    &:focus {
+        opacity: $slider-opacity-active;
+    }
+
+    &::before {
+        content: " ";
+        display: block;
+        width: $slider-button-size;
+        height: $slider-button-size;
+        background-size: $slider-button-size;
+    }
+
+    &.prev-btn,
+    &.next-btn {
+        &::before {
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2Ij4NCiAgPHBhdGggZD0iTTI1NSAxMjhhMTI3IDEyNyAwIDEgMS0yNTQtLjEgMTI3IDEyNyAwIDAgMSAyNTMuOS4xeiIvPg0KICA8cGF0aCBmaWxsPSIjZmZmIiBkPSJNMTQ0IDIyNGwzNi0zNi02MC02MCA2MC02MC0zNi0zNi05NiA5NnoiLz4NCjwvc3ZnPg0K");
+        }
+    }
+
+    &.prev-btn {
+        left: $slider-button-position;
+    }
+
+    &.next-btn {
+        right: $slider-button-position;
+        &::before {
+            transform: rotate(180deg);
+        }
+    }
+}
+
+.slider-dots {
+    display: flex;
+    position: absolute;
+    right: 50%;
+    transform: translateX(50%);
+    bottom: 5px;
+    z-index: 1100;
+
+    list-style: none;
+    text-align: center;
+
+    padding: 0;
+    margin: 0;
+
+    opacity: 0;
+    transition: opacity 0.5s linear;
+
+    li {
+        position: relative;
+        display: inline-block;
+        margin: 0 0.25rem;
+        padding: 0;
+
+        button {
+            margin: 0;
+            padding: 5px;
+
+            &::before {
+                content: " ";
+                display: block;
+                width: $slider-dot-size;
+                height: $slider-dot-size;
+                background-size: $slider-dot-size;
+                background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2Ij4NCiAgPHBhdGggZD0iTTI1NSAxMjhhMTI3IDEyNyAwIDEgMS0yNTQtLjEgMTI3IDEyNyAwIDAgMSAyNTMuOS4xeiIvPg0KICA8cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjA4IDEyOGE4MCA4MCAwIDEgMS0xNjAgMCA4MCA4MCAwIDAgMSAxNjAgMHoiLz4NCjwvc3ZnPg==");
+                opacity: $slider-opacity-inactive;
+            }
+
+            &:hover,
+            &:focus {
+                &::before {
+                    opacity: $slider-opacity-active;
+                }
+            }
+
+            &.active::before {
+                opacity: $slider-opacity-active;
+            }
+        }
+    }
+}
+
+html.mobile {
+    .slider-dots {
+        li button {
+            &:hover {
+                &::before {
+                    opacity: $slider-opacity-inactive;
+                }
+            }
+            &.active::before {
+                opacity: $slider-opacity-active;
+            }
+        }
+    }
+}
+
+html.keyboard-nav .type-slider  .slider-box,
+.type-slider .slider-box:hover {
+
+    .slider-nav-btn {
+        opacity: $slider-opacity-inactive;
+        &:hover,
+        &:focus {
+            opacity: $slider-opacity-active;
+        }
+    }
+
+    .slider-dots {
+        opacity: $slider-opacity-active;
+    }
+}
+
+html.noscript {
+    .use-embla-slider {
+
+        &.hero-slider {
+            .tr-timed {
+                &:not(.slider-initialized) {
+                    * {
+                        visibility: visible;
+                    }
+                }
+            }
         }
     }
 }

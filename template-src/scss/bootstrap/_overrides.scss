@@ -15,11 +15,49 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 // Hard override of Bootstrap variables to avoid map-merge defaults
 
 // Bootstrap colors are not used in Mecury
 $colors: ();
 
-// Boostrap theme colors are not used in Mecury
-$theme-colors: ();
+// Disable unwanted utilities
+$utilities: (
+    "order": (
+      responsive: true,
+      property: order,
+      values: (
+        first: -1,
+        0: 0,
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 4,
+        5: 5,
+        6: 6,
+        last: 6,
+      ),
+    ),
+    "justify-content": (
+      responsive: true,
+      property: justify-content,
+      values: (
+        start: flex-start,
+        end: flex-end,
+        center: center,
+        between: space-between,
+        around: space-around,
+        evenly: space-evenly,
+      )
+    ),
+    "float": (
+      responsive: true,
+      property: float,
+      values: (
+        right: right,
+        left: left,
+      )
+    )
+);
+
+// Bootstrap color variables that are reset to Mercury colors
+$table-border-color:            var(--#{$prefix}highlight-color);

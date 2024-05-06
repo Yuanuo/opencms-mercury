@@ -11,10 +11,12 @@
         <uuid>4117cfed-f31d-47fc-9bfb-5af36dc12979</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-tab.description.formatter.accordion)]]></Description>
     <Rank><![CDATA[500]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[tabs]]></ContainerType>
       </Types>
     </Match>

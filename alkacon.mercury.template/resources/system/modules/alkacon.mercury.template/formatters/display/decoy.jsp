@@ -6,6 +6,7 @@
 
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
@@ -28,10 +29,14 @@
     <c:set var="title"      value="${value.Title}" />
     <c:set var="preface"    value="${value.Preface}" />
 
+    <mercury:list-badge var="badge" type="decoy" test="${cms.isEditMode}" />
+
     <mercury:teaser-piece
-        cssWrapper="type-decoy${setCssWrapper}${setEffect}${invalidDecoy ? ' disabled' : ''}"
+        teaserClass="${setTeaserClass}"
+        cssWrapper="type-decoy${setCssWrapperAll}${invalidDecoy ? ' disabled' : ''}"
         intro="${setShowIntro ? intro : null}"
         headline="${title}"
+        headlineSuffix="${badge}"
         preface="${preface}"
         date="${value.Date.toInstanceDate}"
         paraText="${value.Text}"
@@ -45,6 +50,7 @@
         hsize="${setHsize}"
         dateFormat="${setDateFormat}"
         textLength="${setTextLength}"
+        headingInBody="${setHeadingInBody}"
         buttonText="${setButtonText}">
 
         <jsp:attribute name="markupVisual">

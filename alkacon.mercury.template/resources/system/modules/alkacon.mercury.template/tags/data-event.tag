@@ -13,6 +13,7 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
 
@@ -34,12 +35,12 @@
         <c:set var="preface"    value="${value['MetaInfo/Description']}" />
     </c:when>
     <c:otherwise>
-        <c:set var="preface"    value="${value['TeaserData/TeaserPreface'].isSet ? value['TeaserData/TeaserPreface'] : (value.Preface.isSet ? value.Preface : value.Paragraph.value.Text)}" />
+        <c:set var="preface"    value="${value['TeaserData/TeaserPreface'].isSet ? value['TeaserData/TeaserPreface'] : (value.Preface.isSet ? value.Preface : null)}" />
     </c:otherwise>
 </c:choose>
 <c:set var="image"      value="${value['TeaserData/TeaserImage'].isSet ? value['TeaserData/TeaserImage'] : (value.Image.isSet ? value.Image : value.Paragraph.value.Image)}" />
 
-<c:set var="url">${cms.site.url}<cms:link>${content.filename}</cms:link></c:set>
+<c:set var="url">${cms.site.url}<cms:link>${content.filename}</cms:link>?instancedate=${date.start.time}</c:set>
 
 <%--
 # JSON-LD Generation for Mercury event.
@@ -60,11 +61,17 @@
     </cms:jsonvalue>
 
     <c:if test="${not empty date}">
+        <c:set var="pattern">
+            <c:choose>
+                <c:when test="${date.wholeDay}">yyyy-MM-dd</c:when>
+                <c:otherwise>yyyy-MM-dd'T'HH:mm:ssXXX</c:otherwise>
+            </c:choose>
+        </c:set>
         <c:if test="${not empty date.start}">
-            <cms:jsonvalue key="startDate"><fmt:formatDate value="${date.start}" pattern="yyyy-MM-dd'T'HH:mm" /></cms:jsonvalue>
+            <cms:jsonvalue key="startDate"><fmt:formatDate value="${date.start}" pattern="${pattern}" /></cms:jsonvalue>
         </c:if>
         <c:if test="${not empty date.end and not (date.end eq date.start)}">
-            <cms:jsonvalue key="endDate"><fmt:formatDate value="${date.end}" pattern="yyyy-MM-dd'T'HH:mm" /></cms:jsonvalue>
+            <cms:jsonvalue key="endDate"><fmt:formatDate value="${date.end}" pattern="${pattern}" /></cms:jsonvalue>
         </c:if>
     </c:if>
 
@@ -85,11 +92,29 @@
         </mercury:image-vars>
     </c:if>
 
-    <mercury:location-vars data="${value.AddressChoice}" createJsonLd="${true}">
+    <mercury:location-vars data="${value.AddressChoice}" onlineUrl="${value.VirtualLocation}" fallbackOnlineUrl="${url}" createJsonLd="${true}">
         <cms:jsonvalue key="location" value="${locJsonLd}" />
+        <cms:jsonvalue key="eventAttendanceMode" value="${locAttendanceMode}" />
+        <cms:jsonvalue key="eventStatus" value="https://schema.org/EventScheduled" />
     </mercury:location-vars>
+
+    <c:if test="${value.Costs.isSet}">
+        <cms:jsonarray key="offers">
+        <c:forEach var="costs" items="${content.valueList.Costs}">
+            <cms:jsonobject>
+                <cms:jsonvalue key="@type" value="Offer" />
+                <cms:jsonvalue key="description" value="${costs.value.Label.toString}" />
+                <cms:jsonvalue key="price" value="${fn:replace(costs.value.Price.toString, ',', '.')}" />
+                <cms:jsonvalue key="priceCurrency" value="${costs.value.Currency.isSet ? costs.value.Currency.toString : 'EUR'}" />
+                <cms:jsonvalue key="url" value="${costs.value.LinkToPaymentService.value.URI.isSet ? costs.value.LinkToPaymentService.value.URI.toLink : null}" />
+            </cms:jsonobject>
+        </c:forEach>
+        </cms:jsonarray>
+    </c:if>
 </cms:jsonobject>
 
-<mercury:nl />
-<script type="application/ld+json">${cms.isOnlineProject ? jsonLd.compact : jsonLd.pretty}</script><%----%>
+<mercury:nl /><%----%>
+<script type="application/ld+json">
+    ${cms.isOnlineProject ? jsonLd.compact : jsonLd.pretty}
+</script><%----%>
 <mercury:nl />

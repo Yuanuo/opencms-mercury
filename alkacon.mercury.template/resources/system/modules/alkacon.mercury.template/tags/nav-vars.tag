@@ -8,6 +8,9 @@
 <%@ attribute name="params" type="java.util.Map" required="true"
     description="The parameters passed to the page."%>
 
+<%@ attribute name="navPathRes" type="org.opencms.jsp.CmsJspResourceWrapper" required="false"
+    description="The resource from the URI to display the the navigation for."%>
+
 
 <%@ variable name-given="currentPageUri" declare="true"
     description="The page uri of the navigation." %>
@@ -23,13 +26,21 @@
 
 
 <%-- Check for nav path parameter and use this if it exists --%>
-<c:set var="navpath"                    value="${params.navpath}" />
-<c:if test="${not empty navpath}">
-    <c:set var="navpathRes"             value="${cms.vfs.resource[navpath]}" />
-    <c:set var="navpathRes"             value="${not empty navpathRes and (navpathRes.propertySearch['mercury.navpath'] eq 'param') ? navpathRes : null}" />
-</c:if>
 
-<c:set var="currentPageFolder"          value="${empty navpathRes ? cms.requestContext.folderUri : navpathRes.sitePathFolder}" />
-<c:set var="currentPageUri"             value="${empty navpathRes ? cms.requestContext.uri : navpathRes.sitePath}" />
+<c:choose>
+    <c:when test="${not empty navPathRes}">
+        <%-- Skip other cases --%>
+    </c:when>
+    <c:when test="${not empty params.navpath}">
+        <c:set var="navPathRes"             value="${cms.vfs.resource[params.navpath]}" />
+        <c:set var="navPathRes"             value="${not empty navPathRes and (navPathRes.propertySearch['mercury.navpath'] eq 'param') ? navPathRes : null}" />
+    </c:when>
+    <c:when test="${not empty cms.meta.navPathRes}">
+        <c:set var="navPathRes"             value="${cms.vfs.resource[cms.meta.navPathRes]}" />
+    </c:when>
+</c:choose>
+
+<c:set var="currentPageFolder"          value="${empty navPathRes ? cms.requestContext.folderUri : navPathRes.sitePathFolder}" />
+<c:set var="currentPageUri"             value="${empty navPathRes ? cms.requestContext.uri : navPathRes.sitePath}" />
 
 <jsp:doBody/>

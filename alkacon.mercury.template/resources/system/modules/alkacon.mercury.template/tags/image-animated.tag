@@ -9,7 +9,7 @@
     description="The image to format. Must be a nested image content."%>
 
 <%@ attribute name="sizes" type="java.lang.String" required="false"
-    description="Container sizes to create image variations for." %>
+    description="Sizes (width in pixel) to create image variations for. This must be a comma separated list e.g. '100,200,400,800'." %>
 
 <%@ attribute name="ratio" type="java.lang.String" required="false"
     description="Can be used to scale the image in a specific ratio.
@@ -19,7 +19,7 @@
     description="Text used in the image 'alt' and 'title' attributes."%>
 
 <%@ attribute name="alt" type="java.lang.String" required="false"
-    description="Text used in the image 'alt'attribute." %>
+    description="Text used in the image 'alt' attribute." %>
 
 <%@ attribute name="setTitle" type="java.lang.Boolean" required="false"
     description="If 'true' a 'title' attribute is added to the generated image tag.
@@ -77,9 +77,12 @@
 <%@ variable name-given="imageCopyrightHtml" declare="true" %>
 <%@ variable name-given="imageTitle" declare="true" %>
 <%@ variable name-given="imageTitleCopyright" declare="true" %>
+<%@ variable name-given="imageDescription" declare="true" %>
+<%@ variable name-given="imageDescriptionCopyright" declare="true" %>
 <%@ variable name-given="imageWidth" declare="true" %>
 <%@ variable name-given="imageHeight" declare="true" %>
 <%@ variable name-given="imageOrientation" declare="true" %>
+<%@ variable name-given="imageIsSvg" declare="true" %>
 
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -100,10 +103,10 @@
 
 <c:choose>
     <c:when test="${addEffectPiece}">
-        <c:set var="effectWrapper" value="effect-piece " />
+        <c:set var="effectWrapper" value="effect-piece" />
     </c:when>
     <c:when test="${empty addEffectBox or addEffectBox}">
-        <c:set var="effectWrapper" value="effect-box " />
+        <c:set var="effectWrapper" value="effect-box" />
     </c:when>
 </c:choose>
 
@@ -115,30 +118,33 @@
             <mercury:image-zoomdata
                 src="${imageUrl}"
                 title="${imageTitle}"
+                alt="${empty imageDescription ? imageTitle : imageDescription}"
                 copyright="${imageCopyrightHtml}"
                 height="${imageHeight}"
                 width="${imageWidth}"
+                imageBean="${imageBean}"
             />
         </c:set>
     </c:if>
-    <div class="${effectWrapper}${cssWrapper}" ${attrWrapper}><%----%>
+    <mercury:div css="${effectWrapper}${not empty effectWrapper and not empty cssWrapper ? ' ':''}${cssWrapper}" attr="${attrWrapper}" test="${not empty effectWrapper or not empty cssWrapper or not empty attrWrapper}">
         <mercury:image-srcset
             imagebean="${imageBean}"
             sizes="${sizes}"
-            alt="${empty alt ? imageTitle : alt}"
-            title="${setTitle ? (showCopyright ? imageTitle : imageTitleCopyright) : null}"
+            alt="${empty alt ? (empty imageDescription ? imageTitle : imageDescription) : alt}"
+            title="${setTitle ? (showCopyright ? (empty imageDescription ? imageTitle : imageDescription) : (empty imageDescription ? imageTitleCopyright : imageDescriptionCopyright)) : null}"
             copyright="${showCopyright ? imageCopyrightHtml : null}"
-            cssImage="${empty effectWrapper ? '' : 'animated '}${cssImage}"
+            cssImage="${empty effectWrapper ? '' : 'animated'}${not empty effectWrapper and not empty cssImage ? ' ' : ''}${cssImage}"
             cssWrapper="${showImageZoom ? 'zoomer' : ''}"
             attrImage="${attrImage}"
             attrWrapper="${imageDndAttr}"
+            isSvg="${imageIsSvg}"
             zoomData="${zoomData}"
             noScript="${noScript}"
         />
         <%-- ####### JSP body inserted here ######## --%>
         <jsp:doBody/>
         <%-- ####### /JSP body inserted here ######## --%>
-    </div><%----%>
+    </mercury:div>
     <mercury:nl />
 </c:when>
 

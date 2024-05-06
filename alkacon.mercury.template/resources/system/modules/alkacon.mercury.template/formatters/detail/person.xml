@@ -12,10 +12,12 @@
         <uuid>bea1f1dd-7411-4ac6-a40b-e581d88bed99</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-person.description.formatter) %(key.type.general.description.detail.direct)]]></Description>
     <Rank><![CDATA[45000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[contact]]></ContainerType>
         <ContainerType><![CDATA[person]]></ContainerType>
       </Types>
@@ -67,6 +69,12 @@
       <IncludeName><![CDATA[showAddress.contact]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[showOrganization.organization]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[containerType.detail]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[compactLayout.contact]]></IncludeName>
     </Setting>
     <Setting>
@@ -74,6 +82,9 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showTitle.contact]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showNotice.contact]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showDescription.contact]]></IncludeName>
@@ -91,7 +102,7 @@
       <IncludeName><![CDATA[showImageZoom.true]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[showImageCopyright.default]]></IncludeName>
+      <IncludeName><![CDATA[showImageCopyright.false]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showVcard.contact]]></IncludeName>

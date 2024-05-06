@@ -11,10 +11,12 @@
         <uuid>86689f1e-147f-4f23-ac31-397faac8c066</uuid>
       </link>
     </Jsp>
-    <Rank><![CDATA[20000]]></Rank>
+    <Description><![CDATA[%(key.type.m-faq.description.formatter) %(key.type.general.description.teaser.elaborate) %(key.type.general.description.teaser.list-and-page)]]></Description>
+    <Rank><![CDATA[22000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[faq]]></ContainerType>
       </Types>
     </Match>
@@ -68,10 +70,16 @@
       <IncludeName><![CDATA[linkOption.listTeaser]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[detailLinkWin.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[buttonText.default]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showImageCopyright.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[headingInBody.hidden]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[listEntryMinHeight.125]]></IncludeName>

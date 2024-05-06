@@ -6,6 +6,7 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
 
 <mercury:init-messages>
@@ -16,20 +17,26 @@
 <c:set var="hsize"                  value="${setting.hsize.toInteger}" />
 <c:set var="iconClass"              value="${setting.iconClass.isSet ? setting.iconClass.toString : 'warning'}" />
 
-<c:set var="ade"                    value="${cms.isEditMode}"/>
+<c:set var="hasLink"                value="${value.Link.isSet and value.Link.value.URI.isSet}"/>
+<c:set var="ade"                    value="${not hasLink and cms.isEditMode}"/>
 
 <mercury:nl />
-<div class="element type-iconbox pivot${setCssWrapperAll}"><%----%>
-<mercury:nl />
+<div class="element type-iconbox pivot${hasLink ? ' fully-linked' : ''}${setCssWrapperAll}"><%----%>
 
     <mercury:link link="${value.Link}" setTitle="${true}" css="icon-link">
         <mercury:heading level="${hsize}" text="${value.Title}" css="icon-title" ade="${ade}" />
         <c:if test="${iconClass ne 'none'}">
-            <div class="icon-image fa fa-${iconClass}" aria-hidden="true" role="presentation"></div><%----%>
+            <mercury:icon icon="${iconClass}" tag="div" cssWrapper="icon-image" inline="${true}" />
+            <mercury:nl />
         </c:if>
-        <c:if test="${value.Text.isSet}">
-            <div class="icon-text" ${ade ? content.rdfa.Text : ''}>${value.Text}</div><%----%>
-        </c:if>
+        <c:choose>
+            <c:when test="${value.Text.isSet and fn:contains(value.Text.toString, 'href')}">
+                <div class="icon-text">${cms:stripHtml(value.Text)}</div><%----%>
+            </c:when>
+            <c:when test="${value.Text.isSet}">
+                <div class="icon-text" ${ade ? content.rdfa.Text : ''}>${value.Text}</div><%----%>
+            </c:when>
+        </c:choose>
     </mercury:link>
 
 </div><%----%>

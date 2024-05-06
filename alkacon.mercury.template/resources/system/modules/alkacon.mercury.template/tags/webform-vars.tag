@@ -24,6 +24,9 @@
     description="The title for the form.
     If not set, this is calculated from the provided form and booking contents." %>
 
+<%@ attribute name="dateFormat" type="java.lang.String" required="false"
+    description="The date format used to display the final registration date." %>
+
 
 <%@ variable name-given="form" declare="true"
     description="The initilized webform." %>
@@ -48,11 +51,34 @@
     This can occur in case the form is intended to be used for event bookings,
     but has been placed on a page directly, i.e. is not shown on the event detail page." %>
 
+<%@ variable name-given="formBookingHasFinalRegistrationDate" declare="true"
+    description="Whether there is a final registration date configured in the booking info." %>
+
+<%@ variable name-given="formBookingFinalRegistrationDateStr" declare="true"
+    description="The formatted final registration date." %>
+
+<%@ variable name-given="formBookingRegistrationClosed" declare="true"
+    description="Whether the registration is closed." %>
+
+<%@ variable name-given="showContactForm" declare="true"
+    description="Whether the attribute or property 'mercury.contact.form' is set, indicating that
+    this is maybe." %>
+
+<%@ variable name-given="isContactForm" declare="true"
+    description="Whether this is a dynamic contact form" %>
+
+<%@ variable name-given="contactName" declare="true"
+    description="The contact name, in the case of a dynamic contact form." %>
+
+<%@ variable name-given="contactEmail" declare="true"
+    description="The contact email, in the case of a dynamic contact form." %>
+
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <%-- ###### Initialize the webform ###### --%>
@@ -66,6 +92,7 @@
 </c:choose>
 <c:set var="formBean" value='${cms.getBean("alkacon.mercury.webform.CmsFormBean")}' />
 <c:set var="form" value="${formBean.setForm(formXml.rawContent)}"/>
+
 
 <%-- ###### Check if booking information has been provided ###### --%>
 <c:choose>
@@ -122,6 +149,43 @@
     </c:if>
 </c:if>
 
+<%-- ###### Check whether this is a dynamic contact form, if so, adjust form configuration with contact data. ###### --%>
+<c:set var="isContactForm" value="${cms.element.setting.formModus.toString eq 'contact'}" />
+<c:if test="${isContactForm}">
+    <c:set var="detailContent"                  value="${cms.detailContent}" />
+    <c:if test="${not empty detailContent}">
+        <c:set var="isOrgDetail"                value="${detailContent.typeName eq 'm-organization'}" />
+        <c:set var="isPersDetail"               value="${detailContent.typeName eq 'm-person'}" />
+        <c:set var="isLegacyDetail"             value="${detailContent.typeName eq 'm-contact'}" />
+        <c:set var="isContactDetail"            value="${isOrgDetail or isPersDetail or isLegacyDetail}" />
+    </c:if>
+    <c:if test="${isContactDetail}">
+        <c:set var="contactContent" value="${cms.vfs.xml[detailContent.structureId]}" />
+        <c:set var="contactValue" value="${contactContent.value}" />
+        <c:set var="contactValidEmail" value="${(not empty contactValue.Contact) and (not empty contactValue.Contact.value.Email) and (not empty contactValue.Contact.value.Email.value.Email)}" />
+        <c:if test="${contactValidEmail}">
+            <c:set var="contactEmail" value="${contactValue.Contact.value.Email.value.Email}" />
+        </c:if>
+        <mercury:contact-vars content="${contactContent}">
+            <c:set var="name" value="${valName}" />
+            <c:set var="personname">
+                <c:if test="${name.value.Title.isSet}">${name.value.Title}${' '}</c:if>
+                ${name.value.FirstName}${' '}
+                <c:if test="${name.value.MiddleName.isSet}">${name.value.MiddleName}${' '}</c:if>
+                ${name.value.LastName}
+                <c:if test="${name.value.Suffix.isSet}">${' '}${name.value.Suffix}</c:if>
+            </c:set>
+            <c:set var="contactName" value="${valKind eq 'org' ? valOrganization : personname}" />
+        </mercury:contact-vars>
+        <c:set var="contactForm">${detailContent.onlineLink}</c:set>
+        <c:if test="${contactValidEmail}">
+            ${form.adjustConfigValue("MailTo", contactEmail)}
+            ${form.adjustConfigValue("macro:contact.name", contactName)}
+            ${form.adjustConfigValue("macro:contact.form", contactForm)}
+        </c:if>
+    </c:if>
+</c:if>
+
 <%-- ###### Set title, data path and ID (if required) ###### --%>
 <c:if test="${not empty formId}">
     ${form.adjustConfigValue("formid", formId)}
@@ -144,6 +208,21 @@
     (booking.value.MailTo.isSet or formXml.value.MailTo.isSet) and
     (booking.value.MailFrom.isSet or formXml.value.MailFrom.isSet)
 }" />
+
+<c:set var="formBookingHasFinalRegistrationDate" value="${booking.value.FinalRegistrationDate.isSet}" />
+<jsp:useBean id="now" class="java.util.Date" /> 
+<c:set var="formBookingRegistrationClosed" value="${
+    formBookingHasFinalRegistrationDate and booking.value.FinalRegistrationDate.toDate < now
+}" />
+<c:if test="${formBookingHasFinalRegistrationDate}">
+    <jsp:useBean id="registrationDateBean" class="org.opencms.jsp.util.CmsJspInstanceDateBean" />
+    <c:set var="ignore" value="${registrationDateBean.init(booking.value.FinalRegistrationDate.toDate, cms.locale)}" />
+    <c:set var="ignore" value="${registrationDateBean.setWholeDay(true)}" />
+    <c:set var="dateFormat" value="${dateFormat eq 'none' ? 'fmt-LONG-DATE-TIME' : dateFormat}" />
+    <c:set var="formBookingFinalRegistrationDateStr">
+        <mercury:instancedate date="${registrationDateBean}" format="${dateFormat}" />
+    </c:set>
+</c:if>
 
 <%-- ###### Set adminLink that directs to the page where the form subscriptions are managed. ###### --%>
 <c:set var="adminDetailPageContent" value="${not empty formBookingXml ? formBookingXml : formXml}" />

@@ -37,9 +37,6 @@ var m_mapData = [];
 // API key for accessing the map data
 var m_apiKey;
 
-// map styling
-var m_mapStyle = [];
-
 function getPuempel(color) {
 
   var strokeColor = tinycolor(color).darken(20);
@@ -76,18 +73,22 @@ function getClusterGraphicTextColor() {
     return perceivedColor.isLight() ? tinycolor(color).darken(70) : tinycolor(color).lighten(70);
 }
 
-function getFeatureGraphic(mapId) {
-    const color = Mercury.getThemeJSON("map-color[0]", "#ffffff");
+function getFeatureGraphic(imageId, color) {
+    color = color === undefined ? Mercury.getThemeJSON("map-color[0]", "#ffffff") : color;
     const svg = window.btoa(getPuempel(color));
     const image = new Image(19, 34);
     image.src = `data:image/svg+xml;base64,${svg}`;
-    image.id = "featureGraphic" + mapId;
+    image.id = "featureGraphic" + imageId;
     image.style.display = "none";
     document.querySelector("body").appendChild(image);
     return document.getElementById(image.id);
 }
 
 function showSingleMap(mapData) {
+
+    if (mapData.css) {
+        Mercury.loadCss(mapData.css);
+    }
 
     if (!m_maps[mapData.id]) {
 
@@ -100,9 +101,12 @@ function showSingleMap(mapData) {
             center: [parseFloat(mapData.centerLng), parseFloat(mapData.centerLat)],
             zoom: mapData.zoom,
             interactive: false,
-            maxZoom: 18
+            maxZoom: 18,
+            attributionControl: false
         });
-
+        const attributionControl = new mapgl.AttributionControl({compact:true});
+        m_maps[mapData.id].addControl(attributionControl);
+        attributionControl._container.style.display = "none";
         m_maps[mapData.id].on('mousedown', function (e) {
             this.scrollZoom.enable();
             this.dragPan.enable();
@@ -117,6 +121,8 @@ function showSingleMap(mapData) {
 
         m_maps[mapData.id].on('load', function () {
             this.addControl(new mapgl.NavigationControl());
+            attributionControl._toggleAttribution();
+            attributionControl._container.style.display = "block";
         });
     }
 
@@ -139,12 +145,13 @@ function showSingleMap(mapData) {
             // create a HTML element for each feature
             var el = document.createElement('div');
             el.innerHTML = groups[group];
-            var markerObject = new mapgl.Marker(el, {
-                anchor: "bottom"
+            var markerObject = new mapgl.Marker({
+                anchor: "bottom",
+                element: el
             });
 
             markerObject.setLngLat([parseFloat(marker.lng), parseFloat(marker.lat)]);
-            if (marker.info.length > 0 && group !== "centerpoint"){
+            if (marker.info.length > 0){
                 markerObject.setPopup(new mapgl.Popup({ offset: [0, -25], maxWidth: '400px' }).setHTML(marker.info));
             }
             markerObject.addTo(m_maps[mapData.id]);
@@ -154,11 +161,203 @@ function showSingleMap(mapData) {
     }
 }
 
+function showSingleMapClustered(mapData, filterByGroup) {
+
+    if (mapData.css) {
+        Mercury.loadCss(mapData.css);
+    }
+    let map = m_maps[mapData.id];
+    if (!map) {
+        var $typeParent = jQ("#" + mapData.id).closest("*[class*='type-map']");
+        $typeParent.addClass("visible");
+        map = new mapgl.Map({
+            container: mapData.id,
+            style: m_style,
+            maxZoom: 18,
+            attributionControl: false
+        });
+        const attributionControl = new mapgl.AttributionControl({compact:true});
+        map.addControl(attributionControl);
+        attributionControl._container.style.display = "none";
+        map.on('mousedown', function (e) {
+            this.scrollZoom.enable();
+            this.dragPan.enable();
+            this.touchZoomRotate.enable();
+        });
+        map.on('click', function (e) {
+            this.scrollZoom.enable();
+            this.dragPan.enable();
+            this.touchZoomRotate.enable();
+        });
+        map.on("load", function () {
+            this.addControl(new mapgl.NavigationControl());
+            attributionControl._toggleAttribution();
+            attributionControl._container.style.display = "block";
+        });
+        m_maps[mapData.id] = map;
+    }
+    map.marker=[];
+    map.geojson={"type": "FeatureCollection", "features": []};
+    var groups = {};
+    var groupsFound = 0;
+    const infos = new Map();
+    if (typeof mapData.markers !== "undefined") {
+        for (var p = 0; p < mapData.markers.length; p++) {
+            var marker=mapData.markers[p];
+            if (filterByGroup === undefined || filterByGroup == "showall" || decodeURIComponent(filterByGroup) == marker.group) {
+                let feature = {
+                    "type": "Feature",
+                    "geometry": { "type": "Point", "coordinates": [parseFloat(marker.lng), parseFloat(marker.lat)] },
+                    "properties": {
+                        "info": marker.info,
+                        "group": marker.group
+                    }
+                };
+                map.geojson.features.push(feature);
+                var group = marker.group;
+                if (group === "centerpoint") {
+                    if (DEBUG) {
+                        console.info("OSM new center point added.");
+                    }
+                    var el = document.createElement('div');
+                    el.innerHTML = getCenterPointGraphic();
+                    var markerObject = new mapgl.Marker(el, {
+                        anchor: "bottom"
+                    });
+                    markerObject.setLngLat([parseFloat(marker.lng), parseFloat(marker.lat)]);
+                    markerObject.addTo(map);
+                    markerObject.group=group;
+                    map.marker.push(markerObject);
+                } else if (typeof groups[group] === "undefined" ) {
+                    var color = Mercury.getThemeJSON("map-color[" + groupsFound++ + "]", "#ffffff");
+                    if (DEBUG) console.info("OSM new marker group added: " + group + " with color: " + color);
+                    groups[group] = getFeatureGraphic(mapData.id + group, color);
+                }
+            }
+        }
+        map.groups = groups;
+        let fitted = false;
+        let bounds = getBoundsAndInfos(map.geojson.features || [], null, true, infos);
+        if (map.loaded()) {
+            map.getSource("localFeatures").setData(map.geojson);
+            if (!fitted && map.geojson.features && map.geojson.features.length > 0) {
+                map.fitBounds(bounds, {
+                    padding: {top: 100, bottom: 100, left: 100, right: 100},
+                    speed: 2
+                });
+                fitted = true;
+            }
+        } else {
+            map.on("styleimagemissing", function(event) {
+                const key = event.id.substring("featureGraphic".length);
+                if (!map.hasImage(event.id) && groups[key]) {
+                    map.addImage(event.id, groups[key]);
+                }
+            });
+            map.on("load", function() {
+                if (!map.getSource("localFeatures")) {
+                    map.addSource("localFeatures", {
+                        type: 'geojson',
+                        data: map.geojson,
+                        cluster: true,
+                        clusterMaxZoom: 15,
+                        clusterRadius: 25
+                    });
+                }
+                if (!map.getLayer("clusters")) {
+                    map.addLayer({
+                        id: "clusters",
+                        type: "circle",
+                        source: "localFeatures",
+                        filter: ["has", "point_count"],
+                        paint: getClusterGraphic()
+                    });
+                    map.on("mouseenter", "clusters", function () {
+                        map.getCanvas().style.cursor = "pointer";
+                    });
+                    map.on("mouseleave", "clusters", function () {
+                        map.getCanvas().style.cursor = "";
+                    });
+                    map.on("click", "clusters", async (e) => {
+                        const features = map.queryRenderedFeatures(e.point, {
+                            layers: ["clusters"]
+                        });
+                        const clusterId = features[0].properties.cluster_id;
+                        const zoom = await map.getSource("localFeatures").getClusterExpansionZoom(clusterId);
+                        map.easeTo({
+                            center: features[0].geometry.coordinates,
+                            zoom
+                        });
+                    });
+                }
+                if (!map.getLayer("cluster-count")) {
+                    map.addLayer({
+                        id: "cluster-count",
+                        type: "symbol",
+                        source: "localFeatures",
+                        filter: ["has", "point_count"],
+                        layout: {
+                            "text-field": "{point_count_abbreviated}",
+                            "text-size": 14
+                        },
+                        paint: {
+                            "text-color": getClusterGraphicTextColor().toString(),
+                        }
+                    });
+                }
+                for (let group in groups) {
+                    if (!map.getLayer("unclustered-point-" + group)) {
+                        map.addLayer({
+                            id: "unclustered-point-" + group,
+                            type: "symbol",
+                            source: "localFeatures",
+                            filter: ["==", "group", group],
+                            layout: {
+                                "icon-image": "featureGraphic" + group,
+                                "icon-anchor": "bottom"
+                            }
+                        });
+                        map.on("click", "unclustered-point-" + group, function (e) {
+                            const coordinates = e.features[0].geometry.coordinates.slice();
+                            const info = e.features[0].properties.info;
+                            const key = getKey(coordinates);
+                            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                            }
+                            mapData.popup = new mapgl.Popup({ offset: [0, -25], maxWidth: '400px' });
+                            mapData.popup.setLngLat(coordinates)
+                                .setHTML(infos.get(key) ? infos.get(key) : info)
+                                .addTo(map);
+                        });
+                        map.on("mouseenter", "unclustered-point-" + group, function () {
+                            map.getCanvas().style.cursor = "pointer";
+                        });
+                        map.on("mouseleave", "unclustered-point-" + group, function () {
+                            map.getCanvas().style.cursor = "";
+                        });
+                    }
+                }
+                if (!fitted && map.geojson.features && map.geojson.features.length > 0) {
+                    map.fitBounds(bounds, {
+                        padding: {top: 100, bottom: 100, left: 100, right: 100},
+                        speed: 2
+                    });
+                    fitted = true;
+                }
+            });
+        }
+    }
+}
+
 function showMaps(jQ, apiKey){
 
     for (var i=0; i < m_mapData.length; i++) {
         if(!m_mapData[i].showPlaceholder) {
-            showSingleMap(m_mapData[i]);
+            if (m_mapData[i].markerCluster) {
+                showSingleMapClustered(m_mapData[i]);
+            } else {
+                showSingleMap(m_mapData[i]);
+            }
         }
     }
 }
@@ -182,27 +381,85 @@ function setStyle(jQ, apiKey, showMapFunction){
     }
 }
 
+function getBoundsAndInfos(features, centerPoint, getInfo, infos) {
+    const boundsNorthEast = {lat: null, lng: null};
+    const boundSouthWest = {lat: null, lng: null};
+    const checkBounds = function(coordinates) {
+        let lat = coordinates[1];
+        let lng = coordinates[0];
+        if (boundsNorthEast.lat === null || boundsNorthEast.lat < lat) {
+            boundsNorthEast.lat = lat;
+        }
+        if (boundsNorthEast.lng === null || boundsNorthEast.lng < lng) {
+            boundsNorthEast.lng = lng;
+        }
+        if (boundSouthWest.lat === null || boundSouthWest.lat > lat) {
+            boundSouthWest.lat = lat;
+        }
+        if (boundSouthWest.lng === null || boundSouthWest.lng > lng) {
+            boundSouthWest.lng = lng;
+        }
+    }
+    if (centerPoint) {
+        checkBounds(centerPoint);
+    }
+    for (let i = 0; i < features.length; i++) {
+        const feature = features[i];
+        const coordinates = feature.geometry.coordinates;
+        const key = getKey(coordinates);
+        if (getInfo === true) {
+            const info = feature.properties.info;
+            if (!infos.has(key)) {
+                infos.set(key, info);
+            } else {
+                infos.set(key, info + infos.get(key));
+            }
+        }
+        checkBounds(coordinates);
+    }
+    return [[boundsNorthEast.lng,boundsNorthEast.lat],[boundSouthWest.lng,boundSouthWest.lat]];
+}
+
+function getKey(coordinates) {
+    let c0 = ("" + coordinates[0].toFixed(5));
+    let c1 = ("" + coordinates[1].toFixed(5));
+    return [c0, c1].join(",");
+ }
+
 /****** Exported functions ******/
 
 export function showMarkers(mapId, group){
 
     if (DEBUG) console.info("OSM showMapMarkers() called with id: " + mapId);
     var map = m_maps[mapId];
+    let mapData;
+    for (let md of m_mapData) {
+        if (md.id === mapId) {
+            mapData = md;
+        }
+    }
     if (map) {
-        var markers = map.marker;
-        var g = decodeURIComponent(group);
-
-        for (var i = 0; i < markers.length; i++) {
-            if (markers[i].group == g || g == 'showall') {
-                markers[i].addTo(map);
-            } else {
-                markers[i].remove();
+        if (!mapData.markerCluster) {
+            var markers = map.marker;
+            var g = decodeURIComponent(group);
+            for (var i = 0; i < markers.length; i++) {
+                if (markers[i].group == g || g == 'showall') {
+                    markers[i].addTo(map);
+                } else {
+                    markers[i].remove();
+                }
             }
+        } else {
+            if (mapData.popup) {
+                mapData.popup.remove();
+                mapData.popup = null;
+            }
+            showSingleMapClustered(mapData, group);
         }
     }
 }
 
-export function showGeoJson(mapId, geoJson) {
+export function showGeoJson(mapId, geoJson, ajaxUrlMarkersInfo) {
 
     if (DEBUG) console.info("OSM update markers for map with id: " + mapId);
     const map = m_maps[mapId];
@@ -215,64 +472,20 @@ export function showGeoJson(mapId, geoJson) {
             map.addImage("featureGraphic", featureGraphic);
         });
     }
-    map.addSource('features', {
-        type: 'geojson',
+    map.addSource("features", {
+        type: "geojson",
         data: geoJson,
         cluster: true,
         clusterMaxZoom: 12,
         clusterRadius: 25
     });
-    const infos = new Map();
-    const getKey = function(coordinates) {
-        let c0 = ("" + coordinates[0].toFixed(5));
-        let c1 = ("" + coordinates[1].toFixed(5));
-        return [c0, c1].join(",");
-     }
-    const getBoundsAndInfos = function(features, centerPoint, getInfo) {
-        const boundsNorthEast = {lat: null, lng: null};
-        const boundSouthWest = {lat: null, lng: null};
-        const checkBounds = function(coordinates) {
-            let lat = coordinates[1];
-            let lng = coordinates[0];
-            if (boundsNorthEast.lat === null || boundsNorthEast.lat < lat) {
-                boundsNorthEast.lat = lat;
-            }
-            if (boundsNorthEast.lng === null || boundsNorthEast.lng < lng) {
-                boundsNorthEast.lng = lng;
-            }
-            if (boundSouthWest.lat === null || boundSouthWest.lat > lat) {
-                boundSouthWest.lat = lat;
-            }
-            if (boundSouthWest.lng === null || boundSouthWest.lng > lng) {
-                boundSouthWest.lng = lng;
-            }
-        }
-        if (centerPoint) {
-            checkBounds(centerPoint);
-        }
-        for (let i = 0; i < features.length; i++) {
-            const feature = features[i];
-            const coordinates = feature.geometry.coordinates;
-            const key = getKey(coordinates);
-            if (getInfo === true) {
-                const info = feature.properties.info;
-                if (!infos.has(key)) {
-                    infos.set(key, info);
-                } else {
-                    infos.set(key, info + infos.get(key));
-                }
-            }
-            checkBounds(coordinates);
-        }
-        return [[boundsNorthEast.lng,boundsNorthEast.lat],[boundSouthWest.lng,boundSouthWest.lat]];
-    }
     let centerPoint;
     for (let md of m_mapData) {
         if (md.id === mapId && md.markers && md.markers.length > 0) {
             centerPoint = md;
         }
     }
-    let bounds = getBoundsAndInfos(geoJson.features || [], (centerPoint ? [centerPoint.centerLng, centerPoint.centerLat] : null), true);
+    let bounds = getBoundsAndInfos(geoJson.features || [], (centerPoint ? [centerPoint.centerLng, centerPoint.centerLat] : null), false);
     let fitted = false;
     map.on("data", function(event) {
         if (!fitted && geoJson.features && geoJson.features.length > 0) {
@@ -312,32 +525,30 @@ export function showGeoJson(mapId, geoJson) {
             "icon-anchor": "bottom"
         }
     });
-    map.on("click", "clusters", function (e) {
+    map.on("click", "clusters", async (e) => {
         const features = map.queryRenderedFeatures(e.point, {
             layers: ["clusters"]
         });
         const clusterId = features[0].properties.cluster_id;
-        const pointCount = features[0].properties.point_count;
-        map.getSource("features").getClusterLeaves(clusterId, pointCount, 0, function(error, clusterFeatures) {
-            const bounds = getBoundsAndInfos(clusterFeatures);
-            map.fitBounds(bounds, {
-                padding: {top: 100, bottom: 100, left: 100, right: 100},
-                maxZoom: 16
-            });
+        const zoom = await map.getSource("features").getClusterExpansionZoom(clusterId);
+        map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom
         });
-
     });
     map.on("click", "unclustered-point", function (e) {
-        const coordinates = e.features[0].geometry.coordinates.slice();
-        const info = e.features[0].properties.info;
-        const key = getKey(coordinates);
-        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-        }
-        new mapgl.Popup({ offset: [0, -25], maxWidth: '400px' })
+        const coordinates = e.features[0].geometry.coordinates;
+        const infoCoordinates = e.features[0].properties.coords;
+        const ajaxUrl = ajaxUrlMarkersInfo + "&coordinates=" + infoCoordinates;
+        const popup = new mapgl.Popup({ offset: [0, -25], maxWidth: '400px' })
             .setLngLat(coordinates)
-            .setHTML(infos.get(key) ? infos.get(key) : info)
+            .setHTML("<div></div>")
             .addTo(map);
+        fetch(ajaxUrl)
+            .then(response => response.text())
+            .then(data => {
+                popup.setHTML(data);
+            });
     });
     map.on("mouseenter", "clusters", function () {
         map.getCanvas().style.cursor = "pointer";
@@ -363,18 +574,21 @@ function showMap(event){
             m_mapData[i].showPlaceholder = false;
             var mapData = m_mapData[i];
             setStyle(jQ, m_apiKey, function() {
-                showSingleMap(mapData);
+                mapData.markerCluster ? showSingleMapClustered(mapData) : showSingleMap(mapData);
             });
         }
     }
+    window.dispatchEvent(new CustomEvent("map-placeholder-click", {
+        detail: OsmMap
+    }));
 }
 
 function redrawMap(mapId, event) {
 
     // called if map is in a tab or accordion after being revealed
     var $parentElement;
-    if (event.namespace == "bs.tab") {
-        var target = jQ(event.target).attr("href");
+    if (event.type == "shown.bs.tab") {
+        var target = jQ(event.target).attr("data-bs-target");
         $parentElement = jQ(target);
     } else {
         // this should be an accordion
@@ -412,14 +626,7 @@ export function init(jQuery, debug) {
 
         if (m_apiKey != null || Mercury.hasInfo("osmStyleUrl")) {
 
-            // initialize map style from JSON stored in CSS
-            m_mapStyle = Mercury.getThemeJSON("map-style", []);
-
             if (PrivacyPolicy.cookiesAcceptedExternal()) {
-
-                m_maps = {};
-                m_mapData = [];
-                m_mapStyle = [];
 
                 // initialize map sections with values from data attributes
                 $mapElements.each(function() {
@@ -433,11 +640,11 @@ export function init(jQuery, debug) {
                         mapData.showPlaceholder = Mercury.initPlaceholder($mapElement, showMap);
                         if (DEBUG) console.info("OSM map found with id: " + mapData.id);
                         m_mapData.push(mapData);
-                        if (! mapData.showPlaceholder) {
+                        if (!mapData.showPlaceholder) {
                             $mapElement.removeClass('placeholder');
                         }
                         // add redraw handler for maps hidden in accordions and tabs
-                        Mercury.initTabAccordion(function(event) { redrawMap(mapData.id, event) });
+                        Mercury.initTabAccordion($mapElement[0], function(event) { redrawMap(mapData.id, event) });
                     }
                 });
 

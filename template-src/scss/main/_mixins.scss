@@ -15,51 +15,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-// Intro header, usually for teaser elements in lists
-@mixin intro-header() {
-    line-height: 1.25;
-    font-size: 65%;
-    font-weight: $font-weight-intro-headings;
-    color: $intro-headings-color;
-    margin-bottom: $intro-headings-margin-bottom;
-}
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:string';
 
 // Focus outline color
-@mixin focus-outline() {
+@mixin focus-outline($outside: true) {
     outline-color: $focus-outline-color;
-    outline-width: 3px;
     outline-style: solid;
-    outline-offset: -2px;
-    box-shadow: inset 0 0 4px 1px $focus-outline-color, 0 0 7px 2px $focus-outline-color;
-    z-index: $above-oc-z-index + 5000; // well above OpenCms edit points AND menu dropdowns
-}
-
-// Sets the text color for all elements but 'a' and 'span'
-@mixin set-text-color($text-color) {
-    color: $text-color;
-    *:not(a):not(span) {
-        color: $text-color;
+    @if ($outside == true) {
+        outline-width: 3px;
+        outline-offset: 2px;
+    } @else {
+        outline-width: 2px;
+        outline-offset: -2px;
     }
-}
-
-// Add round corners
-@mixin round-corners($radius, $overflow:false, $setZero:false) {
-    @if ($setZero or ($radius != 0)) {
-        border-radius: $radius;
-    }
-    @if ($overflow == true) {
-        overflow: hidden;
-        z-index: $overflow-z-index;
-    }
+    z-index: $above-oc-z-index + 500000; // well above OpenCms edit points AND menu dropdowns
 }
 
 // Basic image overlay
 @mixin image-overlay {
     display: inline-block;
-    color: $black;
-    background-color: rgba($white, 0.6);
-    opacity: 0.8;
+    color: var(--#{$prefix}copyright-color);
+    background-color: var(--#{$prefix}copyright-bg-color);
+    opacity: var(--#{$prefix}copyright-opacity);
     position: absolute;
     bottom: 0;
     pointer-events: none;
@@ -95,11 +75,15 @@
 
 // Image overlay for copyright notices
 @mixin image-copyright {
-    padding: 2px 4px;
-    font-family: $font-family-base;
-    font-size: 8px;
     line-height: 1;
-    @include image-overlay-right;
+    padding: var(--#{$prefix}copyright-padding);
+    font-family: var(--#{$prefix}copyright-font-family);
+    font-size: var(--#{$prefix}copyright-font-size);
+    border-radius: var(--#{$prefix}copyright-border-radius);
+    text-align: var(--#{$prefix}copyright-pos-right, right);
+    right: var(--#{$prefix}copyright-pos-right, 0);
+    text-shadow: var(--#{$prefix}copyright-text-shadow, none);
+    @include image-overlay;
 }
 
 // Icon overlays for images, e.g. used for the "zoom image" icon
@@ -115,6 +99,22 @@
     z-index: #{$overflow-z-index + 2};
 }
 
+@mixin copyright-subtitle {
+    .copyright {
+        position: relative;
+        > div {
+             @include image-copyright;
+        }
+    }
+
+    .subtitle {
+        margin-top: $section-subtitle-margin-top;
+        line-height: 1.15;
+        font-style: italic;
+        font-size: $section-subtitle-size;
+    }
+}
+
 // Clearfix that is ::before not ::after
 @mixin clearfix-before {
     &::before {
@@ -125,11 +125,11 @@
 }
 
 // Generate lead text
-@mixin text-lead() {
+@mixin text-lead {
     @if ($line-height-lead != $line-height-base) {
         line-height: $line-height-lead;
     }
-    @include media-breakpoint-down(md) {
+    @include media-breakpoint-down(lg) {
         font-size: $lead-font-size-mobile;
     }
     @include media-breakpoint-up(lg) {
@@ -140,27 +140,12 @@
 
 // Reset animation transition effects and shadows
 @mixin effect-box-reset {
-
     box-shadow: none;
     transition-property: transform, box-shadow, transform-origin;
     transition-duration: $transition-timing;
     transition-timing-function: $easeInOutSine;
     transition-delay: 0s;
     z-index: #{$overflow-z-index - 1};
-}
-
-
-// White noise image for backgrounds
-@mixin noise-image {
-    display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    background-repeat: repeat;
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAHlBMVEUAAAD///////////////////////////////////8kfJuVAAAACnRSTlMAIgQNCB4bERUYt5wRYgAAA+ZJREFUOMt9lEtT2lAYhr9zciHZnXMSSNjlBJFml0Cx7S7gBd1BQMFdAmp1lwTsZReKqN0laK3+205nOp1OZ9p/8M7zzPMCnhKUUE0svfCVk46oyvXpt4ArM5CuzrRwzyrTnIrukkDg+WRYW76zIeozWVAlRKO945nz6uDkEIkVGAUDOHgR3swn5uohb3po1tQtL6SfUc/9CC2yRQYo+JLAHBqINeiqBHn3zDFB1W1r15BDJiOUbyF5jY+3/cHUrMFClHitfRtmrGK6DQulG2Y6SDfG0FhosaPssV1rbcFL1oFveqeWlCMXcrcYEtTrXpJUU3WkPwiBI/rZggKJh4i+FYSujc83JFzeEPDKo/mpDi6OqZ2YbqyK291ifUBrDLno6YWCSoCIZILGohC3SbSR9gce/6RUvwCCRmj164nh+wFrTS4UxKMVTsEAb9q9b9Y2qYd7vid+zxmiLrkK3TMguO0lfkGGr09u1pvOWBAAleY3lgZ/kCoRoEltIuSVreVyBNFlPzfq6HLBbeqrJEe5pLLv7nMP5H9NgOpVUfGJRL5Ymb5ulRS+f7YqrfLkCfY7GerK5J5W6PUtKn9EbzqFR0RSBVHTJ7ojnuIdJFDitd6FboaE8gyB1m8mERY5eTk+EUj4GuPpqH5d8zCACJr9xlJaMwBUtc1BKArgWeIY7HMLF92tonQJ9Tz1M1brB4FlHLnwNr5VE87ueubbR4hzZZGiO1LscBUQ5OIhPnGfoSMWXigMzAx8RnkPIJ7hDHaooS4kwNsBOLp9RD5kGBTlvDUTPC0X9zXYVfMO53Y5JSiAXU5dEjvKaZJo6zM0kMiF2XiVxwaQDhxjvHzsAuwsM36nbk8V2ClttYBsLQRy9BlZVEPykyAfuIpDdXIRgetNqb3XidzolhoQ7nZvxqUhBwTwhJcXcmWtorRfuesyrkOhQhX6BeBHs45FphhEu44Ogc8PkTJ63Rlw6AkM7A+N0zvh9c0D0wp/IL63wY5qwP9VHTThhp6GXBR6lSogxkB9wMR3Awa/HfIOILyJY5dGUBsa+n+2+ePg/mDoElOfWPsfrsbuRpRpmjTnYD8nUvtYRA2S8qRVCX3J7S87HulB+TsyhBF7YwmZaCWErMLbqYyLFOD5hchsblKSjR34Wlbf99U4ZiSx4eyxPTwEFJVvVV88qB+Wrm3f+SkNZMG3tuvdcfD3MUBZ8nbdaWVvZIJuRcqSRsYkpONYA3XnsXzUPmlKmEiUlF41LCXdmM0hh19krQgL5KJULKdNwu54XN6HT5jKeN1wz6WpTCnH/mRbtockvocqqrDz9qch46kTvqqEv0v7AUw2CT/ylENXAAAAAElFTkSuQmCC);
 }
 
 // color transition effect, should be used for :hover elements
@@ -171,39 +156,39 @@
 }
 
 // Default Headings
-@mixin heading-base($set-color: true) {
-    font-weight: $font-weight-headings; // must be set because otherwise the default would be "bold"
-    @if ($set-color) {
-        color: $headings-color;  // must be set because otherwise linked headlines would have the link color
-    }
-    @if ($font-family-headings != $font-family-base) {
-        font-family: $font-family-headings;
-    }
-    @if ($font-style-headings != normal) {
-        font-style: $font-style-headings;
-    }
-    @if ($line-height-headings != $line-height-base) {
-        line-height: $line-height-headings;
-    }
+@mixin heading-base {
+    font-weight: var(--#{$prefix}font-weight-headings);
+    font-family: var(--#{$prefix}font-family-headings);
+    font-style: var(--#{$prefix}font-style-headings);
+}
+
+@mixin button-color-setvars($btn-bg, $btn-hover-bg) {
+    --#{$prefix}btn-fg: #{get-text-color($btn-bg)};
+    --#{$prefix}btn-bg: #{$btn-bg};
+    --#{$prefix}btn-hover-fg: #{get-text-color($btn-hover-bg)};
+    --#{$prefix}btn-hover-bg: #{$btn-hover-bg};
 }
 
 // Colored buttons with hover effects
-@mixin button-color($bg-color, $hover-color, $disabled-color: $btn-disabled) {
-    background-color: $bg-color;
-    color: get-text-color($bg-color);
+@mixin button-color($disabled-color: $btn-disabled) {
+    color: var(--#{$prefix}btn-fg);
+    background-color: var(--#{$prefix}btn-bg);
+    @if ($btn-border-style != none) {
+        border-color: var(--#{$prefix}btn-border);
+    }
 
     &:focus,
     &:hover,
     &.active,
     .open .dropdown-toggle & {
-        color: get-text-color($hover-color);
-        background-color: $hover-color;
+        color: var(--#{$prefix}btn-hover-fg);
+        background-color: var(--#{$prefix}btn-hover-bg);
+        @if ($btn-border-style != none) {
+            border-color: var(--#{$prefix}btn-hover-border);
+        }
         text-decoration: none;
         cursor: pointer;
         @include color-transition;
-        @if ($btn-border-style != none) {
-            border-color: $hover-color;
-        }
     }
 
     &.disabled,
@@ -216,17 +201,20 @@
 }
 
 // Colored buttons with hover effects - simplified for less markup
-@mixin button-color-simple($bg-color, $hover-color, $hover: true) {
-    background-color: $bg-color;
-    color: get-text-color($bg-color);
+@mixin button-color-simple($hover: true) {
+    color: var(--#{$prefix}btn-fg);
+    background-color: var(--#{$prefix}btn-bg);
+    @if ($btn-border-style != none) {
+        border-color: var(--#{$prefix}btn-border);
+    }
 
     @if ($hover) {
         &:focus,
         &:hover {
-            color: get-text-color($hover-color);
-            background-color: $hover-color;
+            color: var(--#{$prefix}btn-hover-fg);
+            background-color: var(--#{$prefix}btn-hover-bg);
             @if ($btn-border-style != none) {
-                border-color: $hover-color;
+                border-color: var(--#{$prefix}btn-hover-border);
             }
         }
     }
@@ -241,6 +229,10 @@
     user-select: none;
     box-shadow: none;
     border: $btn-border-style; // must be set even if 'none' because user agent may apply border to <button> elements
+    text-decoration: none;
+
+    font-family: var(--#{$prefix}btn-font-family);
+
     @if ($btn-white-space != normal) {
         white-space: $btn-white-space;
     }
@@ -249,9 +241,6 @@
     }
     @if ($btn-min-width > 0) {
         min-width: $btn-min-width;
-    }
-    @if ($btn-font-family != $font-family-base) {
-        font-family: $btn-font-family;
     }
     @if ($btn-font-size != $font-size-base) {
         font-size: $btn-font-size;
@@ -262,8 +251,8 @@
     @if ($btn-line-height != $line-height-base) {
         line-height: $btn-line-height;
     }
-    @include round-corners($btn-border-radius);
-    @include button-color($btn-default, $btn-default-hover, $btn-disabled);
+    border-radius: var(--#{$prefix}btn-border-radius);
+    @include button-color($btn-disabled);
 }
 
 // Reset buttons
@@ -271,20 +260,25 @@
     padding: 0;
     text-align: inherit;
     user-select: initial;
+
+    font-family: inherit;
+
     @if ($btn-border-style != none) {
         border: none;
     }
     @if ($btn-white-space != normal) {
+        white-space: $btn-white-space;
+    } @else {
         white-space: normal;
+        hyphens: auto;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
     @if ($btn-text-transform != none) {
         text-transform: none;
     }
     @if ($btn-min-width > 0) {
         min-width: 0;
-    }
-    @if ($btn-font-family != $font-family-base) {
-        font-family: inherit;
     }
     @if ($btn-font-size != $font-size-base) {
         font-size: inherit;
@@ -310,10 +304,23 @@
     }
 }
 
+// remove default styles from default HTML 'button' element
+@mixin remove-default-button-style {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+    color: inherit;
+    text-align: inherit;
+    font: inherit;
+    border-radius: 0;
+    appearance: none;
+}
+
 // Font size REM rebasing, usually on the HTML element
 @mixin rem-base {
     @if ($font-rem-base-mobile-size != $font-rem-base-desktop-size) {
-        @include media-breakpoint-down(md) {
+        @include media-breakpoint-down(lg) {
             font-size: $font-rem-base-mobile-size;  // font size for rem units in mobile
         }
         @include media-breakpoint-up(lg) {
@@ -351,25 +358,9 @@
     }
 }
 
-@mixin piece-bottom-margin($margin-bottom: $default-margin)  {
+@mixin piece-bottom-margin($margin-bottom: var(--#{$prefix}element-margin))  {
     > .piece:not(:last-of-type) {
         margin-bottom: $margin-bottom;
-    }
-}
-
-@mixin copyright-subtitle {
-    .copyright {
-        position: relative;
-        > div {
-             @include image-copyright;
-        }
-    }
-
-    .subtitle {
-        margin-top: $default-margin-verysmall;
-        line-height: 1.15;
-        font-style: italic;
-        font-size: $section-subtitle-size;
     }
 }
 
@@ -410,14 +401,14 @@
     }
 }
 
-@mixin colored-a($text-color, $highlight-color: none, $force: false) {
+@mixin colored-a($text-color, $hover-color: none, $force: false) {
     a:not(.btn):not(.uncolored) {
         color: $text-color;
 
-        @if (($highlight-color != none) and (($force == true) or ($highlight-color != $text-color))) {
+        @if (($hover-color != none) and (($force == true) or ($hover-color != $text-color))) {
             &:focus,
             &:hover {
-                color: $highlight-color;
+                color: $hover-color;
             }
         }
     }
@@ -441,7 +432,7 @@
 
 @mixin media-breakpoint-mobile {
     @if ($nav-breakpoint-mobile != none) {
-        @include media-breakpoint-down($nav-breakpoint-mobile) {
+        @include media-breakpoint-down(breakpoint-next($nav-breakpoint-mobile)) {
             @content;
         }
     }
@@ -467,7 +458,7 @@
             word-break: break-word;
         } @else {
             @if ($piece-hyphens-headings-xs) {
-                @include media-breakpoint-down(sm) {
+                @include media-breakpoint-down(md) {
                     hyphens: auto;
                     overflow-wrap: anywhere;
                     word-break: break-word;
@@ -496,7 +487,7 @@
             word-break: break-word;
         } @else {
             @if ($piece-hyphens-text-xs) {
-                @include media-breakpoint-down(sm) {
+                @include media-breakpoint-down(md) {
                     hyphens: auto;
                     overflow-wrap: anywhere;
                     word-break: break-word;
@@ -519,19 +510,19 @@
     display: inline-block;
     line-height: 1;
     font-size: $font-size-sm;
-    color: $text-dark;
-    @if ($btn-font-family != $font-family-base) {
-        font-family: $btn-font-family;
-    }
+    color: var(--#{$prefix}body-color);
+    font-family: var(--#{$prefix}btn-font-family);
+
     &::before {
-        font-family: ForkAwesome;
-        content: "\f02b";
-        padding-right: $default-margin-verysmall;
+        @include icon-font();
+        content: "\f02b"; // mercury:icon - fa-tag
+        padding-right: var(--#{$prefix}ws-margin);
     }
     @if ($add-box) {
-        padding: $default-margin-verysmall;
+        padding: calc(0.5 * var(--#{$prefix}ws-margin)) var(--#{$prefix}ws-margin);
         border-radius: $list-category-radius;
-        background-color: $grey-lighter;
+        color: var(--#{$prefix}text-dark);
+        background-color: var(--#{$prefix}grey-lighter);
         @if ($add-hover) {
             &:hover {
                 background-color: $grey-light;
@@ -552,61 +543,270 @@
     }
 }
 
-@mixin awesome-icons() {
-    // Adds font definitions required to switch to ForkAwesome font
-    font-family: ForkAwesome;
-    font-size: inherit;
-    line-height: inherit;
+@mixin icon-font() {
+    font-family: var(--#{$prefix}icon-font-family);
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
+@mixin toggle-arrow-open-after($reverse: false) {
+    @include icon-font();
+    content: $toggle-arrow-icon;
+    line-height: 1;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    height: 100%;
+    transform: rotate(if($reverse, $toggle-closed-rotation, $toggle-open-rotation));
+    transition: transform $toggle-transition-time;
+}
 
-@mixin box-color($bg-color) {
-    // for a colored background, make sure the text and link color matches the background
-    // normally this means dark background > light text and light background > dark text
-    $color: get-text-color($bg-color);
-    $color-headings-base: conditional-value($color == $text-light, $text-light, $headings-color); // we normally want light text
-    $color-headings: get-text-color($bg-color, $color-headings-base);
+@mixin toggle-arrow-closed-after($reverse: false) {
+    transform: rotate(if($reverse, $toggle-open-rotation, $toggle-closed-rotation));
+}
 
-    $color-links: get-link-colors($bg-color, $color);
-    $color-link: nth($color-links, 1);
-    $color-hover: nth($color-links, 2);
+@mixin ensure-not-css-property($value) {
+    // Ensures a SCSS variable is NOT set as a CSS varianble / custom property
+    $check: ""+#{$value};
+    @if (null != str-index($check, "--")) {
+        @error "SCSS variable value '#{$check}' must NOT contain a CSS custom property.";
+    }
+}
 
-    background-color: $bg-color;
-    color: $color;
+@mixin button-reset-outline-border {
+    @if (button-use-outline-border()) {
+        // If outline buttons are used, make buttons display full in tbe filter display
+        --#{$prefix}btn-bg: var(--#{$prefix}main-theme);
+        --#{$prefix}btn-fg: var(--#{$prefix}main-theme-fg);
+        --#{$prefix}btn-hover-bg: var(--#{$prefix}main-theme-hover);
+        --#{$prefix}btn-hover-fg: var(--#{$prefix}main-theme-hover-fg);
+        --#{$prefix}btn-border: var(--#{$prefix}btn-bg);
+        --#{$prefix}btn-hover-border: var(--#{$prefix}btn-hover-bg);
+    }
+}
 
-    @include colored-a($color-link, $color-hover, true);
+// $set-default: if TRUE, then output all variables
+//               if FALSE, then only output a variable in case the variable has been explicitly set OR it is required because of bg / fg contrast
+@mixin set-box-color-defaults($bg-map: null, $set-default: true) {
 
-    h1, h2, h3, h4, h5, h6  {
-        // required in order to override colors set in headings
-        color: $color-headings;
+    @if ($set-default or map-has-key-safe($bg-map, "main-theme")) {
+        $main-theme-color:                            get-color("main-theme",                   var(--#{$prefix}link-color),                    $bg-map);
+        --#{$prefix}main-theme:                     #{$main-theme-color};
+        @if type-of($main-theme-color) != color {
+            --#{$prefix}main-theme-rgb:             #{get-color("main-theme-rgb",               var(--#{$prefix}link-color-rgb),                $bg-map)};
+          } @else {
+            --#{$prefix}main-theme-rgb:             #{to-rgb($main-theme-color)};
+          }
+    }
+    $main-theme-val: map-get-safe($bg-map, "main-theme");
+    @if ($set-default or ($main-theme-val != null) or map-has-key-safe($bg-map, "main-theme-fg")) {
+        $main-theme-fg-def: if($main-theme-val != null, get-text-color($main-theme-val), var(--#{$prefix}link-fg-color));
+        --#{$prefix}main-theme-fg:                  #{get-color("main-theme-fg",                #{$main-theme-fg-def},                          $bg-map)};
+    }
+    @if ($set-default or map-has-key-safe($bg-map, "main-theme-hover")) {
+        --#{$prefix}main-theme-hover:               #{get-color("main-theme-hover",             var(--#{$prefix}link-hover-color),              $bg-map)};
+    }
+    $main-theme-hover-val: map-get-safe($bg-map, "main-theme-hover");
+    @if ($set-default or ($main-theme-hover-val != null) or map-has-key-safe($bg-map, "main-theme-hover-fg")) {
+        $main-theme-hover-fg-def: if($main-theme-hover-val != null, get-text-color($main-theme-hover-val), var(--#{$prefix}link-hover-fg-color));
+        --#{$prefix}main-theme-hover-fg:            #{get-color("main-theme-hover-fg",          #{$main-theme-hover-fg-def},                    $bg-map)};
     }
 
-    @if ($linked-headings-color != none) {
-        a:hover {
-            h1, h2, h3, h4, h5, h6 {
-                color: $color-hover;
+    @if ($set-default or map-has-key-safe($bg-map, "headings-color")) {
+        --#{$prefix}headings-color:                 #{get-color("headings-color",               var(--#{$prefix}body-color),                    $bg-map)};
+    }
+    @if (map-has-key-safe($bg-map, "headings-color")) {
+        --#{$prefix}intro-headings-color:           #{get-color("intro-headings-color",         var(--#{$prefix}headings-color),                $bg-map)};
+    } @else {
+        @if ($set-default or map-has-key-safe($bg-map, "intro-headings-color")) {
+            --#{$prefix}intro-headings-color:       #{get-color("intro-headings-color",          var(--#{$prefix}main-theme),                   $bg-map)};
+        }
+    }
+    @if (($linked-headings-color != unset) and ($set-default or map-has-key-safe($bg-map, "inked-headings-color"))) {
+        --#{$prefix}linked-headings-color:          #{get-color("linked-headings-color",        var(--#{$prefix}link-color),                    $bg-map)};
+    }
+    @if (($linked-headings-hover-color != unset) and ($set-default or map-has-key-safe($bg-map, "inked-headings-hover-color"))) {
+        --#{$prefix}linked-headings-hover-color:    #{get-color("linked-headings-hover-color",  var(--#{$prefix}link-hover-color),              $bg-map)};
+    }
+
+    @if ($set-default or map-has-key-safe($bg-map, "highlight-color")) {
+        --#{$prefix}highlight-color:                #{get-color("highlight-color",              rgb(var(--#{$prefix}highlight-color-rgb),0.25), $bg-map)};
+    }
+    @if ($set-default or map-has-key-safe($bg-map, "highlight-fg-color")) {
+        --#{$prefix}highlight-fg-color:             #{get-color("highlight-fg-color",           var(--#{$prefix}body-color),                    $bg-map)};
+    }
+    @if ($set-default or map-has-key-safe($bg-map, "highlight-border-color")) {
+        --#{$prefix}highlight-border-color:         #{get-color("highlight-border-color",       var(--#{$prefix}body-color),                    $bg-map)};
+    }
+    @if ($set-default or map-has-key-safe($bg-map, "highlight-border-fg-color")) {
+        --#{$prefix}highlight-border-fg-color:      #{get-color("highlight-border-fg-color",    var(--#{$prefix}body-bg),                       $bg-map)};
+    }
+
+    // if buttons have a border, the usually use the page color inside - optimize further auto settings baswed on this
+    $btn-use-border: button-use-outline-border() and not $box-force-full-buttons;
+
+    $btn-bg-val: map-get-safe($bg-map, "btn-bg");
+    @if ($btn-bg-val != null) {
+        --#{$prefix}btn-bg:                         #{map-get-safe($bg-map, "btn-bg")};
+    } @else if ($set-default and $btn-use-border) {
+        --#{$prefix}btn-bg:                         var(--#{$prefix}body-bg);
+    } @else if ($set-default) {
+        --#{$prefix}btn-bg:                         var(--#{$prefix}link-color);
+    }
+
+    @if (map-has-key-safe($bg-map, "btn-fg")) {
+        --#{$prefix}btn-fg:                         #{map-get-safe($bg-map, "btn-fg")};
+    } @else if ($btn-bg-val != null) {
+        --#{$prefix}btn-fg:                         get-text-color($btn-bg-val);
+    } @else if ($set-default and $btn-use-border) {
+        --#{$prefix}btn-fg:                         var(--#{$prefix}link-color);
+    } @else if ($set-default) {
+        --#{$prefix}btn-fg:                         var(--#{$prefix}link-fg-color);
+    }
+
+    // button hover colors: if btn bg/fg have NOT been customized, base default hover colors on link colors, otherwise on customized btn colors
+    $btn-hover-bg-val: map-get-safe($bg-map, "btn-hover-bg");
+    @if ($btn-hover-bg-val != null) {
+        --#{$prefix}btn-hover-bg:                   #{map-get-safe($bg-map, "btn-hover-bg")};
+    } @else if ($btn-bg-val != null) {
+        --#{$prefix}btn-hover-bg:                   var(--#{$prefix}btn-bg);
+    } @else if ($set-default and $btn-use-border) {
+        --#{$prefix}btn-hover-bg:                   var(--#{$prefix}link-color);
+    } @else if ($set-default) {
+        --#{$prefix}btn-hover-bg:                   var(--#{$prefix}link-hover-color);
+    }
+
+    @if (map-has-key-safe($bg-map, "btn-hover-fg")) {
+        --#{$prefix}btn-hover-fg:                   #{map-get-safe($bg-map, "btn-hover-fg")};
+    } @else if ($btn-hover-bg-val != null) {
+        --#{$prefix}btn-hover-fg:                   get-text-color($btn-hover-bg-val);
+    } @else if (map-has-key-safe($bg-map, "btn-fg")) {
+        --#{$prefix}btn-hover-fg:                   var(--#{$prefix}btn-fg);
+    } @else if ($set-default and $btn-use-border) {
+        --#{$prefix}btn-hover-fg:                   var(--#{$prefix}link-fg-color);
+    } @else if ($set-default) {
+        --#{$prefix}btn-hover-fg:                   var(--#{$prefix}link-hover-fg-color);
+    }
+
+    @if (map-has-key-safe($bg-map, "btn-border")) {
+        --#{$prefix}btn-border:                     #{map-get-safe($bg-map, "btn-border")};
+    } @else if ($set-default and $btn-use-border) {
+        --#{$prefix}btn-border:                     var(--#{$prefix}btn-fg);
+    } @else if ($set-default) {
+        --#{$prefix}btn-border:                     var(--#{$prefix}btn-bg);
+    }
+
+    @if (map-has-key-safe($bg-map, "btn-hover-border")) {
+        --#{$prefix}btn-hover-border:               #{map-get-safe($bg-map, "btn-hover-border")};
+    } @else if ($set-default) {
+        --#{$prefix}btn-hover-border:               var(--#{$prefix}btn-hover-bg);
+    }
+}
+
+@mixin set-box-colors($bg-color, $include-defaults: true, $set-all-defaults: false) {
+
+    $bg-map: map-get($theme-matched-colors-merged, $bg-color);
+
+    @if (($bg-color == $body-bg) and ($bg-map != null)) {
+        @warn "A box color match for the default page body color #{$body-bg} is set in $theme-matched-colors-merged. This may lead to unpredicted results."
+    }
+
+    $li-color: null;
+    $li-hover-color: null;
+
+    $fg-color: map-get-safe($bg-map, "body-color");
+
+    @if ($fg-color != null) {
+        // if a body (fg) color is defined for a background color,
+        // then use link or link-hover colors if these have also been defined,
+        // otherwise do not generate colors for link or link-hover, but use the body (fg) color instead
+        $li-color: get-color("link-color", $fg-color, $bg-map);
+        $li-hover-color: get-color("link-hover-color", $fg-color, $bg-map);
+    } @else {
+        // if a body (fg) color is not defined for a background color, then first calculate the body (fg) color - the result will be either light or dark text
+        $fg-color: get-text-color($bg-color);
+        $li-fallback-color: get-accent-color($fg-color, 20%);
+        @if ($text-use-wcag-contrast) {
+            $li-fallback-color: get-text-color($bg-color, $li-fallback-color);
+        }
+        $li-color: map-get-safe($bg-map, "link-color");
+        @if ($li-color == null) {
+            @if check-contrast($bg-color, $link-color) {
+                // the default $link-color is usable on the background
+                $li-color: $link-color;
+            } @else {
+                // use calculated fallback color based on the body (fg) color for the links
+                $li-color: $li-fallback-color;
+            }
+        }
+        $li-hover-color: map-get-safe($bg-map, "link-hover-color");
+        @if ($li-hover-color == null) {
+            @if ($li-color == $li-fallback-color) {
+                // the default $link-color has been replaced by the fallback color, use the default body (fg) color as link hover color
+                $li-hover-color: $fg-color;
+            } @else {
+                @if check-contrast($bg-color, $link-hover-color) {
+                    // the default $link-hover-color is usable on the background
+                    $li-hover-color: $link-hover-color;
+                } @else {
+                    // use the default body (fg) color as link hover color
+                    $li-hover-color: $fg-color;
+                }
             }
         }
     }
 
-    .sub-header, // detail page
-    .text > a, // list teaser
-    .teaser-date, // list teaser
-    .intro-headline > .intro {
-        color:  $color !important;
+    // body-bg ($bg-color) --> the background color
+    // body-color ($fg-color) --> the text / foreground color
+    // link-color ($li-color) --> the color for links
+    // link-hover-color $(li-hover-color) --> the hover color for links, by default also used for button backgrounds
+    // link-fg-color ($li-fg-color) --> the text color if link color used for the background, by default used for buttons where (btn-bg = link-color and (btn-fg = link-fg-color)
+
+    @if (false and not map-has-key-safe($bg-map, "bg-color")) {
+        @debug "set-box-colors() no color match found for bg: #{$bg-color} - using fg: #{$fg-color} li: #{$li-color} li-hover: #{$li-hover-color}";
     }
 
-    .btn {
-        @include button-color-simple($color-link, $color-hover);
+    $li-fg-color: get-color("link-fg-color", #{get-text-color($li-color)}, $bg-map);
+
+    --#{$prefix}body-bg:                            #{$bg-color};
+    --#{$prefix}body-bg-rgb:                        #{to-rgb($bg-color)};
+    --#{$prefix}body-color:                         #{$fg-color};
+    --#{$prefix}link-color:                         #{$li-color};
+    --#{$prefix}link-color-rgb:                     #{to-rgb($li-color)};
+    --#{$prefix}link-hover-color:                   #{$li-hover-color};
+    --#{$prefix}link-hover-color-rgb:               #{to-rgb($li-hover-color)};
+    --#{$prefix}link-fg-color:                      #{$li-fg-color};
+
+    @if (get-color("link-fg-color", none, $bg-map) == none) {
+        // link fg hover color: if link fg color has NOT been customized, base default for hover color on configuration, otherwise on customized link fg color
+        --#{$prefix}link-hover-fg-color:            #{get-color("link-hover-fg-color",          #{get-text-color($li-hover-color)},     $bg-map)};
+    } @else {
+        --#{$prefix}link-hover-fg-color:            #{get-color("link-hover-fg-color",          #{get-text-color($li-color)},           $bg-map)};
     }
-    .btn-colored {
-        @include button-color-simple($color-link, $color-hover, false);
+
+    @if ($include-defaults) {
+        @include set-box-color-defaults($bg-map, $set-all-defaults);
+    }
+
+    @if ($bg-map != null) {
+        @each $map-key, $map-value in $bg-map {
+            @if (string.index($map-key, "cust-") == 1) {
+                --#{$prefix}#{$map-key}:            #{$map-value};
+            }
+        }
     }
 }
 
+@mixin change-colors($theme-color) {
 
+    $fg-color: get-text-color($theme-color);
 
+    --#{$prefix}main-theme: #{$theme-color};
+    --#{$prefix}main-theme-fg: #{$fg-color};
 
+    --#{$prefix}btn-bg: var(--#{$prefix}main-theme);
+    --#{$prefix}btn-fg: var(--#{$prefix}main-theme-fg);
+}

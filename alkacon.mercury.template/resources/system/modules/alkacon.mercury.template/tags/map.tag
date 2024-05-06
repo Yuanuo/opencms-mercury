@@ -23,8 +23,14 @@
     description="The initial map zoom factor. If not set, will use '13' for OSM and '14' for Google as default.
     If set to 'firstMarker' the zoom level of the first marker will be used." %>
 
+<%@ attribute name="showFacilities" type="java.lang.Boolean" required="false"
+    description="If true, show the facility information of a marker in the info window." %>
+
+<%@ attribute name="showLink" type="java.lang.Boolean" required="false"
+    description="If true, show the link of a marker in the info window." %>
+
 <%@ attribute name="showRoute" type="java.lang.Boolean" required="false"
-    description="If true, show route option for each marker in info window.
+    description="If true, show route option for each marker in the info window.
     Currently only supported for Google maps, not OSM." %>
 
 <%@ attribute name="type" type="java.lang.String" required="false"
@@ -37,6 +43,13 @@
 
 <%@ attribute name="disableEditModePlaceholder" type="java.lang.Boolean" required="false"
     description="If set, disables the map placeholder in edit mode." %>
+
+<%@ attribute name="cssPath" type="java.lang.String" required="false"
+    description="Path the map CSS file that must be loaded by JavaScript.
+    This is required in case the map is displayed in a list." %>
+
+<%@ attribute name="markerCluster" type="java.lang.Boolean" required="false"
+    description="Whether to cluster nearby markers." %>
 
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -101,9 +114,11 @@
 
 <%-- Do costly generation of JSON only if the map can be displayed --%>
 <c:if test="${not noApiKey}">
+    <fmt:message var="linkDefaultText" key="msg.page.map.link.default.text" />
 
     <%-- Generate marker list --%>
     <cms:jsonarray var="markerList" mode="object">
+
         <c:forEach var="marker" items="${markers}" varStatus="status">
 
             <%-- Note: Route markup is supported only by Google maps --%>
@@ -122,13 +137,25 @@
             </c:if>
 
             <%-- Markup for map marker info windows --%>
-            <c:set target="${marker}" property="infoMarkup"><%--
-                --%><div class="map-marker"><%--
-                --%><c:if test="${not empty marker.name}"><div class="markhead">${marker.name}</div></c:if><%--
-                --%><c:if test="${not empty marker.addressMarkup}"><div class="marktxt">${marker.addressMarkup}</div></c:if><%--
-                --%><c:if test="${not empty marker.routeMarkup}">${marker.routeMarkup}</c:if><%--
-                --%></div><%--
-            --%></c:set>
+            <c:set target="${marker}" property="infoMarkup">
+                <div class="map-marker"><%----%>
+                    <c:if test="${not empty marker.name}"><div class="markhead">${marker.name}</div></c:if>
+                    <c:if test="${showFacilities and not empty marker.facilities}">
+                        <mercury:facility-icons
+                            wheelchairAccess="${marker.facilities.value.WheelchairAccess.toBoolean}"
+                            hearingImpaired="${marker.facilities.value.HearingImpaired.toBoolean}"
+                            lowVision="${marker.facilities.value.LowVision.toBoolean}"
+                            publicRestrooms="${marker.facilities.value.PublicRestrooms.toBoolean}"
+                            publicRestroomsAccessible="${marker.facilities.value.PublicRestroomsAccessible.toBoolean}"
+                        />
+                    </c:if>
+                    <c:if test="${not empty marker.addressMarkup}"><div class="marktxt">${marker.addressMarkup}</div></c:if>
+                    <c:if test="${showLink and not empty marker.link}">
+                        <mercury:link link="${marker.link}" noExternalMarker="${true}" css="marklink" text="${linkDefaultText}" />
+                    </c:if>
+                    <c:if test="${not empty marker.routeMarkup}">${marker.routeMarkup}</c:if>
+                </div><%----%>
+            </c:set>
 
             <%-- Generate the actual JSON --%>
             <cms:jsonobject>
@@ -158,6 +185,11 @@
     <c:if test="${not empty markerList}">
         <cms:jsonvalue key="markers" value="${markerList}" />
     </c:if>
+    <c:if test="${isOsm}">
+        <c:set var="cssPath"><mercury:link-resource resource="/system/modules/alkacon.mercury.template/osmviewer/map.css" /></c:set>
+        <cms:jsonvalue key="css" value="${cssPath}" />
+    </c:if>
+    <cms:jsonvalue key="markerCluster" value="${empty markerCluster ? false : markerCluster}" />
 </cms:jsonobject>
 
 <fmt:message var="cookieMessage" key="msg.page.privacypolicy.message.map-${provider}" />
@@ -176,19 +208,18 @@ ${'<'}div class="${subelementWrapper} type-map map-${provider}"${'>'}
             <fmt:setLocale value="${cms.workplaceLocale}" />
             <cms:bundle basename="alkacon.mercury.template.messages">
                 <c:choose>
-                    <c:when test="${noApiKey}">
-                        data-placeholder='<fmt:message key="msg.page.map.${provider}.nokey" />' <%----%>
-                    </c:when>
-                    <c:otherwise>
-                        data-placeholder='<fmt:message key="msg.page.placeholder.map.${provider}" />' <%----%>
-                    </c:otherwise>
+                    <c:when test="${noApiKey}"><%--
+                    --%> data-placeholder='<fmt:message key="msg.page.map.${provider}.nokey" />' <%--
+                --%></c:when>
+                    <c:otherwise><%--
+                    --%> data-placeholder='<fmt:message key="msg.page.placeholder.map.${provider}" />' <%--
+                --%></c:otherwise>
                 </c:choose>
             </cms:bundle>
         </c:if>
     ${'>'}
     <mercury:alert-online showJsWarning="${true}" addNoscriptTags="${true}" />
     ${'</div>'}
-    <mercury:nl />
 
 </mercury:padding-box>
 

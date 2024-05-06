@@ -23,10 +23,10 @@
 
 <c:if test="${empty test ? true : test}">
     <mercury:nl />
-    <div class="${empty css ? '' : css.concat(' ')}oct-meta"><%----%>
+    <div class="${empty css ? '' : css.concat(' ')}oct-meta pivot"><%----%>
         <div class="marker"><%----%>
             <c:if test="${not empty icon}">
-                <span class="fa fa-${icon}"></span><%----%>
+                <mercury:icon icon="${icon}" tag="span" />
             </c:if>
             <jsp:invoke fragment="text" />
         </div><%----%>

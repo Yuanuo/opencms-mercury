@@ -36,50 +36,65 @@
 // 50. Title as image overlay (Detail page only)
 // 99. Default value for content section - treated internally as '4' (Content section only)
 
-@function get-col-flex-size($cols, $reduce: 0) {
+@use 'sass:math';
+
+@function get-col-float-size($cols, $reduce: 0) {
+    // this is NO LONGER USED by piece, but still used somewhere else e.g. in search.scss
     @if ($cols < 12) {
-        @return calc((100% + #{$grid-gutter-width}) * #{divide($cols, $grid-columns)} - #{(0.5 * $grid-gutter-width) + $reduce});
+        @return calc(
+            (var(--#{$prefix}piece-width) + var(--#{$prefix}gutter-x))
+            * #{math.div($cols, $grid-columns)}
+            - var(--#{$prefix}gutter-x)#{if($reduce > 0, ' + ', '')}#{if($reduce > 0, $reduce, '')}
+        );
     } @else {
-        @return 100%;
+        @return var(--#{$prefix}piece-width);
     }
 }
 
-@function get-col-float-size($cols, $reduce: 0, $gutter-width: $grid-gutter-width) {
+@function get-col-size-var($cols, $adjust: 'none', $reduce: 0) {
     @if ($cols < 12) {
-        @if (($reduce != 0) or ($gutter-width != 0)) {
-            @return calc((100% + #{$gutter-width}) * #{divide($cols, $grid-columns)} - #{$gutter-width + $reduce});
-        } @else {
-            @return 100% * $cols / $grid-columns;
-        }
+        @return calc(
+            (var(--#{$prefix}piece-width) + var(--#{$prefix}gutter-x))
+            * #{math.div($cols, $grid-columns)}
+            - (
+                var(--#{$prefix}gutter-factor) * var(--#{$prefix}gutter-x)
+                #{if($reduce > 0, ' + ', '')}#{if($reduce > 0, $reduce, '')}
+            )
+            #{if($adjust != 'none', ' + ', '')}#{if($adjust != 'none', var(--#{$prefix}piece-#{$adjust}-size-adjust), '')}
+        );
     } @else {
         @return 100%;
     }
-}
-
-@mixin make-piece-col($cols, $reduce: 0) {
-    flex: 0 0 get-col-flex-size($cols, $reduce);
 }
 
 $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column sizes for the piece visual
 
 .piece {
+    --#{$prefix}gutter-x: #{$piece-gutter-x};
+    --#{$prefix}gutter-factor: 1;
+    --#{$prefix}visual-last-margin-top: #{$piece-visual-last-margin-top};
+    --#{$prefix}visual-margin-bottom: #{$piece-visual-margin-bottom};
+    --#{$prefix}text-to-link-margin: #{$piece-text-to-link-margin};
+    --#{$prefix}piece-paragraph-margin-bottom: #{$piece-paragraph-margin-bottom};
+    --#{$prefix}piece-headings-margin-bottom: #{$piece-headings-margin-bottom};
+    --#{$prefix}intro-headings-margin-bottom: #{$intro-headings-margin-bottom};
+    --#{$prefix}piece-width: 100%;
+    --#{$prefix}piece-visual-size: var(--#{$prefix}piece-width);
+    --#{$prefix}piece-body-size: var(--#{$prefix}piece-width);
+    --#{$prefix}piece-visual-size-adjust: 0px;
+    --#{$prefix}piece-body-size-adjust: 0px;
+
     display: block;
     position: relative;
 
     > .visual {
-        margin-bottom: $default-margin-small;
+        margin-bottom: var(--#{$prefix}visual-margin-bottom);
         width: 100%;
 
         @include copyright-subtitle;
 
         > a {
             display: block;
-        }
-    }
-
-    &.only-visual {
-        > .visual {
-            margin-bottom: 0;
         }
     }
 
@@ -101,24 +116,30 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
         }
     }
 
+    &.only-visual {
+        > .visual {
+            margin-bottom: 0;
+        }
+    }
+
     &.pvl {
-        // piece visual last - however, there still may be a link behind the visual
+        // (p)iece (v)isual (l)ast - however, there still may be a link behind the visual
         > .visual {
             margin-bottom: 0;
             + .link {
-                 margin-top: $piece-visual-last-top-margin;
+                 margin-top: var(--#{$prefix}visual-last-margin-top);
             }
         }
         > .body,
         > .link {
             + .visual {
-                 margin-top: $piece-visual-last-top-margin;
+                 margin-top: var(--#{$prefix}visual-last-margin-top);
             }
         }
     }
 
     &.paj {
-        // piece align justify
+        // (p)iece (a)lign (j)ustify
         .heading > .piece-heading,
         > .visual > .subtitle,
         > .body + .link,
@@ -129,7 +150,7 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
     }
 
     &.pac {
-        // piece align centered
+        // (p)iece (a)lign (c)entered
         .heading > .piece-heading,
         > .visual > .subtitle,
         > .body + .link,
@@ -140,7 +161,7 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
     }
 
     &.par {
-        // piece align right
+        // (p)iece (a)lign (r)ight
         .heading > .piece-heading,
         .heading > .piece-heading-link,
         > .visual > .subtitle,
@@ -151,7 +172,16 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
         }
     }
 
+    &.pmv {
+        // (p)iece (m)inimum (v)isual - set width to 32px for icons
+        > .visual {
+            min-width: 32px;
+        }
+    }
+
     .heading {
+        @include use-hyphens-headings;
+
         > .piece-heading {
             text-overflow: ellipsis;
             overflow: hidden;
@@ -171,70 +201,97 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
         }
     }
 
-    @if ($piece-headings-margin-bottom != $headings-margin-bottom) {
-        .piece-heading {
-            margin-bottom: $piece-headings-margin-bottom;
-        }
-    }
-
-    @if ($piece-btn-padding != $btn-def-padding) {
-        .piece-btn {
-            padding: $piece-btn-padding;
-        }
-    }
-
-    .piece-btn-lg {
-        padding: $piece-btn-lg-padding;
-    }
-
-    > .body {
-        .text {
-            > .detail-content > *,
-            > * {
-                // add margins for all elements in text piece
-                margin-bottom: $piece-text-margin;
-                &:last-child {
-                    // last element in text must not add margin
-                    margin-bottom: 0;
-                }
-            }
-        }
-        + .link, // link may also be a sibling to the body
-        .text + .link {
-            // add margin between body / text and link
-            margin-top: $piece-text-to-link-margin;
-        }
-    }
-
-    .heading {
-        @include use-hyphens-headings;
+    .piece-heading {
+        margin-bottom: var(--#{$prefix}headings-margin-bottom);
     }
 
     > .body {
         .text {
             @include use-hyphens-text;
+
+            > .detail-content > *,
+            > * {
+                // add margins for all elements in text piece
+                margin-bottom: var(--#{$prefix}piece-paragraph-margin-bottom);
+                &:last-child {
+                    // last element in text must not add margin
+                    margin-bottom: 0;
+                }
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                margin-bottom: var(--#{$prefix}piece-headings-margin-bottom);
+            }
+        }
+        + .link, // link may also be a sibling to the body
+        .text + .link {
+            // add margin between body / text and link
+            margin-top: var(--#{$prefix}text-to-link-margin);
         }
     }
 
-    @include media-breakpoint-down(breakpoint-prev($piece-desktop-breakpoint)) {
+    // special adjustments for type-section content pieces that re not "boxed"
+    // NOTE: This is NOT done for 'paragraph' because contents with multiple paragraphs are not used like sections to create text pages
+    &.element.type-section:not(.box) {
+        // margin adjustments
+        &.only-heading {
+            // if piece element has only a header, set margin the same height as normally used by the headers
+            margin-bottom: var(--#{$prefix}headings-margin-bottom);
+        }
 
-        // uncomment this if images floating right in desktop should also float right on mobile
-        // attention: if headline is displayed above the image, this does not look good
-        // &.p-r {
-        //    > .visual {
-        //        float: right;
-        //        + div {
-        //            @include clearfix-before;
-        //        }
-        //    }
-        // }
+        &.only-text,
+        &.phb:not(.pnm) {
+
+            // if a piece element that starts with text follows a text-only piece element, reduce top margin
+            // goal: make text from 2nd element apperar as if it belongs to first element
+            +.piece.element.type-section:not(.box) {
+                &.only-text,
+                &.pnh {
+                    margin-top: calc(var(--#{$prefix}piece-paragraph-margin-bottom) - var(--#{$prefix}element-margin));
+                }
+            }
+        }
+    }
+
+     // special adjustments for paragraphs or type-section content pieces
+     &.paragraph,
+     &.element.type-section {
+        @if ($piece-btn-white-space == normal) {
+            // buttons in sections that break long text
+            .btn {
+                white-space: normal;
+                hyphens: auto;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+                text-align: left;
+
+                &.btn-block {
+                    text-align: center;
+                }
+            }
+        }
+
+        @if ($piece-text-link-decoration != $link-decoration) {
+            // links may be underlined different in section piece
+            .text a:not(.btn) {
+                text-decoration: $piece-text-link-decoration;
+                &:hover {
+                    text-decoration: $piece-text-link-hover-decoration
+                }
+            }
+        }
+    }
+
+    > .visual {
+        width: var( --#{$prefix}piece-visual-size);
+    }
+
+    @include media-breakpoint-down($piece-desktop-breakpoint) {
 
         @each  $piece-col-size in $piece-cols {
             // generate size variations for the mobile visual column
             &.p-xs-#{""+$piece-col-size} {
-                > .visual {
-                    width: get-col-float-size($piece-col-size);
-                }
+                --#{$prefix}piece-visual-size: #{get-col-size-var($piece-col-size, 'visual')};
             }
         }
 
@@ -247,46 +304,60 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
     }
 }
 
-.col-6,
-.col-md-6,
-.col-lg-6 {
-    &.flex-col {
-        // .flex-col makes single columns in a row use the complete available height
-        // a col-6 column must use the complete available height in small screens
-        // for columns that are not col-6, same height is not required since the columns will be stacked upon each other in small screens
-        > .piece.full:only-child {
+html.keyboard-nav .piece {
+    .heading {
+        > .piece-heading {
+            // must show overflow or the border may be hidden
+            overflow: visible;
+        }
+    }
+}
+
+.flex-col {
+    // .flex-col makes single columns in a row use the complete available height
+    > .piece.flex {
+        flex-grow: 1;
+    }
+    > .piece.full,
+    > .type-contact.box,
+    > .pivot:not(.piece).box {
+        &:only-child {
+            display: flex;
+            flex-direction: column;
             flex-grow: 1;
-            @include text-tile(false);
         }
     }
 }
 
 @include media-breakpoint-up($piece-desktop-breakpoint) {
 
-    .flex-col {
-        // .flex-col makes single columns in a row use the complete available height
-        > .piece.full:only-child {
-            flex-grow: 1;
-            @include text-tile(false);
-        }
-    }
-
     .piece {
 
+        &.full.only-visual,
         &.phv {
             // required for floating layouts, for example the detail page key visual
             // this makes sure a piece with an image will NOT float around a previous key visual image aligned left or right
             @include clearfix-before;
         }
 
+        &.par {
+            // (p)iece (a)lign (r)ight
+            &.only-link > .link {
+                text-align: right;
+            }
+        }
+
         &.flex {
+            --#{$prefix}gutter-factor: 0.5;
+
             display: flex;
             flex-wrap: wrap;
             flex-direction: row;
 
             >.heading,
             >.link {
-                @include make-piece-col(12);
+                // @include make-piece-col(12);
+                flex: auto;
             }
 
             > .heading,
@@ -299,23 +370,27 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
             > .visual {
                 // in flex grid there must be no bottom margin below the visual
                 margin-bottom: 0;
+                flex: 0 0 var(--#{$prefix}piece-visual-size);
+            }
+            > .body {
+                flex: 0 0 var(--#{$prefix}piece-body-size);
             }
 
             &.right {
                 > .visual {
                     order: 13;
-                    padding-left: 0.5 * $grid-gutter-width;
+                    padding-left: calc(var(--#{$prefix}gutter-factor) * var(--#{$prefix}gutter-x));
                 }
                 > .body {
-                    padding-right: 0.5 * $grid-gutter-width;
+                    padding-right: calc(var(--#{$prefix}gutter-factor) * var(--#{$prefix}gutter-x));
                 }
             }
             &.left {
                 > .visual {
-                    padding-right: 0.5 * $grid-gutter-width;
+                    padding-right: calc(var(--#{$prefix}gutter-factor) * var(--#{$prefix}gutter-x));
                 }
                 > .body {
-                    padding-left: 0.5 * $grid-gutter-width;
+                    padding-left: calc(var(--#{$prefix}gutter-factor) * var(--#{$prefix}gutter-x));
                 }
             }
 
@@ -336,37 +411,29 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
             &.left {
                 > .visual {
                     float: left;
-                    margin-right: $grid-gutter-width;
+                    margin-right: var(--#{$prefix}gutter-x);
+                }
+                > .body ul {
+                    display: flex;
+                    flex-direction: column;
                 }
             }
 
             &.right {
                 > .visual {
                     float: right;
-                    margin-left: $grid-gutter-width;
+                    margin-left: var(--#{$prefix}gutter-x);
                 }
             }
         }
 
-        @each  $piece-col-size in $piece-cols {
+        @each $piece-col-size in $piece-cols {
             // generate size variations for the visual column
             &.p-md-#{""+$piece-col-size} {
-                &.flex {
-                    > .visual {
-                        @include make-piece-col($piece-col-size);
-                    }
-                    > .body {
-                        @include make-piece-col($grid-columns - $piece-col-size, 1);
-                    }
-                }
-                &.full,
-                &.float {
-                    > .visual {
-                        width: get-col-float-size($piece-col-size );
-                    }
-                }
+                --#{$prefix}piece-visual-size: #{get-col-size-var($piece-col-size, 'visual')};
             }
         }
+        --#{$prefix}piece-body-size: calc(var(--#{$prefix}piece-width) - var(--#{$prefix}piece-visual-size) - 1px);
 
         &.p-md-0 {
             // visual is hidden from md, but visible in xs, sm
@@ -374,7 +441,7 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
                 display: none;
             }
             &.flex > .body {
-                @include make-piece-col(12);
+                flex: auto;
             }
         }
     }
@@ -388,45 +455,35 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
         text-overflow: ellipsis;
     }
     > .intro {
-        @include intro-header;
-    }
-    @if ($linked-headings-decoration != none) {
-        &:hover {
-            // decoration does not look good for intro
-            text-decoration: none;
-            > .headline {
-                text-decoration: $linked-headings-decoration;
-            }
-        }
+        line-height: 1.25;
+        font-size: 65%;
+        font-weight: $font-weight-intro-headings;
+        color: var(--#{$prefix}intro-headings-color);
+        margin-bottom: var(--#{$prefix}intro-headings-margin-bottom);
     }
 }
 
-
-// labels
-.piece .text {
-    .label {
-        display: inline-block;
-        padding: 0 0.4rem;
-        color: white;
-
-        &.label-orange {
-            background-color: $con-col-orange;
-        }
-        &.label-red {
-            background-color: $con-col-red;
-        }
-        &.label-cyan {
-            background-color: $con-col-cyan;
+a .intro-headline {
+    // decoration does not look good for intro, however must set on parent which is the hx element
+    text-decoration: none;
+    > .headline {
+        text-decoration: $linked-headings-decoration;
+    }
+    &:hover {
+        text-decoration: none;
+        > .headline {
+            text-decoration: $linked-headings-hover-decoration;
         }
     }
 }
 
 // element text that should display like piece text (use for text inserted from editor)
+//// only known usage: newsletterconfig-detail-formatter.jsp
 .element {
     .body-text {
         > * {
             // add margins for all elements in text piece
-            margin-bottom: $piece-text-margin;
+            margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
             &:last-child {
                 // last element in text must not add margin
                 margin-bottom: 0;

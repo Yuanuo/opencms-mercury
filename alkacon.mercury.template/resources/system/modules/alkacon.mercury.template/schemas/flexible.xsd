@@ -1,4 +1,4 @@
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+<xsd:schema version="1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
 
     <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/onclick-activation.xsd"/>
@@ -9,12 +9,13 @@
         <xsd:sequence>
             <xsd:element name="Flexible" type="OpenCmsFlexible" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+        <xsd:attribute name="version" type="xsd:int" use="optional" />
     </xsd:complexType>
 
     <xsd:complexType name="OpenCmsFlexible">
         <xsd:sequence>
             <xsd:element name="Title" type="OpenCmsString" />
-            <xsd:element name="Code" type="OpenCmsHtml" />
+            <xsd:element name="Code" type="OpenCmsString" />
             <xsd:element name="RequireReload" type="OpenCmsBoolean" minOccurs="0" />
             <xsd:element name="RequireCookies" type="OpenCmsBoolean" minOccurs="0" />
             <xsd:element name="OnclickActivation" type="OpenCmsOnclickActivation" minOccurs="0" />
@@ -25,6 +26,7 @@
 
     <xsd:annotation>
         <xsd:appinfo>
+            <versiontransformation>/system/modules/alkacon.mercury.template/schemas/transformations/flexible.xslt</versiontransformation>
             <resourcebundles>
                 <propertybundle name="alkacon.mercury.template.messages" />
             </resourcebundles>
@@ -44,7 +46,7 @@
                     <PropertyName>Code</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Code)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Code.help)]]></Description>
-                    <Widget>textarea</Widget>
+                    <Widget>sourcecode</Widget>
                     <WidgetConfig>12</WidgetConfig>
                     <Search>false</Search>
                 </Setting>
@@ -81,10 +83,6 @@
                     <Mapping>
                        <MapTo>property:Title</MapTo>
                        <UseDefault>true</UseDefault>
-                    </Mapping>
-                    <Mapping>
-                        <MapTo>urlName</MapTo>
-                        <UseDefault>true</UseDefault>
                     </Mapping>
                 </Setting>
             </FieldSettings>

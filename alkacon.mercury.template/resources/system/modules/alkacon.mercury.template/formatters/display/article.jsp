@@ -21,7 +21,8 @@
 <c:set var="preface"    value="${value['TeaserData/TeaserPreface'].isSet ? value['TeaserData/TeaserPreface'] : value.Preface}" />
 
 <mercury:teaser-piece
-    cssWrapper="type-article${setCssWrapper}${setEffect}"
+    teaserClass="${setTeaserClass}"
+    cssWrapper="type-article${setCssWrapperAll}"
     intro="${setShowIntro ? intro : null}"
     headline="${title}"
     preface="${preface}"
@@ -35,9 +36,11 @@
     teaserType="${displayType}"
     link="${linkToDetail}"
     linkOption="${setLinkOption}"
+    linkNewWin="${setLinkNewWin}"
     hsize="${setHsize}"
     dateFormat="${setDateFormat}"
     textLength="${value['TeaserData/TeaserPreface'].isSet ? -1 : setTextLength}"
+    headingInBody="${setHeadingInBody}"
     buttonText="${setButtonText}">
 
     <jsp:attribute name="markupVisual">

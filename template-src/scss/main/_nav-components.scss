@@ -64,6 +64,7 @@
                 content: $nav-breadcrumb-separator;
                 display: inline-block;
                 font-family: $nav-breadcrumb-separator-font;
+                font-size: $nav-breadcrumb-separator-font-size;
                 margin-right: $nav-breadcrumb-space-right;
                 color: $nav-breadcrumb-separator-color;
             }
@@ -102,11 +103,13 @@
        @include media-breakpoint-up(md) {
             border: $nav-side-border;
             box-shadow: $panel-shadow;
-            @include round-corners($nav-side-border-radius, true);
+            border-radius: $nav-side-border-radius;
+            overflow: hidden;
+            z-index: $overflow-z-index;
         }
     }
 
-    @include media-breakpoint-down(xs) {
+    @include media-breakpoint-down(sm) {
         // remove bootstrap gutter on small screens
         // we expect to be in "full width" mode here
         margin-left: -0.5 * $grid-gutter-width;
@@ -136,7 +139,7 @@
             padding: $nav-side-padding;
 
             @if ($nav-side-boxed == false) {
-                @include media-breakpoint-down(xs) {
+                @include media-breakpoint-down(sm) {
                     padding-left: $grid-gutter-width-half;
                 }
             }
@@ -158,12 +161,12 @@
                 // add caret labels to menus that have submenus
                 &[aria-controls] {
                     &::after {
+                        @include icon-font();
+                        content: "\f107"; // mercury:icon - fa-angle-down
                         position: absolute;
                         display: inline-block;
-                        font-family: ForkAwesome;
                         right: 0;
                         width: $nav-handle-right-padding;
-                        content: "\f107";
                         font-weight: normal;
                         text-align: center;
                         transform: rotate(0) translate(0px, 0px);

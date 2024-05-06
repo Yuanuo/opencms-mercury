@@ -11,7 +11,8 @@
         <uuid>3f90a2c4-74b4-11ea-8d2f-0242ac11002b</uuid>
       </link>
     </Jsp>
-    <Rank><![CDATA[19000]]></Rank>
+    <Description><![CDATA[%(key.type.m-organization.description.formatter) %(key.type.general.description.teaser.compact.in-list) %(key.type.general.description.teaser.contact)]]></Description>
+    <Rank><![CDATA[21000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[contact]]></ContainerType>
@@ -38,6 +39,9 @@
       <IncludeName><![CDATA[hsize.listTeaser]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[linkTarget.contact]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[linkOption.listTeaser]]></IncludeName>
     </Setting>
     <Setting>
@@ -50,16 +54,16 @@
       <IncludeName><![CDATA[showAddress.contact]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[showOrganization.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[compactLayout.contact]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[showOrganization.contact]]></IncludeName>
+      <IncludeName><![CDATA[showTitle.contact.false]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[showAddInfo.contact]]></IncludeName>
-    </Setting>
-    <Setting>
-      <IncludeName><![CDATA[showDescription.contact]]></IncludeName>
+      <IncludeName><![CDATA[showDescription.contact.false]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showPhone.contact]]></IncludeName>
@@ -84,6 +88,9 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[listEntryWrapper.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[listDetailLinkOverride.default]]></IncludeName>
     </Setting>
   </NewFormatter>
 </NewFormatters>

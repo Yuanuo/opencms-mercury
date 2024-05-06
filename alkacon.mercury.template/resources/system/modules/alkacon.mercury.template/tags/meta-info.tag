@@ -66,6 +66,15 @@ to find a sentence end.
     </c:otherwise>
 </c:choose>
 
+<c:choose>
+    <c:when test="${not empty cms.meta.Robots}">
+        <c:set var="pagerobots"><mercury:meta-value text="${cms.meta.Robots}" /></c:set>
+    </c:when>
+    <c:otherwise>
+        <c:set var="pagerobots">index, follow</c:set>
+    </c:otherwise>
+</c:choose>
+
 <%-- ###### Default page meta infos ###### --%>
 
 <meta charset="${cms.requestContext.encoding}">
@@ -74,7 +83,7 @@ to find a sentence end.
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <c:if test="${not empty pagedesc}"><meta name="description" content="${pagedesc}">${nl}</c:if>
 <c:if test="${not empty pagekeywords}"><meta name="keywords" content="${pagekeywords}">${nl}</c:if>
-<meta name="robots" content="index, follow">
+<meta name="robots" content="${pagerobots}">
 <meta name="revisit-after" content="7 days">
 
 <%-- ###### Facebook open graph meta infos ###### --%>
@@ -146,7 +155,7 @@ to find a sentence end.
 <c:set var="solcalImageMaxWidth" value="${2400}" />
 <c:if test="${not empty fbimage}">
     <cms:scaleImage var="imgBean" src="${fbimage}">
-        <c:if test="${not empty imgBean}">
+        <c:if test="${not empty imgBean and not fn:endsWith(imgBean.vfsUri, '.svg')}">
             <c:set var="fbSet" value="true" />
             <c:set target="${imgBean}" property="quality" value="${85}" />
             <c:set var="ib" value="${imgBean.scaleRatio['191-100']}" />
@@ -275,7 +284,7 @@ to find a sentence end.
 <%-- Twitter images must not be smaller then 300x157 and not be larger then 4096x4096 --%>
 <c:if test="${not empty twimage}">
     <cms:scaleImage var="imgBean" src="${twimage}">
-        <c:if test="${not empty imgBean}">
+        <c:if test="${not empty imgBean and not fn:endsWith(imgBean.vfsUri, '.svg')}">
             <c:set var="twSet" value="true" />
             <c:set target="${imgBean}" property="quality" value="${85}" />
             <c:choose>

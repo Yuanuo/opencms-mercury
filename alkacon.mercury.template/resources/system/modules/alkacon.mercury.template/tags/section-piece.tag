@@ -1,5 +1,5 @@
 <%@ tag pageEncoding="UTF-8"
-    display-name="section"
+    display-name="section-piece"
     body-content="tagdependent"
     trimDirectiveWhitespaces="true"
     description="Displays a content section like a paragraph." %>
@@ -36,8 +36,7 @@
     description="The tag to generate. Defaults to 'div' if not provided." %>
 
 <%@ attribute name="pieceClass" type="java.lang.String" required="false"
-    description="The class to generate. Defaults to 'piece' if not provided.
-    If this is set a special css selector 'plo-x' will be added to the generated markup where x is the pieceLayout number." %>
+    description="The class to generate. Defaults to 'piece' if not provided." %>
 
 <%@ attribute name="heading" type="java.lang.Object" required="false"
     description="The optional section heading." %>
@@ -68,7 +67,18 @@
     description="Controls if the tag body text is displayed or not. Default is 'Display as normal text'." %>
 
 <%@ attribute name="linkOption" type="java.lang.String" required="false"
-    description="Controls if and how the link is displayed. Default is 'button'." %>
+    description="Controls if and how the link is displayed. Possible values are:
+    'button':           Display a regular size link button.
+    'button-sm':        Display a small size link button.
+    'button-full':      Display a link button that is as wide as it's parent element.
+    'text':             Display the link as text, not as button.
+    'heading':          Link the heading, do not display a separate link button or text.
+    'none' / 'false':   Do not display / use the link at all.
+    Default is 'button'." %>
+
+<%@ attribute name="suppressLinks" type="java.lang.Boolean" required="false"
+    description="Controls if links are generated, or if a markup is generated without actual links. Default is 'false'.
+    This can be used in case the entire section is to be contained in one link." %>
 
 <%@ attribute name="textAlignment" type="java.lang.String" required="false"
     description="Controls the alignment of the text elements. Default is left aligned." %>
@@ -111,7 +121,16 @@
 <%@ attribute name="addHeadingId" type="java.lang.Boolean" required="false"
     description="Adds an automatically generated ID attribute for the heading, for use in anchor links.
     The ID attribute will be generated from the provided text, which will be translated according to the configured file name translation rules.
-    The result will also be all lower case." %>
+    The result will also be all lower case.
+    Default is 'false' if not provided." %>
+
+<%@ attribute name="addHeadingAnchorlink" type="java.lang.Boolean" required="false"
+    description="Adds a heading anchor link after the heading that can be used do easily bookmark or link to this heading.
+    If this option is 'true', then the value of 'addHeadingId' is ignored and the ID is always generated.
+    Default is 'false' if not provided." %>
+
+<%@ attribute name="piecePreMarkup" type="java.lang.String" required="false"
+    description="Markup to add inside the piece before the heading, body and everything else." %>
 
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -129,52 +148,38 @@
 <c:set var="showVisualMobile"   value="${empty image and empty markupVisual ? false : (empty sizeMobile ? true : sizeMobile != 0)}" />
 <c:set var="showVisual"         value="${showVisualDesktop or showVisualMobile}" />
 <c:set var="showHeading"        value="${empty heading or (hsize < 1) ? false : (empty headingOption ? true : (headingOption ne 'none'))}" />
-<c:set var="showLinkOption"     value="${empty linkOption or linkHeading ? true : (linkOption ne 'none') and (linkOption ne 'false') }" />
+<c:set var="showLinkOption"     value="${empty linkOption or linkHeading ? true : (linkOption ne 'none') and (linkOption ne 'false')}" />
 <c:set var="showLink"           value="${empty link or linkHeading ? false : showLinkOption}" />
 <c:set var="defaultText"        value="${showText and empty markupText}" />
 
-<c:if test="${showVisual and empty markupVisual}">
-    <c:set var="visualFromImage">
-        <c:set var="showImageLink"  value="${empty showImageLink ? false : showImageLink}" />
-        <c:set var="showImageZoom" value="${empty showImageZoom ? true : showImageZoom}" />
-        <mercury:link
-            link="${link}"
-            test="${showImageLink}"
-            attr="${showLink or linkHeading ? 'tabindex=\"-1\"' : ''}"
-            setTitle="${true}" >
-            <mercury:image-animated
-                image="${image}"
-                ratio="${imageRatio}"
-                setTitle="${not showImageLink}"
-                showCopyright="${showImageCopyright}"
-                showImageZoom="${showImageZoom and not showImageLink}"
-                ade="${ade}">
-                <c:set var="imageSubtext">
-                    <c:if test="${showImageSubtitle and not empty imageTitle}">
-                        <div class="subtitle"${showImageLink ? '' : ' aria-hidden=\"true\"'}>${imageTitle}</div><%----%>
-                    </c:if>
-                </c:set>
-                <c:set var="emptyImage" value="${empty imageBean}" />
-                <c:set var="imageOri" value="${' '.concat(imageOrientation)}" />
-            </mercury:image-animated>
-        </mercury:link>
-        <c:out value="${imageSubtext}" escapeXml="false" />
-    </c:set>
-</c:if>
-
 <c:choose>
 <c:when test="${showHeading or showText or showVisual or showLink}">
+
+    <c:if test="${showVisual and empty markupVisual}">
+        <%-- To set the visual css wrapper, the image orientation must be known. Also check if the image is from the icon folder. --%>
+        <mercury:image-vars
+            image="${image}"
+            ratio="${imageRatio}"
+            ade="${false}">
+                <c:set var="showVisual" value="${not empty imageBean}" />
+                <c:set var="isIconImage" value="${imageIsSvg and fn:startsWith(imageBean.resource.rootPath, '/system/modules/alkacon.mercury.theme/icons/')}" />
+                <c:set var="visualOrientation" value="${' '.concat(imageOrientation)}" />
+        </mercury:image-vars>
+    </c:if>
+
+    <%-- pmv class: (p)iece (m)inimum (v)isual - set width to 32px for icons --%>
     <mercury:piece
-        cssWrapper="${cssWrapper}"
+        cssWrapper="${cssWrapper}${isIconImage ? ' pmv' : ''}"
         attrWrapper="${attrWrapper}"
         pieceLayout="${pieceLayout}"
         sizeDesktop="${sizeDesktop}"
         sizeMobile="${sizeMobile}"
         pieceTag="${pieceTag}"
         pieceClass="${pieceClass}"
+        piecePreMarkup="${piecePreMarkup}"
         cssText="${showText and (textOption ne 'default') ? textOption : ''}${not empty cssText ? ' '.concat(cssText) : null}"
         attrVisual="${ade ? image.rdfaAttr : null}"
-        cssVisual="rs_skip${imageOri}${not empty cssVisual ? ' '.concat(cssVisual) : null}"
+        cssVisual="rs_skip${visualOrientation}${not empty cssVisual ? ' '.concat(cssVisual) : null}"
         textAlignment="${textAlignment}"
         attrBody="${ade and showLinkOption and (empty link or (link.exists and not link.isSet)) ? link.rdfaAttr : null}"
         cssBody="${defaultText ? 'default' :_null}"
@@ -183,16 +188,71 @@
 
         <jsp:attribute name="heading">
             <c:if test="${showHeading}">
-                <mercury:link link="${link}" css="piece-heading-link" test="${linkHeading}" setTitle="true">
-                    <mercury:heading text="${heading}" level="${hsize}" ade="${linkHeading ? false : ade}" css="piece-heading" addId="${addHeadingId}" />
-                </mercury:link>
+                <c:set var="headingCss" value="piece-heading" />
+                <c:if test="${addHeadingId or addHeadingAnchorlink}">
+                    <c:set var="headingId"><mercury:translate-name name="${fn:trim(heading)}" />-${fn:substringBefore(cms.element.instanceId, '-')}</c:set>
+                    <c:if test="${addHeadingAnchorlink}">
+                        <c:set var="anchorLinkSuffix"><a class="anchor-link" href="#${headingId}"></a></c:set>
+                        <c:set var="headingCss" value="piece-heading anchor-link-parent" />
+                    </c:if>
+                </c:if>
+                <c:choose>
+                    <c:when test="${linkHeading and not suppressLinks}">
+                        <mercury:heading
+                            level="${hsize}"
+                            suffix="${anchorLinkSuffix}"
+                            tabindex="${empty anchorLinkSuffix}"
+                            ade="${false}"
+                            css="${headingCss}"
+                            id="${headingId}">
+                            <jsp:attribute name="markupText">
+                                <mercury:link link="${link}" css="piece-heading-link" setTitle="true">
+                                    <c:out value="${heading}" />
+                                </mercury:link>
+                            </jsp:attribute>
+                        </mercury:heading>
+                    </c:when>
+                    <c:otherwise>
+                        <mercury:heading
+                            text="${heading}"
+                            level="${hsize}"
+                            suffix="${anchorLinkSuffix}"
+                            ade="${ade}"
+                            css="${headingCss}"
+                            id="${headingId}"
+                        />
+                    </c:otherwise>
+                </c:choose>
             </c:if>
         </jsp:attribute>
 
         <jsp:attribute name="visual">
+            <%-- Note: It is important set the image inside the attribute, because otherwise the cssgrid for the image size is not calculated correctly. --%>
+            <%-- However, to set the visual css wrapper, the image orientation must be known - hence the image vars must be read above. --%>
             <c:choose>
-                <c:when test="${not empty visualFromImage}">
-                    <c:out value="${visualFromImage}" escapeXml="false" />
+                <c:when test="${showVisual and empty markupVisual}">
+                    <c:set var="showImageLink"  value="${empty showImageLink or suppressLinks ? false : showImageLink}" />
+                    <c:set var="showImageZoom" value="${suppressLinks ? false : (empty showImageZoom ? true : showImageZoom)}" />
+                    <mercury:link
+                        link="${link}"
+                        test="${showImageLink}"
+                        attr="${showLink or linkHeading ? 'tabindex=\"-1\"' : ''}"
+                        setTitle="${true}" >
+                        <mercury:image-animated
+                            image="${image}"
+                            ratio="${imageRatio}"
+                            setTitle="${not showImageLink}"
+                            showCopyright="${showImageCopyright}"
+                            showImageZoom="${showImageZoom and not showImageLink}"
+                            ade="${ade}">
+                            <c:set var="imageSubtext">
+                                <c:if test="${showImageSubtitle and not empty imageTitle}">
+                                    <div class="subtitle"${showImageLink ? '' : ' aria-hidden=\"true\"'}>${imageTitle}</div><%----%>
+                                </c:if>
+                            </c:set>
+                        </mercury:image-animated>
+                    </mercury:link>
+                    <c:out value="${imageSubtext}" escapeXml="false" />
                 </c:when>
                 <c:when test="${showVisual}">
                     <jsp:invoke fragment="markupVisual"/>
@@ -223,12 +283,15 @@
                     <c:when test="${linkOption eq 'text'}">
                         <c:set var="linkCss" value="piece-text-link" />
                     </c:when>
+                    <c:when test="${fn:startsWith(linkOption, 'custom=')}">
+                        <c:set var="linkCss" value="${fn:substringAfter(linkOption, 'custom=')}" />
+                    </c:when>
                     <c:otherwise>
                         <%-- default is 'button' --%>
                         <c:set var="linkCss" value="btn piece-btn" />
                     </c:otherwise>
                 </c:choose>
-                <mercury:link link="${link}" css="${linkCss}"/>
+                <mercury:link link="${link}" css="${linkCss}" createSpan="${suppressLinks}" />
             </c:if>
         </jsp:attribute>
 

@@ -19,23 +19,35 @@
 <c:set var="settings" value="${cms.element.settings}" />
 <c:set var="wrappedSettings" value="${cms.element.setting}" />
 
-<mercury:nl />
-<div class="element type-static-list list-content ${settings.listCssWrapper}${' '}${settings.listDisplay}${' '}${settings.cssWrapper}${' '}${cms.isEditMode ? 'oc-point-T-25_L15' : ''}"><%----%>
-<mercury:nl />
-
-    <%-- ####### Check if list formatters are compatible ######## --%>
+<c:set var="listCompatibilityMarkup">
+    <%-- Check if list formatters are compatible. --%>
     <mercury:list-compatibility
         settings="${settings}"
         types="${content.valueList.TypesToCollect}"
+        listType="static"
         listTitle="${value.Title}"
-        isStaticList="true"
     />
+</c:set>
+
+<mercury:nl />
+<div class="element type-static-list list-content <%--
+--%>${not empty settings.listCssWrapper ? settings.listCssWrapper.concat(' ') : ''}<%--
+--%>${not empty settings.listDisplay ? settings.listDisplay.concat(' ') : ''}<%--
+--%>${not empty settings.cssWrapper ? settings.cssWrapper.concat(' ') : ''}<%--
+--%>${not empty listDisplayType ? 'list-'.concat(listDisplayType).concat(' ') : ''}<%--
+--%>${cms.isEditMode ? 'oc-point-T-25_L15' : ''}"><%----%>
+<mercury:nl />
+
+    <c:if test="${not isCompatible}">
+        ${listCompatibilityMarkup}
+    </c:if>
 
     <c:if test="${isCompatible}">
 
         <mercury:heading level="${wrappedSettings.listHsize.toInteger}" text="${value.Title}" css="heading pivot" />
 
         <c:set var="listWrapper" value="${settings.listWrapper}${' '}${settings.requiredListWrapper}" />
+        <c:set var="listWrapper" value="${fn:replace(listWrapper, 'row-tile', 'row')}" />
         <c:set var="listTag" value="${wrappedSettings.listTag.isSet ? wrappedSettings.listTag : 'ul' }" />
         <c:set var="instanceId"><mercury:idgen prefix="li" uuid="${cms.element.instanceId}" /></c:set>
 
@@ -56,13 +68,11 @@
                 />
             ${'</'}${listTag}${'>'}
 
-            <%-- ####### Boxes to create new entries in case of empty result ######## --%>
-            <c:if test="${cms.isEditMode and (search.numFound == 0)}">
-                <mercury:list-types types="${content.valueList.TypesToCollect}" var="types" uploadFolder="${cms.getBinaryUploadFolder(content)}" />
-                <c:forEach var="createType" items="${types}">
-                    <mercury:list-messages type="${createType}" defaultCats="${content.value.Category}"  uploadFolder="${cms.getBinaryUploadFolder(content)}"/>
-                </c:forEach>
-            </c:if>
+            <%-- ####### Displays notice in case of empty list result ######## --%>
+            <mercury:list-messages
+                search="${search}"
+                types="${content.valueList.TypesToCollect}"
+                uploadFolder="${cms.getBinaryUploadFolder(content)}" />
 
         </div><%----%>
         <mercury:nl />

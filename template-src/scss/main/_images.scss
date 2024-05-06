@@ -64,25 +64,88 @@ aside img {
 .image-src-box {
     width: 100%;
 
-    img {
+    img,
+    .img {
         width: 100%;
+
+        &.external {
+            object-fit: cover;
+            object-position: center;
+        }
+    }
+
+    &.presized,
+    &.original-size {
+        position: relative;
+
+        > .copyright.image-copyright { // must have both selectors here in order to make the rule more important
+            position: absolute;
+            @include image-copyright;
+        }
     }
 
     &.presized {
-        position: relative;
+
         height: 0;
         display: block;
         // padding-bottom is calculated according to ratio and rendered as inline style in HTML
 
-        img {
+        img,
+        .img {
             position: absolute;
             top: 0;
             left: 0;
             height: 100%;
         }
+    }
 
-        > .image-copyright {
-            @include image-copyright;
+    &.original-size {
+
+        img,
+        .img {
+            height: auto;
         }
     }
+}
+
+// Inline SVG images
+.svg-inline.img {
+     > svg {
+        width: 100%;
+        height: auto;
+    }
+
+    &.fill-body-color > svg {
+        fill: var(--#{$prefix}body-color);
+    }
+
+    &.fill-theme-color > svg {
+        fill: var(--#{$prefix}main-theme);
+    }
+
+    &.fill-highlight-color > svg {
+        fill: var(--#{$prefix}highlight-color);
+    }
+
+    &.fill-headings-color > svg {
+        fill: var(--#{$prefix}headings-color);
+    }
+}
+
+.ico-img,
+.ico-svg {
+    display: inline-block;
+    line-height: 1;
+}
+
+.ico-img > img {
+    vertical-align: bottom;
+    height: 1em;
+    width: auto;
+}
+.ico-svg > svg {
+    vertical-align: bottom;
+    fill: currentColor;
+    height: 1em;
+    width: auto;
 }

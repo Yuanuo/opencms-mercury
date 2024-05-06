@@ -13,6 +13,8 @@
 <mercury:init-messages>
 <cms:formatter var="content" val="value">
 
+<mercury:load-plugins group="detail-setting-defaults" type="jsp-nocache" />
+
 <mercury:setting-defaults>
 
 <c:set var="pieceLayout"        value="${setting.pieceLayout.toInteger}" />
@@ -30,15 +32,14 @@
 <c:set var="headingOption"      value="${setting.headingOption.toString}" />
 <c:set var="textOption"         value="${setting.textOption.toString}" />
 
-<c:set var="addHeadingId"       value="${cms.sitemapConfig.attribute['template.section.add.heading.id'].toBoolean}" />
-
 <mercury:section-piece
     cssWrapper="element type-section${setCssWrapperAll}"
     pieceLayout="${pieceLayout < 11 ? pieceLayout : 4}"
     sizeDesktop="${sizeDesktop}"
     sizeMobile="${sizeMobile}"
     heading="${value.Title}"
-    addHeadingId="${addHeadingId}"
+    addHeadingId="${cms.sitemapConfig.attribute['template.section.add.heading.id'].toBoolean}"
+    addHeadingAnchorlink="${cms.sitemapConfig.attribute['template.section.add.heading.anchorlink'].toBoolean}"
     image="${value.Image}"
     text="${value.Text}"
     link="${value.Link}"

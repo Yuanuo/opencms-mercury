@@ -21,7 +21,7 @@
 <c:set var="preface" value="${value.Preface}" />
 
 <mercury:teaser-piece
-    cssWrapper="type-imageseries${setCssWrapper}${setEffect}"
+    cssWrapper="type-imageseries${setCssWrapperAll}"
     intro="${setShowIntro ? intro : null}"
     headline="${title}"
     preface="${preface}"
@@ -34,9 +34,11 @@
     teaserType="${displayType}"
     link="${linkToDetail}"
     linkOption="${setLinkOption}"
+    linkNewWin="${setLinkNewWin}"
     hsize="${setHsize}"
     dateFormat="${setDateFormat}"
     textLength="${setTextLength}"
+    headingInBody="${setHeadingInBody}"
     buttonText="${setButtonText}">
 
     <jsp:attribute name="markupVisual">
@@ -48,7 +50,7 @@
                 test="${not empty image}"
                 setTitle="${false}"
                 showCopyright="${setShowCopyright}">
-                <span class="centered fa fa-picture-o"></span>
+                <mercury:icon icon="picture-o" tag="span" cssWrapper="centered" />
             </mercury:image-animated>
         </c:if>
     </jsp:attribute>

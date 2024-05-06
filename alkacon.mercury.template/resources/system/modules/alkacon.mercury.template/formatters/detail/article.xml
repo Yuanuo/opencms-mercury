@@ -11,10 +11,12 @@
         <uuid>4e6c6ad3-3a70-43da-a265-30a2c6c9e026</uuid>
       </link>
     </Jsp>
-    <Rank><![CDATA[3000]]></Rank>
+    <Description><![CDATA[%(key.type.m-article.description.formatter) %(key.type.general.description.detail)]]></Description>
+    <Rank><![CDATA[20000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[article]]></ContainerType>
       </Types>
     </Match>
@@ -42,10 +44,31 @@
       <IncludeName><![CDATA[keyPieceLayout.detail]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[keyPieceSizeDesktop.detail]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[keyPiecePrefacePos.detail]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[cssWrapperKeyPiece.detail]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[keyPieceOrigin.detail]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[keyPieceimageRatio.detail]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[pieceLayout.detail]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[pieceLayoutAlternating.detail]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[pieceLayoutSizeDesktop.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatioParagraphs.detail]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[cssWrapperParagraphs.detail]]></IncludeName>
@@ -55,9 +78,6 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[dateFormat.default]]></IncludeName>
-    </Setting>
-    <Setting>
-      <IncludeName><![CDATA[imageRatio.detail]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[effect.tile]]></IncludeName>
@@ -101,6 +121,11 @@
       <Order><![CDATA[5000]]></Order>
     </MetaMapping>
     <MetaMapping>
+      <Key><![CDATA[Robots]]></Key>
+      <Element><![CDATA[MetaInfo/Robots]]></Element>
+      <Order><![CDATA[5000]]></Order>
+    </MetaMapping>
+    <MetaMapping>
       <Key><![CDATA[ogIntroTeaser]]></Key>
       <Element><![CDATA[TeaserData/TeaserIntro]]></Element>
       <Order><![CDATA[5000]]></Order>
@@ -118,6 +143,11 @@
     <MetaMapping>
       <Key><![CDATA[ogImageTeaser]]></Key>
       <Element><![CDATA[TeaserData/TeaserImage]]></Element>
+      <Order><![CDATA[5000]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[navPathRes]]></Key>
+      <Element><![CDATA[NavPathRes]]></Element>
       <Order><![CDATA[5000]]></Order>
     </MetaMapping>
     <MetaMapping>

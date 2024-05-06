@@ -26,6 +26,7 @@
 <c:set var="keyPieceLayout"         value="${setting.keyPieceLayout.toInteger}" />
 <c:set var="hsize"                  value="${setting.hsize.toInteger}" />
 <c:set var="showMap"                value="${setting.showMap.toBoolean}" />
+<c:set var="showMapOnClick"         value="${setting.showMap.toString eq 'onclick'}" />
 <c:set var="mapRatio"               value="${setting.mapRatio.toString}" />
 <c:set var="mapZoom"                value="${setting.mapZoom.toString}" />
 <c:set var="showLocation"           value="${value.Address.isSet and setting.showLocation.toBoolean}" />
@@ -40,54 +41,37 @@
 
 <c:if test="${showFacilities and value.Facilities.isSet}">
     <c:set var="accessibleFacilities">
-        <div class="accessible"><%----%>
-            <c:if test="${value.Facilities.value.WheelchairAccess.toBoolean}">
-                <div title="<fmt:message key='label.Facility.WheelchairAccess' />" tabindex="0" data-toggle="tooltip" class="acc-icon"><%----%>
-                    <span class="acc-inner"><%----%>
-                        <span class="fa fa-wheelchair"></span><%----%>
-                     </span><%----%>
-                </div><%----%>
-            </c:if>
-            <c:if test="${value.Facilities.value.HearingImpaired.toBoolean}">
-                <div title="<fmt:message key='label.Facility.HearingImpaired' />" tabindex="0" data-toggle="tooltip" class="acc-icon"><%----%>
-                    <span class="acc-inner"><%----%>
-                        <span class="fa fa-assistive-listening-systems"></span><%----%>
-                    </span><%----%>
-                </div><%----%>
-            </c:if>
-            <c:if test="${value.Facilities.value.LowVision.toBoolean}">
-                <div title="<fmt:message key='label.Facility.LowVision' />" tabindex="0" data-toggle="tooltip" class="acc-icon"><%----%>
-                    <span class="acc-inner"><%----%>
-                        <span class="fa fa-low-vision"></span><%----%>
-                    </span><%----%>
-                </div><%----%>
-            </c:if>
-            <c:if test="${value.Facilities.value.PublicRestrooms.toBoolean}">
-                <div title="<fmt:message key='label.Facility.PublicRestrooms' />" tabindex="0" data-toggle="tooltip" class="acc-icon"><%----%>
-                    <span class="acc-inner"><%----%>
-                        <span class="fa fa-male"></span><%----%>
-                        <span class="fa fa-female"></span><%----%>
-                    </span><%----%>
-                </div><%----%>
-            </c:if>
-            <c:if test="${value.Facilities.value.PublicRestroomsAccessible.toBoolean}">
-                <div title="<fmt:message key='label.Facility.PublicRestroomsAccessible' />" tabindex="0" data-toggle="tooltip" class="acc-icon"><%----%>
-                    <span class="acc-inner acc-wc"><%----%>
-                        <span class="fa fa-wheelchair"></span><%----%>
-                    </span><%----%>
-                    <span class="acc-add acc-wc"><%----%>
-                        <span class="fa fa-male"></span><%----%>
-                        <span class="fa fa-female"></span><%----%>
-                    </span><%----%>
-                </div><%----%>
-            </c:if>
-        </div><%----%>
-        <mercury:nl />
+        <mercury:facility-icons
+            useTooltip="${true}"
+            wheelchairAccess="${value.Facilities.value.WheelchairAccess.toBoolean}"
+            hearingImpaired="${value.Facilities.value.HearingImpaired.toBoolean}"
+            lowVision="${value.Facilities.value.LowVision.toBoolean}"
+            publicRestrooms="${value.Facilities.value.PublicRestrooms.toBoolean}"
+            publicRestroomsAccessible="${value.Facilities.value.PublicRestroomsAccessible.toBoolean}"
+        />
     </c:set>
 </c:if>
 
+<c:if test="${showMapOnClick and value.Coord.isSet}">
+    <c:set var="poiId"><mercury:idgen prefix='poi' uuid='${cms.element.id}' /></c:set>
+    <c:choose>
+        <c:when test="${param.showmap == null}">
+            <c:set var="linkMarkup">
+                <c:set var="pageLink" value="${cms.detailRequest ? cms.detailContent.sitePath : cms.requestContext.uri}" />
+                <c:set var="queryString"><c:out value="${pageContext.request.queryString}" /></c:set>
+                <a class="btn" href="${cms.wrap[pageLink].toLink}?${queryString}${empty queryString ? '' : '&'}showmap#${poiId}" data-bs-toggle="map"><%----%>
+                    <fmt:message key="msg.page.poi.showmap" />
+                </a><%----%>
+            </c:set>
+        </c:when>
+        <c:otherwise>
+            <c:set var="showMap" value="${true}" />
+        </c:otherwise>
+    </c:choose>
+</c:if>
+
 <mercury:nl />
-<div class="detail-page type-poi layout-${keyPieceLayout}${setCssWrapper123}"><%----%>
+<div class="detail-page type-poi layout-${keyPieceLayout}${setCssWrapper123}"${empty poiId ? '' : ' '.concat('id=\"').concat(poiId).concat('\"')}><%----%>
 <mercury:nl />
 
 <mercury:piece
@@ -105,7 +89,6 @@
     </jsp:attribute>
 
     <jsp:attribute name="text">
-
         <c:if test="${showLocation}">
             <div class="adr" <%--
             --%>itemprop="address" itemscope <%--
@@ -135,8 +118,8 @@
 
     <jsp:attribute name="visual">
         <c:if test="${showMap and not preview and value.Coord.isSet}">
+            <c:set var="id"><mercury:idgen prefix='poimap' uuid='${cms.element.instanceId}' /></c:set>
             <mercury:location-vars data="${content}" addMapInfo="true" >
-                <c:set var="id"><mercury:idgen prefix='poimap' uuid='${cms.element.instanceId}' /></c:set>
                 <mercury:map
                     provider="auto"
                     id="${id}"
@@ -144,6 +127,8 @@
                     zoom="${mapZoom}"
                     markers="${[locData]}"
                     subelementWrapper="poi-map"
+                    showFacilities="${true}"
+                    showLink="${true}"
                 />
             </mercury:location-vars>
             <mercury:nl />
@@ -154,6 +139,10 @@
                 <fmt:message key="msg.page.poi.nomap" />
             </jsp:attribute>
         </mercury:alert>
+    </jsp:attribute>
+
+    <jsp:attribute name="link">
+        ${linkMarkup}
     </jsp:attribute>
 
 </mercury:piece>

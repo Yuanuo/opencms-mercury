@@ -1,0 +1,161 @@
+// This program is part of the OpenCms Mercury Template.
+//
+// Copyright (c) Alkacon Software GmbH & Co. KG (http://www.alkacon.com)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+/**********
+ * Source file: _root.scss
+ */
+
+:root,
+.box-body-base {
+    // colors
+    --#{$prefix}body-bg: #{$body-bg};
+    --#{$prefix}body-bg-rgb: #{to-rgb($body-bg)};
+    --#{$prefix}body-color: #{$body-color};
+
+    --#{$prefix}link-color: #{$link-color};
+    --#{$prefix}link-color-rgb: #{to-rgb($link-color)};
+    --#{$prefix}link-hover-color: #{$link-hover-color};
+    --#{$prefix}link-hover-color-rgb: #{to-rgb($link-hover-color)};
+    --#{$prefix}link-fg-color: #{$link-fg-color};
+    --#{$prefix}link-hover-fg-color: #{$link-hover-fg-color};
+    --#{$prefix}link-opacity: 1.0;
+
+    --#{$prefix}main-theme: #{$main-theme};
+    --#{$prefix}main-theme-rgb: #{to-rgb($main-theme)};
+    --#{$prefix}main-theme-fg: #{$main-theme-fg};
+    --#{$prefix}main-theme-hover: #{$main-theme-hover};
+    --#{$prefix}main-theme-hover-fg: #{$main-theme-hover-fg};
+
+    --#{$prefix}headings-color: #{$headings-color};
+
+    @if ($linked-headings-color != unset) {
+        --#{$prefix}linked-headings-color: #{$linked-headings-color};
+    }
+    @if ($linked-headings-hover-color != unset) {
+        --#{$prefix}linked-headings-hover-color: #{$linked-headings-hover-color};
+    }
+    @if ($intro-headings-color != $main-theme) {
+        --#{$prefix}intro-headings-color: #{$intro-headings-color};
+    } @else {
+        --#{$prefix}intro-headings-color: var(--#{$prefix}main-theme);
+    }
+
+    --#{$prefix}highlight-color: #{$highlight-color};
+    --#{$prefix}highlight-color-rgb: #{to-rgb($highlight-color)};
+    --#{$prefix}highlight-fg-color: #{$highlight-fg-color};
+    --#{$prefix}highlight-border-color: #{$highlight-border-color};
+    --#{$prefix}highlight-border-fg-color: #{$highlight-border-fg-color};
+
+    // buttons
+    @if ($btn-bg != $main-theme) {
+        --#{$prefix}btn-bg: #{$btn-bg};
+        --#{$prefix}btn-fg: #{$btn-fg};
+    } @else {
+        --#{$prefix}btn-bg: var(--#{$prefix}main-theme);
+        --#{$prefix}btn-fg: var(--#{$prefix}main-theme-fg);
+    }
+    @if ($btn-hover-bg != $main-theme-hover) {
+        --#{$prefix}btn-hover-bg: #{$btn-hover-bg};
+        --#{$prefix}btn-hover-fg: #{$btn-hover-fg};
+    } @else {
+        --#{$prefix}btn-hover-bg: var(--#{$prefix}main-theme-hover);
+        --#{$prefix}btn-hover-fg: var(--#{$prefix}main-theme-hover-fg);
+    }
+    --#{$prefix}btn-border: #{$btn-border};
+    --#{$prefix}btn-hover-border: #{$btn-hover-border};
+}
+
+:root {
+    // body
+    --#{$prefix}body-font-family: #{inspect($font-family-base)};
+    --#{$prefix}body-font-size:  #{$font-size-base};
+    --#{$prefix}body-font-weight: #{$font-weight-base};
+    --#{$prefix}body-line-height: #{$line-height-base};
+    --#{$prefix}font-weight-bold:  #{$font-weight-bold};
+
+    --#{$prefix}disabled-color: #{$disabled-color};
+    --#{$prefix}disabled-fg-color: #{$disabled-fg-color};
+
+    --#{$prefix}main-theme-base: #{$main-theme};
+
+    --#{$prefix}white: #{$white};
+    --#{$prefix}grey-lighter: #{$grey-lighter};
+    --#{$prefix}grey-light: #{$grey-light};
+    --#{$prefix}grey: #{$grey};
+
+    --#{$prefix}text-dark: #{$text-dark};
+    --#{$prefix}text-light: #{$text-light};
+
+    --#{$prefix}nav-toggle-bg: #{$nav-toggle-bg};
+    --#{$prefix}nav-toggle-fg: #{$nav-toggle-fg};
+
+    // fonts
+    @if ($font-family-headings != $font-family-base) {
+        --#{$prefix}font-family-headings: #{inspect($font-family-headings)};
+    } @else {
+        --#{$prefix}font-family-headings: var(--#{$prefix}body-font-family);
+    }
+    @if ($btn-font-family != $font-family-base) {
+        --#{$prefix}btn-font-family: #{inspect($btn-font-family)};
+    } @else {
+        --#{$prefix}btn-font-family: var(--#{$prefix}body-font-family);
+    }
+    --#{$prefix}font-monospace: #{inspect($font-family-monospace)};
+
+    // headings
+    @if ($font-weight-headings != $font-weight-base) {
+        --#{$prefix}font-weight-headings: #{inspect($font-weight-headings)};
+    } @else {
+        --#{$prefix}font-weight-headings: var(--#{$prefix}body-font-weight);
+    }
+    --#{$prefix}font-style-headings: #{$font-style-headings};
+
+    // border radius
+    --#{$prefix}border-radius: #{$default-border-radius};
+    --#{$prefix}btn-border-radius: #{$btn-border-radius};
+    --#{$prefix}image-border-radius: #{$image-border-radius};
+
+    // margins
+    --#{$prefix}default-margin: #{$default-margin};
+    --#{$prefix}default-margin-small: #{$default-margin-small};
+    --#{$prefix}default-margin-verysmall: #{$default-margin-verysmall};
+
+    --#{$prefix}element-margin: #{$element-margin};
+    --#{$prefix}ws-margin: #{$ws-margin};
+    --#{$prefix}box-padding: #{$box-padding};
+
+    --#{$prefix}paragraph-margin-bottom: #{$paragraph-margin-bottom};
+
+    @if ($headings-margin-bottom != $paragraph-margin-bottom) {
+        --#{$prefix}headings-margin-bottom: #{$headings-margin-bottom};
+    } @else {
+        --#{$prefix}headings-margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
+    }
+
+}
+
+.copyright {
+    --#{$prefix}copyright-padding: #{$copyright-padding};
+    --#{$prefix}copyright-font-size: #{$copyright-font-size};
+    --#{$prefix}copyright-color: #{$copyright-color};
+    --#{$prefix}copyright-bg-color: #{$copyright-bg-color};
+    --#{$prefix}copyright-opacity: #{$copyright-opacity};
+    --#{$prefix}copyright-pos-right: initial;
+    --#{$prefix}copyright-border-radius: #{$copyright-border-radius} 0 0 0;
+    --#{$prefix}copyright-font-family: var(--#{$prefix}body-font-family);
+    --#{$prefix}copyright-text-shadow: none;
+}

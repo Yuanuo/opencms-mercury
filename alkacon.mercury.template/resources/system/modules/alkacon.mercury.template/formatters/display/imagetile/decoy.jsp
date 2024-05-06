@@ -29,6 +29,8 @@
 <c:set var="title"              value="${value.Title}" />
 <c:set var="image"              value="${value.Image}" />
 
+<mercury:list-badge var="badge" type="decoy" test="${cms.isEditMode}" />
+
 <c:if test="${showPreface}">
     <c:set var="preface"        value="${value.Preface}" />
     <c:set var="minHeight" value="min-height show-preface" />
@@ -44,30 +46,33 @@
 <c:set var="imgRatio" value="${ratio}" />
 
 <c:choose>
-<c:when test="${squareGrid eq '4'}">
-    <c:set var="tileClassLarge" value="square-xs-12 square-xl-6" />
-    <c:set var="tileClassSmall" value="square-xs-12 square-md-6 square-xl-3" />
-</c:when>
-<c:otherwise>
-    <c:set var="tileClassLarge" value="square-xs-12 square-xl-8" />
-    <c:set var="tileClassSmall" value="square-xs-12 square-md-6 square-xl-4" />
-</c:otherwise>
+    <c:when test="${squareGrid eq '4'}">
+        <c:set var="tileClassLarge" value="square-xs-12 square-xl-6" />
+        <c:set var="tileClassSmall" value="square-xs-12 square-md-6 square-xl-3" />
+    </c:when>
+    <c:otherwise>
+        <c:set var="tileClassLarge" value="square-xs-12 square-xl-8" />
+        <c:set var="tileClassSmall" value="square-xs-12 square-md-6 square-xl-4" />
+    </c:otherwise>
 </c:choose>
 
 <c:choose>
-<c:when test="${firstSquare eq 'firstOnlyLarge'}">
-    <c:set var="firstLarge" value="${(param.resultPage eq 1) and (param.resultOnPage eq 1)}" />
-</c:when>
-<c:when test="${firstSquare eq 'firstOnPageLarge'}">
-    <c:set var="firstLarge" value="${param.resultOnPage eq 1}" />
-</c:when>
-<c:when test="${firstSquare eq 'firstOnPageFlip'}">
-    <c:set var="firstLarge" value="${param.resultOnPage eq 1}" />
-    <c:set var="firstOnPageFlip" value="${(param.resultPage % 2) eq 0}" />
-</c:when>
+    <c:when test="${firstSquare eq 'firstOnlyLarge'}">
+        <c:set var="firstLarge" value="${(param.resultPage eq 1) and (param.resultOnPage eq 1)}" />
+        <c:set var="addClear" value="${squareGrid eq '4' ? (param.resultInList eq 6) : (param.resultInList eq 4)}" />
+    </c:when>
+    <c:when test="${firstSquare eq 'firstOnPageLarge'}">
+        <c:set var="firstLarge" value="${param.resultOnPage eq 1}" />
+        <c:set var="addClear" value="${firstLarge ? true : (squareGrid eq '4' ? (param.resultOnPage eq 6) : (param.resultOnPage eq 4))}" />
+    </c:when>
+    <c:when test="${firstSquare eq 'firstOnPageFlip'}">
+        <c:set var="firstLarge" value="${param.resultOnPage eq 1}" />
+        <c:set var="firstOnPageFlip" value="${(param.resultPage % 2) eq 0}" />
+        <c:set var="addClear" value="${firstLarge ? true : (squareGrid eq '4' ? (param.resultOnPage eq 6) : (param.resultOnPage eq 4))}" />
+    </c:when>
 </c:choose>
 
-<c:if test="${ratio eq '16-9'}"><c:set var="imgRatio" value="1600-920" /></c:if>
+<c:if test="${ratio eq '16-9'}"><c:set var="imgRatio" value="1600-960" /></c:if>
 <c:choose>
     <c:when test="${firstLarge}">
         <c:set var="tileClass" value="square-col square-${ratio} square-large ${minHeight}${' '}${tileClassLarge}" />
@@ -79,6 +84,9 @@
         <c:set var="tileClass" value="square-col square-${ratio} square-small ${minHeight}${' '}${tileClassSmall}" />
     </c:otherwise>
 </c:choose>
+<c:if test="${addClear}">
+    <c:set var="tileClass" value="${tileClass} clear-row" />
+</c:if>
 
 <c:if test="${not empty param.instancedate}">
     <c:set var="linkParameters">?instancedate=${param.instancedate}</c:set>
@@ -101,10 +109,10 @@
 
         <div class="text-overlay"><%----%>
             <c:if test="${not empty dateStr}"><div class="teaser-date">${dateStr}</div></c:if>
-            <h2 class="title"><c:out value="${title}" /></h2><%----%>
+            <h2 class="title"><c:out value="${title}" />${badge}</h2><%----%>
             <c:if test="${not empty preface}"><h3 class="preface"><c:out value="${preface}" /></h3></c:if>
         </div><%----%>
-        <c:if test="${showImageCopyright}"><div class="square-copyright">${copyright}</div></c:if>
+        <c:if test="${showImageCopyright}"><div class="copyright">${copyright}</div></c:if>
     </mercury:link>
 
     </div><%----%>

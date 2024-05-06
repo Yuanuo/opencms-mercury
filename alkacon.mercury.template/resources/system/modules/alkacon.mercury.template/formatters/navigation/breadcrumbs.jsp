@@ -42,20 +42,25 @@
                             or (navElem.info ne 'ignoreInDefaultNav')}">
                             <c:set var="navImage" value="${navElem.navImage}" />
                             <c:set var="navText" value="${(empty navElem.navText or fn:startsWith(navElem.navText, '???'))
-                                ? (empty navElem.navImage ? navElem.title : null) : navElem.navText}" />
+                                ? (empty navImage ? navElem.title : null) : navElem.navText}" />
                             <c:if test="${(not empty navText) or (not empty navImage)}">
                                 <c:set var="navLink"><cms:link>${navElem.resourceName}</cms:link></c:set>
                                 <c:if test="${breadcrumbsFullPath or (navLink ne lastNavLink)}">
                                     <c:set var="lastNavLink" value="${navLink}" />
-                                    <c:out value='<li><a href="${navLink}">' escapeXml="false" />
+                                    <c:out value='<li><a href=\"${navLink}\">' escapeXml="false" />
                                     <c:if test="${not empty navImage}">
+                                        <c:set var="navTitle" value="${empty navText ? navElem.title : null}" />
                                         <c:set var="navImageMarkup">
                                             <c:choose>
                                                 <c:when test="${fn:startsWith(navImage, '/')}">
-                                                    <img src="<cms:link>${navImage}</cms:link>" height="12" width="12" /><%----%>
+                                                    <img src="<cms:link>${navImage}</cms:link>" height="12" width="12"<%--
+                                                    --%><c:if test="${not empty navTitle}">
+                                                            <c:out value=" title=\"${navTitle}\"" escapeXml="false" />
+                                                        </c:if><%--
+                                                    --%>/><%----%>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <i class="fa fa-<c:out value='${navImage}' escapeXml="true" />"></i><%----%>
+                                                    <mercury:icon icon="${navImage}" tag="i" inline="${true}" />
                                                 </c:otherwise>
                                             </c:choose>
                                         </c:set>
@@ -78,7 +83,7 @@
                                     <cms:jsonobject>
                                         <cms:jsonvalue key="@type" value="ListItem" />
                                         <cms:jsonvalue key="position" value="${currNavPos}" />
-                                        <cms:jsonvalue key="name" value="${navText}" />
+                                        <cms:jsonvalue key="name" value="${empty navText ? navElem.title : navText}" />
                                         <cms:jsonvalue key="item" value="${cms.site.url}${navLink}" />
                                     </cms:jsonobject>
 
@@ -121,7 +126,9 @@
                     <cms:jsonvalue key="@type" value="BreadcrumbList" />
                     <cms:jsonvalue key="itemListElement" value="${breadCrumbJson.json}" />
                 </cms:jsonobject>
-                <script type="application/ld+json">${jsonLd.compact}</script><%----%>
+                <script type="application/ld+json"><%----%>
+                    ${cms.isOnlineProject ? jsonLd.compact : jsonLd.pretty}
+                </script><%----%>
                 <mercury:nl />
             </c:if>
 

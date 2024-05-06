@@ -11,10 +11,12 @@
         <uuid>98e53b52-2eb8-4052-acfc-c7e1c1b70f1c</uuid>
       </link>
     </Jsp>
-    <Rank><![CDATA[3000]]></Rank>
+    <Description><![CDATA[%(key.type.m-job.description.formatter) %(key.type.general.description.detail)]]></Description>
+    <Rank><![CDATA[20000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[job]]></ContainerType>
       </Types>
     </Match>
@@ -77,6 +79,12 @@
     <Setting>
       <IncludeName><![CDATA[showLocation.true]]></IncludeName>
     </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showJobType.true]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showMetaSummary.true]]></IncludeName>
+    </Setting>
     <MetaMapping>
       <Key><![CDATA[ogTitleMeta]]></Key>
       <Element><![CDATA[MetaInfo/Title]]></Element>
@@ -95,6 +103,11 @@
     <MetaMapping>
       <Key><![CDATA[Keywords]]></Key>
       <Element><![CDATA[MetaInfo/Keywords]]></Element>
+      <Order><![CDATA[4600]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[Robots]]></Key>
+      <Element><![CDATA[MetaInfo/Robots]]></Element>
       <Order><![CDATA[4600]]></Order>
     </MetaMapping>
     <MetaMapping>

@@ -11,6 +11,7 @@
         <uuid>f82ae476-07b4-420a-a0ca-b3947133925f</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-layout-row-simple.description.formatter) %(key.type.general.description.layout)]]></Description>
     <Rank><![CDATA[1000]]></Rank>
     <Match>
       <Types>
@@ -31,10 +32,19 @@
       <Widget><![CDATA[%(stringtemplate:showCssWrapper)]]></Widget>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[cssWrapper2.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[cssWrapper3.default]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[detailContainer.layout]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[containerOrder.layout]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[xsCols.layout]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[useFlex.layout]]></IncludeName>
@@ -98,6 +108,17 @@
       <Key><![CDATA[showColWidth]]></Key>
       <Value><![CDATA[%!
             !%%if (fn.(content.value.("Variant")).isEqual.("adjust"))%%!
+                !%select%!
+            !%%else%%!
+                !%hidden%!
+            !%%endif%%!
+        !%]]></Value>
+    </Attribute>
+    <Attribute>
+      <Key><![CDATA[showXsCols]]></Key>
+      <Value><![CDATA[%!
+            !%%if (fn.(content.value.("Variant")).isEqual.("2-2-2-2-2-2")
+                || fn.(content.value.("Variant")).isEqual.("3-3-3-3"))%%!
                 !%select%!
             !%%else%%!
                 !%hidden%!

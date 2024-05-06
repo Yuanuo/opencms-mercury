@@ -11,10 +11,12 @@
         <uuid>5567fd0e-e29e-40d2-b798-d036237adc84</uuid>
       </link>
     </Jsp>
-    <Rank><![CDATA[3000]]></Rank>
+    <Description><![CDATA[%(key.type.m-event.description.formatter) %(key.type.general.description.detail)]]></Description>
+    <Rank><![CDATA[20000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[event]]></ContainerType>
       </Types>
     </Match>
@@ -42,10 +44,31 @@
       <IncludeName><![CDATA[keyPieceLayout.detail]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[keyPieceSizeDesktop.detail]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[keyPiecePrefacePos.detail]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[cssWrapperKeyPiece.detail]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[keyPieceOrigin.detail]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[keyPieceimageRatio.detail]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[pieceLayout.detail]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[pieceLayoutAlternating.detail]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[pieceLayoutSizeDesktop.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatioParagraphs.detail]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[cssWrapperParagraphs.detail]]></IncludeName>
@@ -60,16 +83,22 @@
       <IncludeName><![CDATA[dateFormat.default]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[imageRatio.detail]]></IncludeName>
+      <IncludeName><![CDATA[effect.tile]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[effect.tile]]></IncludeName>
+      <IncludeName><![CDATA[containerType.detail]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[performerOption.detail]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[containerType.detail]]></IncludeName>
+      <IncludeName><![CDATA[showMap.event]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showLocation.true]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showEventType.true]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showImageCopyright.default]]></IncludeName>
@@ -81,7 +110,7 @@
       <IncludeName><![CDATA[showImageZoom.true]]></IncludeName>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[showLocation.true]]></IncludeName>
+      <IncludeName><![CDATA[showCosts.true]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showCombinedDownloads.true]]></IncludeName>
@@ -107,6 +136,11 @@
     <MetaMapping>
       <Key><![CDATA[Keywords]]></Key>
       <Element><![CDATA[MetaInfo/Keywords]]></Element>
+      <Order><![CDATA[4900]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[Robots]]></Key>
+      <Element><![CDATA[MetaInfo/Robots]]></Element>
       <Order><![CDATA[4900]]></Order>
     </MetaMapping>
     <MetaMapping>

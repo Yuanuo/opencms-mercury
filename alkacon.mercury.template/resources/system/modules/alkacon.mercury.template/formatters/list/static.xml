@@ -11,10 +11,12 @@
         <uuid>04be6bf8-1f64-4b7c-b999-9e59ce4d471b</uuid>
       </link>
     </Jsp>
-    <Rank><![CDATA[2000]]></Rank>
+    <Description><![CDATA[%(key.type.list.description.formatter) %(key.type.list.description.formatter.static)]]></Description>
+    <Rank><![CDATA[19000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[list]]></ContainerType>
       </Types>
     </Match>

@@ -50,13 +50,17 @@ import { _OpenCmsReinitEditButtons } from './opencms-callbacks.js';
  *
  * @typedef {Object.<string, List[]>} ListArrayMap Object holding only list arrays as property values.
  *
+ * @typedef {Object.<string, HTMLElement[]>} ResetButtonsPerList Object holding list resource ids as properties and the reset buttons map as value.
+ *
  * @typedef {Object} ListFilter Wrapper for a list's filter.
  * @property {JQuery<HTMLElement>} $element the HTML element of the filter.
  * @property {string} id the id attribute of the filter HTML element.
  * @property {string} elementId the id of the list element the filter belongs to.
  * @property {?JQuery<HTMLElement>} $textsearch  the search form of the filter (for full text search).
+ * @property {boolean} hasResetButtons flag, indicating if the filter has reset buttons shown.
+ * @property {string} resetbuttontitle the (locale specific) title attribute for reset buttons.
  * @property {string} initparams the initial search state parameters to apply on first load of the list.
-
+ *
  * @typedef {Object.<string, ListFilter>} ListFilterMap Object holding only list filters as property values.
  *
  * @typedef {Object.<string, ListFilter[]>} ListFilterArrayMap Object holding only list filters as property values.
@@ -69,6 +73,10 @@ import { _OpenCmsReinitEditButtons } from './opencms-callbacks.js';
  * @property {number} start the first result to show on the page.
  * @property {number} end the last result to show on the page.
  *
+ * @typedef {Object} InitWaitCallBackHandler Handler to keep track of initialization and trigger an callback when initialization finishes.
+ * @property {() => void} wait start waiting for an initialization action
+ * @property {() => void} ready stop waiting for an initialization action.
+ *
  * @callback PaginationCallback
  * @param {PageData} pageData the current state of the list pagination.
  *
@@ -79,6 +87,8 @@ import { _OpenCmsReinitEditButtons } from './opencms-callbacks.js';
 var jQ;
 /** @type {boolean} flag, indicating if in debug mode. */
 var DEBUG;
+/** @type {boolean} flag, indicating if in verbose debug mode. */
+var VERBOSE;
 
 /** @type {ListMap} all initialized lists by unique instance id  */
 var m_lists = {};
@@ -98,24 +108,44 @@ var m_autoLoadLists = [];
 /** @type {boolean} flag indicating whether to scroll to the list head on filter or on page change. */
 var m_flagScrollToAnchor = true;
 
+/** @type {ResetButtonsPerList} reset buttons to display per list. */
+var m_listResetButtons = {};
+
 /**
  * Calculates the search state parameters.
  * @param {*} filter
  * @param {string} elId id of the element the search state parameters should be calculated for.
  * @param {boolean} resetActive flag, indicating if other active filters should be reset.
+ * @param {boolean} countVersion flag, indicating if the state has to be calculated for the count calculation.
  * @returns {string} the search state parameters corresponding to the filter action.
  */
-function calculateStateParameter(filter, elId, resetActive) {
+function calculateStateParameter(filter, elId, resetActive, countVersion = false) {
     var $el = $( '#' + elId);
     var value = $el.data("value")
-    var paramkey = elId.indexOf('cat_') == 0 ? (resetActive && $el.hasClass("active") ? '' : filter.catparamkey) : elId.indexOf('folder_') == 0 ? filter.folderparamkey : resetActive && $el.hasClass("active") ? '' : filter.archiveparamkey;
+    var paramkey =
+            elId.indexOf('cat_') == 0
+                ? (resetActive && $el.hasClass("active")
+                    ? ''
+                    : (countVersion
+                        ? 'facet_' + encodeURIComponent(filter.id + '_c')
+                        : filter.catparamkey))
+            : elId.indexOf('folder_') == 0
+                ? (resetActive && $el.hasClass("currentpage")
+                    ? ''
+                    :  (countVersion
+                        ?'facet_' + encodeURIComponent(filter.id + '_f')
+                        : filter.folderparamkey))
+            : (resetActive && $el.hasClass("active")
+                    ? ''
+                    : (countVersion
+                        ? 'facet_' + encodeURIComponent(filter.id + '_a')
+                        : filter.archiveparamkey));
     var stateParameter =
         typeof paramkey !== 'undefined' && paramkey != '' && typeof value !== 'undefined' && value != ''
             ? '&' + paramkey + '=' + encodeURIComponent(value)
             : '';
     return stateParameter;
 }
-
 
 /**
  * Splits the request parameters in a key-value map.
@@ -144,7 +174,6 @@ function getAdditionalFilterParams(filter) {
     if (typeof filterGroup !== 'undefined') {
         for (var i=0; i<filterGroup.length; i++) {
             var fi = filterGroup[i];
-            //TODO: Query
             if (fi.combinable && fi.id != filter.id) {
                 var query = fi.$textsearch.val();
                 if(typeof query !== 'undefined' && query != '') {
@@ -154,6 +183,17 @@ function getAdditionalFilterParams(filter) {
                     var p = calculateStateParameter(fi, this.id, false);
                     params += p;
                 });
+                // Folder is a bit tricky, here currenpage is on
+                // each item, with a parent folder of the clicked on
+                // but only the clicked one should be set
+                // so we only take the parameter with the longest path
+                // into account
+                var pageP = "";
+                fi.$element.find("li.currentpage").each( function() {
+                    var p = calculateStateParameter(fi, this.id, false);
+                    if(p.length > pageP.length) pageP = p;
+                });
+                params += pageP;
             }
         }
     }
@@ -179,29 +219,50 @@ function listFilter(id, triggerId, filterId, searchStateParameters, removeOthers
     var filter = m_archiveFilters[filterId]
     var removeAllFilters = !(filter && filter.combine);
     if ((triggerId != "SORT") && (typeof filterGroup !== "undefined")) {
+        // We have more than one filter element, so we can combine them and have to adjust counts
+        // I.e., if in one filter element we click a category
+        // the facet counts in the other filter elements decrease
+        var adjustCounts = filterGroup.length > 1;
         // potentially the same filter may be on the same page
         // here we make sure to reset them all
         var triggeredWasActive = triggerId != null && jQ("#" + triggerId).hasClass("active");
+        // check if reset buttons need to be shown.
+        var hasResetButtons = m_listResetButtons[id] != undefined;
         for (var i=0; i<filterGroup.length; i++) {
             var fi = filterGroup[i];
             // remove all active / highlighted filters
             // unless filters should be combined
-            if (removeOthers && (removeAllFilters || !fi.combinable || fi.id == filterId)) {
+            // TODO: Is there any uncombinable filter at all presently?
+            var currentFolder = "";
+            // if triggerId is null, we have a changed query string and this means always to reset all filters.
+            if (removeOthers && (removeAllFilters || !fi.combinable || fi.id == filterId || triggerId == null)) {
                 var $elactive = fi.$element.find(".active");
                 $elactive.removeClass("active");
+                // clear folder filter
+                var $current = fi.$element.find("li.currentpage").each(function() {
+                    var $c = $(this);
+                    $c.children().trigger("blur");
+                    $c.removeClass("currentpage");
+                    $c.parentsUntil("ul.list-group").removeClass("currentpage");
+                    var folderPath = this.getAttribute('data-value');
+                    if(folderPath && folderPath.length > currentFolder.length) currentFolder = folderPath;
+                });
                 // clear text input if wanted
                 if (triggerId != fi.$textsearch.id) {
                     fi.$textsearch.val('');
                 }
             }
             if (triggerId != null) {
-                fi.$element.find(".currentpage").removeClass("currentpage");
                 var $current = fi.$element.find("#" + triggerId).first();
                 if (DEBUG) console.info("Lists.listFilter() Current has class active? : " + $current.hasClass("active") + " - " + $current.attr("class"));
-                // activate / highlight clicked filter
+                // activate clicked folder filter, if it wasn't the highlighted before
                 if (triggerId.indexOf("folder_") == 0) {
-                    $current.addClass("currentpage");
-                    $current.parentsUntil("ul.list-group").addClass("currentpage");
+                    var folderElem = document.getElementById(triggerId);
+                    var elemValue = folderElem.getAttribute('data-value');
+                    if(currentFolder !== elemValue) {
+                        $current.addClass("currentpage");
+                        $current.parentsUntil("ul.list-group").addClass("currentpage");
+                    }
                 } else if (triggeredWasActive){
                     $current.removeClass("active");
                 } else {
@@ -233,6 +294,10 @@ function listFilter(id, triggerId, filterId, searchStateParameters, removeOthers
         for (var i=0; i<listGroup.length; i++) {
             updateInnerList(listGroup[i].id, searchStateParameters, true);
         }
+        if (adjustCounts || hasResetButtons) {
+          updateFilterCountsAndResetButtons(listGroup[0].id, filterGroup);
+        }
+        updateDirectLink(filter, searchStateParameters);
     } else {
         var archive = m_archiveFilters[filterId];
         // list is not on this page, check filter target attribute
@@ -249,15 +314,40 @@ function listFilter(id, triggerId, filterId, searchStateParameters, removeOthers
 }
 
 /**
+ * Updates the direct link for a changed search state.
+ *
+ * @param {Object} filter the filter
+ * @param {string} searchStateParameters the search state paramters
+ */
+function updateDirectLink(filter, searchStateParameters) {
+    if (!filter.$directlink) {
+        return;
+    }
+    var link = filter.$directlink.find("a");
+    if (!link) {
+        return;
+    }
+    var url = link.attr("href");
+    if (url && url.indexOf("?") >= 0) {
+        url = url.substring(0, url.indexOf("?"));
+    }
+    link.attr("href", url + "?" + searchStateParameters);
+}
+
+/**
  * Updates the list (results) for a changed search state.
  * Search is performed on the server and results are returned according to the state parameters.
  *
  * @param {string} id the lists id.
  * @param {string} searchStateParameters the search state parameters.
  * @param {boolean} reloadEntries flag, indicating if the shown list entries should be reloaded (in contrast to appending new ones only).
+ * @param {boolean} isInitialLoad flag, indicating if this is the first load for the list after the page was originally loaded.
+ * @param {InitWaitCallBackHandler} waitHandler optionally to keep an initialization action waiting till the list is updated.
  * @returns {void}
  */
-function updateInnerList(id, searchStateParameters, reloadEntries) {
+function updateInnerList(id, searchStateParameters, reloadEntries, isInitialLoad = false, waitHandler = undefined) {
+
+    if (waitHandler) waitHandler.wait();
     searchStateParameters = searchStateParameters || "";
     reloadEntries = reloadEntries || false;
 
@@ -275,6 +365,7 @@ function updateInnerList(id, searchStateParameters, reloadEntries) {
             if (reloadEntries) {
                 // hide the "no results found" message during search
                 list.$editbox.hide();
+                list.$pagination.show();
             } else {
                 // fade out the load more button
                 list.$element.find('.btn-append').addClass("fadeOut");
@@ -286,8 +377,8 @@ function updateInnerList(id, searchStateParameters, reloadEntries) {
             }
 
             // calculate the spinner position in context to the visible list part
-            var scrollTop = jQ(window).scrollTop();
-            var windowHeight = jQ(window).height();
+            var scrollTop = Mercury.windowScrollTop();
+            var windowHeight = window.innerHeight;
             var elementTop = list.$element.offset().top;
             var offsetTop = scrollTop > elementTop ? (elementTop - scrollTop) * -1 : 0;
             var elementHeight = list.$element.outerHeight(true);
@@ -318,16 +409,54 @@ function updateInnerList(id, searchStateParameters, reloadEntries) {
                 if (!isNaN(pageFromParam) && pageFromParam > 1) {
                     page = pageFromParam;
                 }
+                if (list.loadAll) {
+                    const params = new URLSearchParams(searchStateParameters);
+                    params.delete('page');
+                    searchStateParameters = params.toString();
+                }
             }
             if (DEBUG) console.info("Lists.updateInnerList() showing page " + page);
 
-            jQ.get(buildAjaxLink(list, ajaxOptions, searchStateParameters), function(ajaxListHtml) {
-                generateListHtml(list, reloadEntries, ajaxListHtml, page)
-            }, "html");
+            const shouldLoadMultiplePages = isInitialLoad && !list.reloadEntries && page > 1 && list.option === 'append' && !list.loadAll;
+            if (shouldLoadMultiplePages) {
+                const params = new URLSearchParams(searchStateParameters);
+                loadMultiplePages(list, ajaxOptions, params, 1, page, waitHandler);
+            } else {
+                if (waitHandler) waitHandler.wait();
+                jQ.get(buildAjaxLink(list, ajaxOptions, searchStateParameters), function (ajaxListHtml) {
+                    generateListHtml(list, reloadEntries, ajaxListHtml, page, true, waitHandler);
+                }, "html");
+            }
         }
+        if (waitHandler) waitHandler.ready();
     }
 }
 
+/**
+ * Loads all pages from the current to the last one.
+ * This function should only be used for a list with append as option that does not load all entries at once
+ * but initially should load more than the first page.
+ *
+ * @param {List} list the list to generate the link for.
+ * @param {string} ajaxOptions the ajax options to pass with the link as parameters.
+ * @param {URLSearchParams} searchStateParameters the search state parameters to pass with the link.
+ * @param {number} currentPage the page to load next
+ * @param {number} lastPage the last page to load
+ * @param {InitWaitCallBackHandler} waitHandler optional init wait handler.
+ * @returns {string} the AJAX link.
+ */
+function loadMultiplePages(list, ajaxOptions, searchStateParameters, currentPage, lastPage, waitHandler) {
+    if(currentPage <= lastPage) {
+        searchStateParameters.set('page', currentPage);
+        if(waitHandler) waitHandler.wait();
+        jQ.get(buildAjaxLink(list, ajaxOptions, searchStateParameters.toString()), function(ajaxListHtml) {
+            generateListHtml(list, false, ajaxListHtml, currentPage, true, waitHandler);
+            if(list.pageData && list.pageData.pages && list.pageData.pages > currentPage && currentPage < lastPage) {
+                loadMultiplePages(list, ajaxOptions, searchStateParameters, currentPage+1, lastPage);
+            }
+        }, "html");
+    }
+}
 /**
  * Generates the AJAX link to call to retrieve the list entries and pagination for the
  * provided state.
@@ -339,7 +468,7 @@ function updateInnerList(id, searchStateParameters, reloadEntries) {
  */
 function buildAjaxLink(list, ajaxOptions, searchStateParameters) {
 
-    if (DEBUG) console.info("Lists.buildAjaxLink() called - searchStateParameters='" + searchStateParameters + "' ajaxOptions='" + ajaxOptions + "'");
+    if (DEBUG) console.info("Lists.buildAjaxLink() called searchStateParameters='" + searchStateParameters + "' ajaxOptions='" + ajaxOptions + "'");
 
     var params = "contentpath=" + list.path
         + "&instanceId="
@@ -373,9 +502,11 @@ function buildAjaxLink(list, ajaxOptions, searchStateParameters) {
  * @param {boolean} reloadEntries flag, indicating if the current results should be reloaded/replaced.
  * @param {string} listHtml the list HTML as received from the server.
  * @param {number} page the number of the result page to show.
+ * @param {boolean} isInitialLoad flag, indicating if the generation happens during the initial page load.
+ * @param {InitWaitCallBackHandler} waitHandler optional init wait handler.
  * @returns {void}
 */
-function generateListHtml(list, reloadEntries, listHtml, page) {
+function generateListHtml(list, reloadEntries, listHtml, page, isInitialLoad = false, waitHandler = undefined) {
     if (DEBUG) console.info("Lists.generateListHtml() called");
 
     var $result = jQ(listHtml);
@@ -409,7 +540,7 @@ function generateListHtml(list, reloadEntries, listHtml, page) {
     // initial list load:
     // entries are already there, if there are no groups in the result we can skip the reload
     // but never skip if all items are displayed
-    var skipInitialLoad = list.initialLoad && !hasGroups && !list.loadAll;
+    var skipInitialLoad = list.initialLoad && !hasGroups && !list.loadAll && page == 1;
     list.initialLoad = false;
     if (DEBUG && skipInitialLoad) console.info("Lists.generateListHtml() Skipping initial reload for list=" + list.id);
 
@@ -479,8 +610,10 @@ function generateListHtml(list, reloadEntries, listHtml, page) {
         list.$entries.animate({'min-height': "0px"}, 500);
     }
 
-    // trigger "listLoaded" event
-    jQ('#' + list.id).trigger("list:loaded");
+    setTimeout(function() {
+        // trigger "list:loaded" event with a short delay, so that other lists have a change to initialize as well
+        jQ('#' + list.id)[0].dispatchEvent(new CustomEvent("list:loaded", { bubbles: true, cancelable: true }));
+    }, 100);
 
     // fade out the spinner
     list.$spinner.fadeOut(250);
@@ -493,7 +626,7 @@ function generateListHtml(list, reloadEntries, listHtml, page) {
         list.notclicked = false;
         if (m_autoLoadLists.length == 1) {
             // enable scroll listener because we now have one autoloading gallery
-            jQ(window).bind('scroll', handleAutoLoaders);
+            window.addEventListener("scroll", handleAutoLoaders, { passive: true });
         }
         handleAutoLoaders();
     } else if (reloadEntries && list.autoload) {
@@ -504,7 +637,7 @@ function generateListHtml(list, reloadEntries, listHtml, page) {
     // there may be media elements in the list
     Mercury.update('#' + list.id);
 
-    if (resultData.reloaded == "true" && reloadEntries) {
+    if (resultData.reloaded == "true" && reloadEntries && !isInitialLoad) {
         if (! list.$element.visible()) {
             if (DEBUG) console.info("Lists.generateListHtml() Scrolling to anchor");
             if (m_flagScrollToAnchor) {
@@ -512,10 +645,45 @@ function generateListHtml(list, reloadEntries, listHtml, page) {
             }
         }
     }
+
+    updateURLPageMarker(list,page);
+    // We have to wait till Animations finished.
+    if(waitHandler) setTimeout(waitHandler.ready, 750);
 }
 
 /**
+ * Replaces the current URL by setting an url parameter keeping the current page of the list in edit mode.
+ * Otherwise replacing the parameters value in the history state to allow to directly set the page again when using history back.
  *
+ * @param {List} list the list to update the page data for.
+ * @param {number} page the new current page.
+ */
+function updateURLPageMarker(list, page) {
+    if (DEBUG) console.info("Lists.updateURLPageMarker() called");
+    const paramName = 'p_' + list.elementId;
+    if(Mercury.isEditMode()) {
+        const currentUrl = new URL(window.location.href);
+        const currentParams = currentUrl.searchParams;
+        if(page > 1) {
+            currentParams.set(paramName, page);
+        } else if (currentParams.has(paramName)) {
+            currentParams.delete(paramName);
+        }
+        // We could either use pushState or replaceState.
+        // It depends if each page switch should be kept in the history
+        window.history.replaceState(window.history.state, null, currentUrl.toString());
+    } else {
+        const state = window.history.state ? window.history.state : {};
+        if(page > 1) {
+            state[paramName] = page.toString();
+        } else if (state[paramName]) {
+            delete state[paramName];
+        }
+        window.history.replaceState(state, null, window.location.href);
+    }
+}
+
+/**
  * @param {List} list the list to update the page data for.
  * @param {number} page the new current page.
  */
@@ -535,6 +703,8 @@ function updatePageData(list, page) {
     if (pageData.end > pageData.found) {
         pageData.end = pageData.found;
     }
+
+    updateURLPageMarker(list,page);
     if (null != list.paginationCallback) {
         list.paginationCallback(pageData);
     }
@@ -577,7 +747,7 @@ function generatePagination(list, page) {
             }
             result.push('<ul class="pagination">');
             // previous page and first page
-            result.push(generatePaginationItem("previous", page <= 1, false, page <= 1 ? 1 : page -1, messages.tpp, null, "fa fa-angle-left", listId));
+            result.push(generatePaginationItem("previous", page <= 1, false, page <= 1 ? 1 : page -1, messages.tpp, null, "ico fa fa-angle-left", listId)); // mercury:icon
             if (firstShownPage > 1) {
                 var liClassesFirstPage = "first";
                 if (firstShownPage > 2) {
@@ -588,9 +758,7 @@ function generatePagination(list, page) {
             for (var p = firstShownPage; p <= lastShownPage; p++) {
                 result.push(generatePaginationItem(p == lastShownPage ? "lastpage" : "page", false, page == p, p, messages.tp, messages.lp, "number", listId));
             }
-            result.push(generatePaginationItem("next", page >= lastPage, false, page < lastPage ? page + 1 : lastPage, messages.tnp, null, "fa fa-angle-right", listId));
-            // currently, we never show the last page button.
-            // result.push(generatePaginationItem(null, page >= lastPage, false, lastPage, messages.tlp, null, "fa fa-angle-double-right", listId));
+            result.push(generatePaginationItem("next", page >= lastPage, false, page < lastPage ? page + 1 : lastPage, messages.tnp, null, "ico fa fa-angle-right", listId)); // mercury:icon
         } else if (list.option === 'append' && page < lastPage) {
             // show the button to append more results.
             result.push('<div class="list-append-position" data-dynamic="false">');
@@ -646,7 +814,7 @@ function generatePaginationItem(liClasses, isDisabled, isActive, page, title, la
     result.push('">');
     var noLabel = (label == null);
     if (noLabel) {
-        result.push('<span class="sr-only">');
+        result.push('<span class="visually-hidden">');
         result.push(resolvedTitle);
         result.push('</span>');
     }
@@ -810,6 +978,392 @@ function handleAutoLoaders() {
     }
 }
 
+/**
+ * Updates the counts on list filters.
+ * Search is performed on the server and results are returned according to the state parameters.
+ *
+ * @param {sting} id id of the list to update.
+ * @param {ListFilter[]} filterGroup the list filters to update.
+ * @returns {void}
+ */
+function updateFilterCountsAndResetButtons(id, filterGroup) {
+  if (DEBUG)
+    console.info(
+      "Lists.updateFilterCountsAndResetButtons() called with filterGroup, filter, searchStateParameters:"
+    );
+  var list = m_lists[id];
+  /** @type {HTMLElement[]} */
+  const resetButtons = [];
+  const updateCounts = list.ajaxCount != undefined;
+  const updateResets = m_listResetButtons[list.elementId] != undefined;
+  if (!updateCounts) {
+    if (DEBUG)
+      console.warn(
+        "Lists.updateFilterCountsAndResetButtons() does not support updates since no AJAX link for count updates is provided."
+      );
+  }
+  if (!updateResets) {
+    if (DEBUG)
+      console.warn(
+        "Lists.updateFilterCountsAndResetButtons() does not need to update reset buttons."
+      );
+  }
+  if (updateCounts || updateResets) {
+    var params = "&reloaded";
+    for (var i = 0; i < filterGroup.length; i++) {
+      var fi = filterGroup[i];
+      if (fi.combinable) {
+        var query = fi.$textsearch.val();
+        if (typeof query !== "undefined" && query != "") {
+          if (updateCounts)
+            params +=
+              "&" +
+              fi.$textsearch.attr("name") +
+              "=" +
+              encodeURIComponent(query);
+          if (updateResets)
+            resetButtons.push(generateInputFieldResetButton(fi.id, fi.resetbuttontitle));
+        }
+        fi.$element.find(".active").each(function () {
+          if (updateCounts) {
+            var p = calculateStateParameter(fi, this.id, false, true);
+            params += p;
+          }
+          if (updateResets) {
+            resetButtons.push(generateResetButton(this, fi.resetbuttontitle));
+          }
+        });
+        var pageP = "";
+        var checkedElement = undefined;
+        fi.$element.find("li.currentpage").each(function () {
+          var p = calculateStateParameter(fi, this.id, false, true);
+          if (p.length > pageP.length) {
+            pageP = p;
+            checkedElement = this;
+          }
+        });
+        if (updateCounts) {
+          params += pageP;
+        }
+        if (updateResets && checkedElement != undefined) {
+          resetButtons.push(generateResetButton(checkedElement, fi.resetbuttontitle));
+        }
+
+        if(updateCounts) {
+          // Tell which filters are shown in the current filter element
+          if (fi.search == "true") params += "&s=" + encodeURIComponent(fi.id);
+          if (fi.categories == "true")
+            params += "&c=" + encodeURIComponent(fi.id);
+          if (fi.archive == "true") params += "&a=" + encodeURIComponent(fi.id);
+          if (fi.folders == "true") params += "&f=" + encodeURIComponent(fi.id);
+        }
+      }
+    }
+    if(updateCounts) {
+      jQ.get(
+        buildAjaxCountLink(list, params),
+        function (ajaxCountJson) {
+          replaceFilterCounts(filterGroup, ajaxCountJson);
+        },
+        "json"
+      );
+    }
+    if(updateResets) {
+      updateResetButtons(list.elementId, resetButtons);
+    }
+  }
+}
+
+/**
+ * @param {HTMLElement} filterField
+ * @param {string} titleAttr
+ * @returns {HTMLElement} the reset button
+ */
+function generateResetButton(filterField, titleAttr) {
+  /** @type {HTMLElement} */
+  const result = document.createElement("button");
+  const id = filterField.id;
+  const type = id.startsWith('folder_')
+    ? 'folders'
+    : (id.startsWith('y_')
+        ? 'archive'
+        : (id.startsWith('cat_') ? 'categories' : undefined))
+  result.classList.add("resetbutton");
+  if(type != undefined) result.classList.add(type);
+  result.id = "reset_" + id;
+  const label = filterField.getAttribute('data-label');
+  let onclick = filterField.getAttribute('onclick');
+  if(!onclick) onclick = filterField.getAttribute('data-onclick');
+  if(!onclick) onclick = filterField.firstChild.getAttribute('onclick');
+  result.setAttribute('onclick', onclick);
+  if(titleAttr) result.setAttribute('title', titleAttr);
+  result.textContent = label ? label : id;
+  return result;
+}
+
+/**
+ * @param {string} archiveId
+ * @param {string} titleAttr
+ * @returns {HTMLElement} the reset button
+ */
+function generateInputFieldResetButton(archiveId, titleAttr) {
+  /** @type {HTMLElement} */
+  const result = document.createElement("button");
+  result.classList.add("resetbutton");
+  result.classList.add("textsearch");
+  result.id = "reset_textsearch_" + archiveId;
+  const form = document.getElementById('queryform_' + archiveId)
+  const submitAction = form.getAttribute('onsubmit');
+  const inputField = document.getElementById('textsearch_' + archiveId);
+  const labelPlain = inputField.getAttribute('data-label');
+  const label = labelPlain ? labelPlain.replace('%(query)', inputField.value) : inputField.value;
+  let onclick = "document.getElementById('textsearch_" + archiveId + "').value = ''; " + submitAction;
+  result.setAttribute('onclick', onclick);
+  if(titleAttr) result.setAttribute('title', titleAttr);
+  result.textContent = label;
+  return result;
+}
+
+
+
+/**
+ *
+ * @param {string} id
+ * @param {ResetButtonsMap} resetButtons
+ */
+function updateResetButtons(id, resetButtons) {
+  m_listResetButtons[id] = resetButtons;
+  const filters = m_archiveFilterGroups[id];
+  filters.forEach((filter) => {
+    /** @type {HTMLElement} */
+    const buttons = document.getElementById('resetbuttons_' + filter.id);
+    if(buttons != undefined) {
+      buttons.textContent = '';
+      resetButtons.forEach((button) => buttons.appendChild(button.cloneNode(true)));
+    }
+  });
+}
+
+/**
+ * Generates the AJAX link to call to retrieve the item counts for filters for the
+ * provided state.
+ *
+ * @param {List} list the list to generate the link for.
+ * @param {string} searchStateParameters the search state parameters to pass with the link.
+ * @returns {string} the AJAX link.
+ */
+function buildAjaxCountLink(list, searchStateParameters) {
+
+    if (DEBUG) console.info("Lists.buildAjaxCountLink() called searchStateParameters='" + searchStateParameters + "'");
+
+    var params = "contentpath=" + list.path
+        + "&sitepath="
+        + list.sitepath
+        + "&subsite="
+        + list.subsite
+        + "&__locale="
+        + list.locale;
+
+    if (list.$facets.length != 0) {
+        // The first option is only used by the old lists. NG lists use the settings.
+        //params = params + "&facets=" + list.$facets.data("facets");
+        //params = params + list.$facets.data("settings");
+    }
+    return list.ajaxCount + (list.ajaxCount.indexOf('?') >= 0 ? '&' : '?') + params + searchStateParameters;
+}
+
+/**
+ * Updates the counts on list filters.
+ * Callback after the counts are returned from the server.
+ *
+ * @param {ListFilter[]} filterGroup the list filters to update.
+ * @param {Object} ajaxCountJson the new counts of the filters.
+ * @returns {void}
+ */
+function replaceFilterCounts(filterGroup, ajaxCountJson) {
+    if(DEBUG) console.info("Lists.replaceFilterCounts() called with ajaxCountJson", ajaxCountJson);
+    filterGroup.forEach((filter) => {
+        var elementFacets = ajaxCountJson[filter.id];
+        if (undefined !== elementFacets && null !== elementFacets) {
+            var archiveFilter = elementFacets['a'];
+            var categoryFilter = elementFacets['c'];
+            var folderFilter = elementFacets['f'];
+            if(null != archiveFilter) {
+                var $el = filter.$element.find('.archive');
+                $el.find('li[data-value]').each(function(_, li) {
+                    var val = li.getAttribute('data-value');
+                    var count = archiveFilter[val];
+                    if(null == count) count = '0';
+                    var countSpan = li.querySelector('.li-count');
+                    var isDisabled = li.classList.contains('disabled');
+                    if(countSpan != undefined && countSpan.textContent !== count) { // change the count
+                        countSpan.textContent = count;
+                    }
+                    if (isDisabled && count !== '0' || !isDisabled && count === '0') { // enabled / disable
+                        if(count === '0') {
+                            li.setAttribute('data-onclick', li.getAttribute('onclick'));
+                            li.removeAttribute('onclick');
+                            li.setAttribute('tabindex', '-1');
+                            li.classList.remove('enabled');
+                            li.classList.add('disabled');
+                        } else  {
+                            li.setAttribute('onclick', li.getAttribute('data-onclick'));
+                            li.removeAttribute('data-onclick');
+                            li.setAttribute('tabindex', '0');
+                            li.classList.remove('disabled');
+                            li.classList.add('enabled');
+                        }
+                    }
+                });
+            }
+            if(null != categoryFilter) {
+                var $catEl = filter.$element.find('.categories');
+                $catEl.find('li[data-value]').each(function(_, li) {
+                    var val = li.getAttribute('data-value');
+                    var count = categoryFilter[val];
+                    if(null == count) count = '0';
+                    var countSpan = li.querySelector('.li-count');
+                    var isDisabled = li.classList.contains('disabled');
+                    if(countSpan != undefined && countSpan.textContent !== count) { // change the count
+                        countSpan.textContent = count;
+                    }
+                    if (isDisabled && count !== '0' || !isDisabled && count === '0') { // enabled / disable
+                        var a = li.querySelector('a');
+                        if(count == '0') {
+                            a.setAttribute('tabindex', '-1');
+                            li.classList.remove('enabled');
+                            li.classList.add('disabled');
+                        } else {
+                            a.setAttribute('tabindex', '0');
+                            li.classList.remove('disabled');
+                            li.classList.add('enabled');
+                        }
+                    }
+                });
+            }
+            if(null != folderFilter) {
+                var $catEl = filter.$element.find('.folders');
+                $catEl.find('li[data-value]').each(function(_, li) {
+                    var val = li.getAttribute('data-value');
+                    var count = folderFilter[val];
+                    var shouldDisable = (null == count || count == '0');
+                    var isDisabled = li.classList.contains('disabled');
+                    if (isDisabled != shouldDisable) {
+                        var a = li.querySelector('a');
+                        if(shouldDisable) {
+                            a.setAttribute('tabindex', '-1');
+                            li.classList.remove('enabled');
+                            li.classList.add('disabled');
+                        } else {
+                            a.setAttribute('tabindex', '0');
+                            li.classList.remove('disabled');
+                            li.classList.add('enabled');
+                        }
+                    }
+                });
+            }
+        }
+    })
+}
+
+/**
+ * The callback for scroll events that tracks the current scroll position.
+ * @type {() => void}
+ */
+const scrollListener = () => {
+    const scrollPos = window.scrollY;
+    if (VERBOSE) console.log("Lists.scrollListener: scrolled to " + scrollPos);
+    if (Mercury.isEditMode()) {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('_sp', scrollPos);
+        window.history.replaceState(window.history.state, null, currentUrl.toString());
+    } else {
+        const state = window.history.state ? window.history.state : {};
+        if (VERBOSE) console.log('Lists.scrollListener: pulled state', state);
+        state.sp = scrollPos;
+        if (VERBOSE) console.log('Lists.scrollListener: pushed state', state);
+        window.history.replaceState(state, null, window.history.url)
+    }
+}
+
+let debScrollListener;
+
+/**
+ * Initializes scroll position tracking.
+ * The function should be called if all dynamic page loading has finished.
+ * It directly scrolls to the latest tracked scroll position (if any) and starts
+ * tracking positions again.
+ */
+function initScrollPositionTracking() {
+    /**
+     * @type {Object}
+     */
+    if (DEBUG) console.info('Lists.initScrollPositionTracking() called');
+    let spInt = undefined;
+    if (Mercury.isEditMode()) {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('_sp')) {
+            const sp = url.searchParams.get('_sp');
+            spInt = parseInt(sp);
+        }
+    } else {
+        const state = window.history.state;
+        if (DEBUG) console.log('Lists.initScrollPositionTracking: pulled state', state);
+        if (state && state.sp) {
+            const sp = state.sp;
+            spInt = parseInt(sp);
+        }
+    }
+    if (spInt && !isNaN(spInt) && spInt > 0) {
+        window.scrollTo(0, spInt);
+    }
+
+    debScrollListener = Mercury.debounce(function() {
+        scrollListener();
+    }, 100);
+
+    window.addEventListener("scroll", debScrollListener, { passive: true });
+}
+
+/**
+ * Returns an init wait callback handler that will trigger the
+ * provided callback when initialization is finished.
+ * @param {() => void} callback the callback to trigger when initialization is finished.
+ * @returns {InitWaitCallBackHandler} the callback handler that will trigger the provided callback after initialization.
+ */
+function getInitWaitCallBackHandler(callback) {
+    let counter = 0;
+    return {
+        wait: () => {
+            counter++;
+            if (VERBOSE) console.info('Lists.getInitWaitCallBackHandler() increase counter to:' + counter);
+        },
+        ready: () => {
+            counter--;
+            if (VERBOSE) console.info('Lists.getInitWaitCallBackHandler() decrease counter to:' + counter);
+            if (counter <= 0) {
+                if (DEBUG) console.info('Lists.getInitWaitCallBackHandler() ready, triggering callback');
+                callback();
+            }
+        }
+    }
+}
+
+/**
+ * Handler for dom changes.
+ * We need to find out when the content editor is closed and
+ * a reload trigger is placed in the page.
+ * If this is the case, we have to prevent scroll tracking to
+ * keep the former scroll position until the page is reloaded.
+ *
+ * @param {[MutationRecord]} m the list of dom mutations.
+ */
+function onDomChange(m) {
+    if (m.find((mr) => mr.target.classList && mr.target.classList.contains('org-opencms-ade-contenteditor-client-css-I_CmsLayoutBundle-I_CmsXmlEditorCss-basePanel'))) {
+        window.removeEventListener("scroll", debScrollListener, { passive: true });
+    }
+}
+
 /****** Exported functions ******/
 
 /**
@@ -842,13 +1396,14 @@ export function archiveFilter(id, triggerId) {
 /**
  * Applies an query filter to the list.
  *
- * @param {string} idthe id of the list the filter belongs to.
+ * @param {string} id the id of the list the filter belongs to.
  * @param {string} triggerId the id of the HTML element that triggered the filter action.
  */
 export function archiveSearch(id, searchStateParameters) {
     var filter = m_archiveFilters[id];
-    // if filters of other filter elements should be combined with that one - get the other filters that are set
-    var additionalFilters = filter.combine ? getAdditionalFilterParams(filter) : "";
+    // we do never combine the text search when we change the search word. This should reset all other filters always.
+    //var additionalFilters = filter.combine ? getAdditionalFilterParams(filter) : "";
+    var additionalFilters= "&reloaded";
     listFilter(filter.elementId, null, filter.id, searchStateParameters + encodeURIComponent(filter.$textsearch.val()) + additionalFilters, true);
 }
 
@@ -868,6 +1423,7 @@ export function switchPage(id, page) {
     if (!paginationString.empty) {
         jQ(paginationString).appendTo(list.$pagination);
     }
+
     // there may be media elements in the list
     Mercury.update('#' + list.id);
     if (! list.$element.visible()) {
@@ -934,16 +1490,51 @@ export function injectResults(id, resultHtml, paginationCallback, pageToShow) {
  * @param {jQuery} jQuery jQuery object.
  * @param {boolean} debug a flag, determining iff in debug mode.
  */
-export function init(jQuery, debug) {
+export function init(jQuery, debug, verbose) {
 
     jQ = jQuery;
     DEBUG = debug;
+    VERBOSE = verbose;
 
     if (DEBUG) console.info("Lists.init()");
+
+    let waitHandler = undefined;
+    if (document.querySelector('.list-content') != null) {
+        waitHandler = getInitWaitCallBackHandler(initScrollPositionTracking);
+        waitHandler.wait();
+
+        if (Mercury.isEditMode()) {
+            if (DEBUG) console.info("Lists.init() observing DOM in edit mode.");
+            const observeDOM = (function () {
+                const MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+                return function (obj, callback) {
+                    if (!obj || obj.nodeType !== 1) return;
+
+                    if (MutationObserver) {
+                        // define a new observer
+                        const mutationObserver = new MutationObserver(callback)
+
+                        // have the observer observe for changes in children
+                        mutationObserver.observe(obj, { childList: true, subtree: true })
+                        return mutationObserver
+                    }
+
+                    // browser support fallback
+                    else if (window.addEventListener) {
+                        obj.addEventListener('DOMNodeInserted', callback, false)
+                        obj.addEventListener('DOMNodeRemoved', callback, false)
+                    }
+                }
+            })();
+            observeDOM(document.body, onDomChange);
+        }
+    }
 
     var $listElements = jQ('.list-dynamic');
     if (DEBUG) console.info("Lists.init() .list-dynamic elements found: " + $listElements.length);
 
+    const urlParams = (new URL(window.location.href)).searchParams;
     if ($listElements.length > 0 ) {
         $listElements.each(function() {
 
@@ -979,7 +1570,8 @@ export function init(jQuery, debug) {
                 list.locked = false;
                 list.autoload = false;
                 list.notclicked = true;
-                if (list.appendSwitch.indexOf(Mercury.gridInfo().grid) >= 0) {
+                let screenSize = Mercury.gridInfo().grid == 'xxl' ? 'xl' : Mercury.gridInfo().grid;
+                if (list.appendSwitch.indexOf(screenSize) >= 0) {
                     // I think this is a cool way for checking the screen size ;)
                     list.option = "append";
                     $list.removeClass("list-paginate").addClass("list-append");
@@ -1010,13 +1602,29 @@ export function init(jQuery, debug) {
                 initParams = list.initparams;
                 if (DEBUG) console.info("Lists.init() Data init params - " + initParams);
             }
+            const pageParam = 'p_' + list.elementId;
+            let pageStr = undefined;
+            if(Mercury.isEditMode()) {
+                if(urlParams.has(pageParam)) {
+                    pageStr = urlParams.get(pageParam);
+                }
+            } else {
+                const state = window.history.state ? window.history.state : {};
+                pageStr = state[pageParam];
+            }
+            if(pageStr) {
+                const page = parseInt(pageStr);
+                if(!isNaN(page) && page > 1) {
+                    initParams = 'page=' + page + (initParams == '' ? '' : ('&' + initParams));
+                }
+            }
             // load the initial list
-            updateInnerList(list.id, initParams, true);
+            updateInnerList(list.id, initParams, true, true, waitHandler);
         });
 
         if (m_autoLoadLists.length > 0) {
             // only enable scroll listener if we have at least one autoloading gallery
-            jQ(window).on('scroll', handleAutoLoaders);
+            window.addEventListener("scroll", handleAutoLoaders, { passive: true });
         }
     }
 
@@ -1057,6 +1665,8 @@ export function init(jQuery, debug) {
                 filter.id = $archiveFilter.attr("id");
                 filter.elementId = $archiveFilter.data("id");
                 filter.$textsearch = $archiveFilter.find("#textsearch_" + filter.id);
+                filter.hasResetButtons = $archiveFilter.find("#resetbuttons_" + filter.id).length > 0;
+                filter.$directlink = $archiveFilter.find(".directlink");
 
                 // unfold categories if on desktop and responsive setting is used
                 var $collapses = $archiveFilter.find('#cats_' + filter.id + ', #folder_' + filter.id  + ', #arch_' + filter.id);
@@ -1083,6 +1693,11 @@ export function init(jQuery, debug) {
                     m_archiveFilterGroups[filter.elementId] = [filter];
                 }
 
+                if (filter.hasResetButtons && m_listResetButtons[filter.elementId] == undefined) {
+                  // tell list, that it has to track reset buttons
+                  m_listResetButtons[filter.elementId] = [];
+                }
+
                 // attach key listeners for keyboard support
                 $archiveFilter.find("li > a").on("keydown", function(e) {
                     if (e.type == "keydown" && (e.which == 13 || e.which == 32)) {
@@ -1103,6 +1718,7 @@ export function init(jQuery, debug) {
 
         });
     }
+    if (waitHandler) waitHandler.ready();
 }
 
 export function setFlagScrollToAnchor(flagScrollToAnchor) {

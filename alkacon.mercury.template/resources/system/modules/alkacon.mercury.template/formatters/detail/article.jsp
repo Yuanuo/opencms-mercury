@@ -12,7 +12,7 @@
 <%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
 
 
-<cms:secureparams />
+<cms:secureparams replaceInvalid="bad_param" />
 <mercury:init-messages>
 
 <cms:formatter var="content" val="value">
@@ -20,17 +20,26 @@
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
 
+<mercury:load-plugins group="detail-setting-defaults" type="jsp-nocache" />
+
 <mercury:setting-defaults>
 
 <c:set var="keyPieceLayout"         value="${setting.keyPieceLayout.toInteger}" />
+<c:set var="keyPieceSizeDesktop"    value="${setting.keyPieceSizeDesktop.useDefault('99').toInteger}" />
+<c:set var="keyPiecePrefacePos"     value="${setting.keyPiecePrefacePos.toString}" />
+<c:set var="keyPieceInfoPos"        value="${setting.keyPieceInfoPos.toString}" />
 <c:set var="pieceLayout"            value="${setting.pieceLayout.toInteger}" />
+<c:set var="pieceLayoutAlternating" value="${setting.pieceLayoutAlternating.toBoolean}" />
+<c:set var="pieceLayoutSizeDesktop" value="${setting.pieceLayoutSizeDesktop.useDefault('99').toInteger}" />
 <c:set var="hsize"                  value="${setting.hsize.toInteger}" />
 <c:set var="imageRatio"             value="${setting.imageRatio}" />
-<c:set var="containerType"          value="${setting.containerType.useDefault('element').toString}" />
+<c:set var="imageRatioParagraphs"   value="${setting.imageRatioParagraphs}" />
+<c:set var="containerType"          value="${setting.containerType.useDefault('m-element').toString}" />
 <c:set var="showImageCopyright"     value="${setting.showImageCopyright.toBoolean}" />
 <c:set var="showImageSubtitle"      value="${setting.showImageSubtitle.toBoolean}" />
 <c:set var="showImageZoom"          value="${setting.showImageZoom.toBoolean}" />
 <c:set var="showCombinedDownloads"  value="${setting.showCombinedDownloads.toBoolean}" />
+<c:set var="useVisualFromParagraph" value="${setting.keyPieceOrigin.useDefault('subsitute').toString ne 'none'}" />
 
 <c:set var="dateFormat"             value="${setting.dateFormat.toString}" />
 <c:set var="datePrefix"             value="${fn:substringBefore(dateFormat, '|')}" />
@@ -47,7 +56,8 @@
 <c:set var="intro"                  value="${value.Intro}" />
 <c:set var="title"                  value="${value.Title}" />
 <c:set var="preface"                value="${value.Preface}" />
-<c:set var="image"                  value="${value.Image.value.Image.isSet ? value.Image : firstParagraph.value.Image}" />
+<c:set var="useVisualFromParagraph" value="${useVisualFromParagraph and not value.Image.value.Image.isSet and firstParagraph.value.Image.isSet}" />
+<c:set var="image"                  value="${value.Image.value.Image.isSet ? value.Image : (useVisualFromParagraph ? firstParagraph.value.Image : null)}" />
 <c:set var="author"                 value="${value.Author}" />
 
 <c:set var="showAuthor"             value="${author.isSet and setting.showAuthor.toBoolean}" />
@@ -55,23 +65,68 @@
 <c:set var="showOverlay"            value="${keyPieceLayout == 50}" />
 <c:set var="ade"                    value="${cms.isEditMode}" />
 
+<c:set var="keyPieceLayout"         value="${showOverlay ? 0 : keyPieceLayout}" />
+<c:if test="${empty image}">
+    <c:choose>
+        <c:when test="${(keyPieceLayout >= 2) and (keyPieceLayout <= 5)}">
+            <c:set var="keyPieceLayout"  value="${0}" />
+        </c:when>
+        <c:when test="${(keyPieceLayout >= 6) and (keyPieceLayout <= 9)}">
+            <c:set var="keyPieceLayout"  value="${1}" />
+        </c:when>
+    </c:choose>
+</c:if>
+
+<c:set var="keyPiecePrefacePos"     value="${empty keyPiecePrefacePos ? ((showOverlay or (keyPieceLayout == 1)) ? 'bt' : (keyPieceLayout == 0 ? 'ih' : 'tt')) : keyPiecePrefacePos}" />
+<c:set var="keyPieceInfoPos"        value="${empty keyPieceInfoPos ? 'it' : keyPieceInfoPos}" />
+
+<%-- keyPiecePrefacePos options:    bt = bottom of text / tt = top of text   / ih = in header --%>
+<%-- keyPieceInfoPos options:       ah = above heading  / bh = below heading / it = in text / ov = outside key visual --%>
+
+<c:choose>
+    <c:when test="${showDate or showAuthor}">
+        <c:set var="keyPieceInfoMarkup">
+            <div class="visual-info ${not showAuthor ? 'right date-only' : ''}"><%----%>
+                <c:if test="${showDate}">
+                    <div class="info date"><%----%>
+                        <span class="sr-only"><fmt:message key="msg.page.sr.date" /></span><%----%>
+                        <div>${datePrefix}${date}</div><%----%>
+                    </div><%----%>
+                </c:if>
+                <c:if test="${showAuthor}">
+                    <div class="info person"><%----%>
+                        <span class="sr-only"><fmt:message key="msg.page.sr.by" /></span><%----%>
+                        <div ${author.rdfaAttr}>${author}</div><%----%>
+                    </div><%----%>
+                </c:if>
+            </div><%----%>
+        </c:set>
+    </c:when>
+    <c:otherwise>
+        <c:set var="keyPieceInfoPos" value="${null}" />
+    </c:otherwise>
+</c:choose>
+
 <mercury:nl />
 <div class="detail-page type-article layout-${keyPieceLayout}${setCssWrapper123}"><%----%>
 <mercury:nl />
 
-<c:set var="keyPieceLayout"         value="${showOverlay ? 0 : keyPieceLayout}" />
+<%-- Optional debug output generated from "detail-setting-defaults" plugin --%>
+${settingDefaultsDebug}
 
 <mercury:piece
     cssWrapper="detail-visual${setCssWrapperKeyPiece}"
     pieceLayout="${keyPieceLayout}"
-    allowEmptyBodyColumn="${true}"
-    sizeDesktop="${(keyPieceLayout < 2 || keyPieceLayout == 10) ? 12 : 6}"
+    allowEmptyBodyColumn="${not empty image}"
+    sizeDesktop="${keyPieceSizeDesktop != 99 ? keyPieceSizeDesktop : ((keyPieceLayout < 2 || keyPieceLayout == 10) ? 12 : 6)}"
     sizeMobile="${12}">
 
     <jsp:attribute name="heading">
         <c:if test="${not showOverlay}">
+            <c:if test="${keyPieceInfoPos eq 'ah'}">${keyPieceInfoMarkup}</c:if>
             <mercury:intro-headline intro="${intro}" headline="${title}" level="${hsize}" ade="${ade}"/>
-            <mercury:heading text="${preface}" level="${7}" css="sub-header" ade="${ade}" test="${keyPieceLayout == 0}" />
+            <mercury:heading text="${preface}" level="${7}" css="sub-header" ade="${ade}" test="${keyPiecePrefacePos eq 'ih'}" />
+            <c:if test="${keyPieceInfoPos eq 'bh'}">${keyPieceInfoMarkup}</c:if>
         </c:if>
     </jsp:attribute>
 
@@ -92,49 +147,43 @@
     </jsp:attribute>
 
     <jsp:attribute name="text">
-        <mercury:heading text="${preface}" level="${7}" css="sub-header" ade="${ade}" test="${not showOverlay and (keyPieceLayout > 1)}" />
-
-        <c:if test="${showDate or showAuthor}">
-            <div class="visual-info ${not showAuthor ? 'right' : ''}"><%----%>
-                <c:if test="${showDate}">
-                    <div class="info date"><%----%>
-                        <span class="sr-only"><fmt:message key="msg.page.sr.date" /></span><%----%>
-                        <div>${datePrefix}${date}</div><%----%>
-                    </div><%----%>
-                </c:if>
-                <c:if test="${showAuthor}">
-                    <div class="info person"><%----%>
-                        <span class="sr-only"><fmt:message key="msg.page.sr.by" /></span><%----%>
-                        <div ${author.rdfaAttr}>${author}</div><%----%>
-                    </div><%----%>
-                </c:if>
-            </div><%----%>
-        </c:if>
-
-        <mercury:heading text="${preface}" level="${7}" css="sub-header" ade="${ade}" test="${showOverlay or (keyPieceLayout == 1)}" />
+        <mercury:heading text="${preface}" level="${7}" css="sub-header" ade="${ade}" test="${keyPiecePrefacePos eq 'tt'}" />
+        <c:if test="${keyPieceInfoPos eq 'it'}">${keyPieceInfoMarkup}</c:if>
+        <mercury:heading text="${preface}" level="${7}" css="sub-header" ade="${ade}" test="${keyPiecePrefacePos eq 'bt'}" />
     </jsp:attribute>
 
 </mercury:piece>
 
-<c:if test="${not empty paragraphsContent or not empty paragraphsDownload}">
+<c:if test="${keyPieceInfoPos eq 'ov'}">
+    <div class="pivot detail-visual-info">${keyPieceInfoMarkup}</div><%----%>
+</c:if>
 
+<c:if test="${not empty paragraphsContent or not empty paragraphsDownload}">
+    <c:set var="pHsize" value="${hsize >= 0 ? hsize + 1 : (hsize >= -7 ? -1 * hsize : 0)}" />
     <div class="detail-content"><%----%>
-        <c:forEach var="paragraph" items="${paragraphsContent}" varStatus="status">
+        <mercury:paragraphs-alternating
+            paragraphs="${paragraphsContent}"
+            baseLayout="${pieceLayout}"
+            layoutAlternating="${pieceLayoutAlternating}"
+            skipFirstParagraphImage="${useVisualFromParagraph}">
             <mercury:section-piece
                 cssWrapper="${setCssWrapperParagraphs}"
-                pieceLayout="${pieceLayout}"
+                pieceLayout="${paragraphLayout}"
+                sizeDesktop="${pieceLayoutSizeDesktop}"
+                sizeMobile="${12}"
                 heading="${paragraph.value.Caption}"
-                image="${(status.first and not value.Image.value.Image.isSet) ? null : paragraph.value.Image}"
+                image="${status.first and useVisualFromParagraph ? null : paragraph.value.Image}"
+                imageRatio="${imageRatioParagraphs}"
                 text="${paragraph.value.Text}"
                 link="${paragraph.value.Link}"
                 showImageZoom="${showImageZoom}"
                 showImageSubtitle="${showImageSubtitle}"
                 showImageCopyright="${showImageCopyright}"
-                hsize="${hsize + 1}"
+                hsize="${pHsize}"
                 ade="${ade}"
                 emptyWarning="${not status.first}"
             />
-        </c:forEach>
+        </mercury:paragraphs-alternating>
         <mercury:paragraph-downloads paragraphs="${paragraphsDownload}" hsize="${hsize + 1}" />
     </div><%----%>
     <mercury:nl />

@@ -15,6 +15,9 @@
 <%@ attribute name="addSpan" type="java.lang.String" required="false"
     description="If provided, adds a SPAN tag around the generated href tag with a class containing the argument value." %>
 
+<%@ attribute name="addLi" type="java.lang.String" required="false"
+    description="If provided, adds an LI tag around the generated href tag with a class containing the argument value." %>
+
 <%@ attribute name="resultMap" type="java.util.HashMap" required="false"
     description="If provided, store the results in this map and do NOT generate any HTML output." %>
 
@@ -26,39 +29,48 @@
 
 
 <c:set var="linkText" value="${link.value.Text}" />
-<c:choose>
-    <c:when test="${fn:contains(linkText, '||')}">
-        <c:set var="linkParts" value="${fn:split(linkText, '||')}" />
-        <c:forEach var="linkPart" items="${linkParts}">
-            <c:choose>
-                <c:when test="${fn:startsWith(linkPart, 'icon:')}">
-                    <c:set var="linkIcon"><span class="ls-icon fa fa-${fn:substringAfter(linkPart, 'icon:')}"></span></c:set>
-                </c:when>
-                <c:when test="${fn:startsWith(linkPart, 'id:')}">
-                    <c:set var="linkAttr">id="${fn:substringAfter(linkPart, 'id:')}"</c:set>
-                </c:when>
-                <c:when test="${fn:startsWith(linkPart, 'class:')}">
-                    <c:set var="cssWrapper">${fn:substringAfter(linkPart, 'class:')}</c:set>
-                </c:when>
-                <c:when test="${fn:startsWith(linkPart, 'title:')}">
-                    <c:set var="linkTitle">${fn:substringAfter(linkPart, 'title:')}</c:set>
-                </c:when>
-                <c:otherwise>
-                     <c:set var="linkMessage">${empty linkMessage ? '' : linkMessage.concat(' ')}${linkPart}</c:set>
-                </c:otherwise>
-            </c:choose>
-        </c:forEach>
-        <c:if test="${not empty linkMessage}">
-            <c:set var="linkMessage"><span>${linkMessage}</span></c:set>
-        </c:if>
-    </c:when>
-    <c:when test="${fn:startsWith(linkText, 'icon:')}">
-        <c:set var="linkIcon"><span class="ls-icon fa fa-${fn:substringAfter(linkText, 'icon:')}"></span></c:set>
-    </c:when>
-    <c:otherwise>
-         <c:set var="linkMessage" value="${linkText}" />
-    </c:otherwise>
-</c:choose>
+<c:set var="autoLi" value="${addLi ne 'none'}" />
+<c:set var="addLi" value="${autoLi ? addLi : null}" />
+
+<c:set var="linkParts" value="${fn:split(linkText, '||')}" />
+<c:forEach var="linkPart" items="${linkParts}">
+    <c:choose>
+        <c:when test="${fn:startsWith(linkPart, 'icon:')}">
+            <c:set var="iconClass" value="${fn:substringAfter(linkPart, 'icon:')}" />
+            <c:set var="linkIcon"><mercury:icon icon="${iconClass}" tag="span" cssWrapper="ls-icon" inline="${true}" /></c:set>
+        </c:when>
+        <c:when test="${fn:startsWith(linkPart, 'icon-last:')}">
+            <c:set var="iconClass" value="${fn:substringAfter(linkPart, 'icon-last:')}" />
+            <c:set var="linkIcon"><mercury:icon icon="${iconClass}" tag="span" cssWrapper="ls-icon icon-last" inline="${true}" /></c:set>
+            <c:if test="${not empty addSpan}">
+                <c:set var="addSpan" value="${addSpan} icon-last" />
+            </c:if>
+        </c:when>
+        <c:when test="${fn:startsWith(linkPart, 'image:')}">
+            <c:set var="imagePath" value="${fn:substringAfter(linkPart, 'image:')}" />
+            <c:set var="linkIcon"><mercury:icon icon="${imagePath}" tag="span" cssWrapper="ls-icon" fromImage="${true}" /></c:set>
+        </c:when>
+        <c:when test="${fn:startsWith(linkPart, 'id:')}">
+            <c:set var="linkAttr">id="${fn:substringAfter(linkPart, 'id:')}"</c:set>
+        </c:when>
+        <c:when test="${fn:startsWith(linkPart, 'class:')}">
+            <c:set var="cssWrapper">${fn:substringAfter(linkPart, 'class:')}</c:set>
+            <c:if test="${autoLi}">
+                <c:set var="addLi" value="${empty addLi ? 'li-'.concat(cssWrapper) : addLi.concat(' li-').concat(cssWrapper)}" />
+            </c:if>
+        </c:when>
+        <c:when test="${fn:startsWith(linkPart, 'title:')}">
+            <c:set var="linkTitle">${fn:substringAfter(linkPart, 'title:')}</c:set>
+        </c:when>
+        <c:otherwise>
+            <c:set var="linkMessage">${empty linkMessage ? '' : linkMessage.concat(' ')}${linkPart}</c:set>
+        </c:otherwise>
+    </c:choose>
+</c:forEach>
+
+<c:if test="${not empty linkMessage and (resultMap == null)}">
+    <c:set var="linkMessage"><span>${linkMessage}</span></c:set>
+</c:if>
 
 <c:choose>
     <c:when test="${resultMap != null}">
@@ -69,6 +81,7 @@
                     "link": link,
                     "message": linkMessage,
                     "icon": linkIcon,
+                    "iconClass": iconClass,
                     "title": linkTitle,
                     "css": cssWrapper,
                     "attr": linkAttr
@@ -77,17 +90,17 @@
         </c:set>
     </c:when>
     <c:otherwise>
-        <mercury:link
-            link="${link}"
-            title="${linkTitle}"
-            css="${css}${not empty css and not empty cssWrapper ? ' ' : ''}${cssWrapper}"
-            attr="${linkAttr}">
-
-            ${empty addSpan ? '' : '<span class=\"'.concat(addSpan).concat('\">')}
-            ${linkIcon}${linkMessage}
-            ${empty addSpan ? '' : '</span>'}
-
-        </mercury:link>
+        ${empty addLi ? '' : '<li class=\"'.concat(addLi).concat('\">')}
+            <mercury:link
+                link="${link}"
+                title="${linkTitle}"
+                css="${css}${not empty css and not empty cssWrapper ? ' ' : ''}${cssWrapper}"
+                attr="${linkAttr}">
+                    ${empty addSpan ? '' : '<span class=\"'.concat(addSpan).concat('\">')}
+                        ${linkIcon}${linkMessage}
+                    ${empty addSpan ? '' : '</span>'}
+            </mercury:link>
+        ${empty addLi ? '' : '</li>'}
     </c:otherwise>
 </c:choose>
 

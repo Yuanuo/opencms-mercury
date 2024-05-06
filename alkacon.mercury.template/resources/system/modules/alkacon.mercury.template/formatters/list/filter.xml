@@ -11,10 +11,12 @@
         <uuid>27941448-def0-4cdd-8f30-cbe088d79bf4</uuid>
       </link>
     </Jsp>
-    <Rank><![CDATA[2750]]></Rank>
+    <Description><![CDATA[%(key.type.list.description.formatter) %(key.type.list.description.formatter.filter)]]></Description>
+    <Rank><![CDATA[15000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[list]]></ContainerType>
       </Types>
     </Match>
@@ -36,6 +38,9 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[searchlabel.filter]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showresetbutton.filter]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showcategories.filter]]></IncludeName>

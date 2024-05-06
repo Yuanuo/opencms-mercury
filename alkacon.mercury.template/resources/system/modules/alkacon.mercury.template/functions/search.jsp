@@ -10,7 +10,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
 
-<cms:secureparams />
+<cms:secureparams replaceInvalid="bad_param" />
 <mercury:init-messages reload="true">
 
 <c:set var="id"><mercury:idgen prefix="" uuid="${cms.element.id}" /></c:set>
@@ -30,7 +30,24 @@
 <c:set var="datePrefix"             value="${fn:substringBefore(dateFormat, '|')}" />
 <c:set var="dateFormat"             value="${empty datePrefix ? dateFormat : fn:substringAfter(dateFormat, '|')}" />
 <c:set var="showDateLastModified"   value="${dateFormat ne 'none'}" />
+<c:set var="slotText"               value="${setting.slotText.toString}" />
+<c:set var="slotButton"             value="${setting.slotButton.toString}" />
 
+<c:if test="${empty slotText}">
+    <c:set var="slotText"><fmt:message key='msg.page.search.enterquery' /></c:set>
+</c:if>
+
+<c:choose>
+    <c:when test="${empty slotButton}">
+        <c:set var="slotButton"><fmt:message key="msg.page.search.submit" /></c:set>
+    </c:when>
+    <c:when test="${fn:startsWith(slotButton, 'icon:')}">
+        <c:set var="icon" value="${fn:substringAfter(slotButton, 'icon:')}" />
+        <c:set var="slotButton"><mercury:icon icon="${icon}" tag="span" cssWrapper="icon-image" inline="${true}" /></c:set>
+    </c:when>
+</c:choose>
+
+<c:set var="showFacets"             value="${numFacetItems != 0}" />
 
 <%-- Generate the search configuration --%>
 <c:choose>
@@ -54,6 +71,11 @@
     --%>,containerpage<%--
     --%>,plain<%--
  --%></c:set>
+
+<c:set var="additionalTypes" value="${cms.vfs.propertySearch[cms.requestContext.uri]['search.types.additional']}"/>
+<c:if test="${not empty additionalTypes}">
+    <c:set var="types">${types},${additionalTypes}</c:set>
+</c:if>
 
 <%-- automatically determine the types to search for by the availability of detail pages. --%>
 <c:set var="adeManager" value="<%= org.opencms.main.OpenCms.getADEManager() %>" />
@@ -83,7 +105,7 @@
     <c:set var="typesRestriction">${typesRestriction}${status.first ? '' : ' OR '}${fn:trim(type)}</c:set>
 </c:forEach>
 
-<c:set var="returnFields">disptitle_${cms.locale}_sort,disptitle_sort,lastmodified,${cms.locale}_excerpt,id,path</c:set>
+<c:set var="returnFields">disptitle_${cms.locale}_sort,disptitle_sort,lastmodified,${cms.locale}_excerpt,id,path,mercury.detail.link_dprop</c:set>
 <c:set var="config">
     {
         "searchforemptyquery" : ${searchForEmptyQuery},
@@ -98,9 +120,12 @@
                                 , { "label" : "<fmt:message key='msg.page.search.sort.title.asc'/>", "solrvalue" : "disptitle_${cms.locale}_sort asc" }
                                 , { "label" : "<fmt:message key='msg.page.search.sort.title.desc'/>", "solrvalue" : "disptitle_${cms.locale}_sort desc" }
                                 ],
-        "fieldfacets" :         [ { "field" : "type", "label" : "<fmt:message key="msg.page.search.facet.type"/>", "mincount" : 1, "limit" : ${numFacetItems} }
+        <c:if test="${showFacets}">
+        "fieldfacets" :         [
+                                  { "field" : "type", "label" : "<fmt:message key="msg.page.search.facet.type"/>", "mincount" : 1, "limit" : ${numFacetItems} }
                                 , { "field" : "category_exact", "label" : "<fmt:message key="msg.page.search.facet.category"/>", "mincount" : 1, "order" : "index" }
                                 ],
+        </c:if>
         "highlighter" :         {
                                     "field" :                       "content_${cms.locale}",
                                     "alternateField":               "content_${cms.locale}",
@@ -157,9 +182,9 @@
                     <div class="input button"><%----%>
                         <label for="searchFormQuery" class="sr-only"><fmt:message key="msg.page.search" /></label><%----%>
                         <input id="searchFormQuery" name="${common.config.queryParam}" <%--
-                            --%>value="${escapedQuery}" class="form-control blur-focus" type="text" autocomplete="off" <%--
-                            --%>placeholder="<fmt:message key='msg.page.search.enterquery' />" /><%----%>
-                        <button class="btn btn-submit-search" type="submit"><fmt:message key="msg.page.search.submit" /></button><%----%>
+                            --%>value="${escapedQuery}" class="form-control" type="text" autocomplete="off" <%--
+                            --%>placeholder="<c:out value="${slotText}" />" /><%----%>
+                        <button class="btn btn-submit-search" type="submit" title="<fmt:message key="msg.page.search" />">${slotButton}</button><%----%>
                     </div><%----%>
                 </section><%----%>
             </div><%----%>
@@ -178,10 +203,10 @@
                         <div class="filterbox facet-query">
                             <button type="button" <%--
                             --%>class="btn btn-block li-label" <%--
-                            --%>data-target="#qf${id}" <%--
+                            --%>data-bs-target="#qf${id}" <%--
                             --%>aria-controls="qf${id}" <%--
                             --%>aria-expanded="true" <%--
-                            --%>data-toggle="collapse"><%--
+                            --%>data-bs-toggle="collapse"><%--
                             --%>${facetController.config.label}<%--
                          --%></button><%----%>
                             <div id="qf${id}" class="collapse show"><%----%>
@@ -213,10 +238,10 @@
                                 <c:if test="${fn:contains(flabel, '???')}"><c:set var="flabel">${facetController.config.label}</c:set></c:if>
                                 <button type="button" <%--
                                 --%>class="btn btn-block li-label" <%--
-                                --%>data-target="#ff${id}_${status.index}" <%--
+                                --%>data-bs-target="#ff${id}_${status.index}" <%--
                                 --%>aria-controls="ff${id}_${status.index}" <%--
                                 --%>aria-expanded="true" <%--
-                                --%>data-toggle="collapse"><%--
+                                --%>data-bs-toggle="collapse"><%--
                                 --%>${facetController.config.label}<%--
                              --%></button><%----%>
                                 <mercury:nl/>
@@ -409,7 +434,8 @@
                                 </c:if>
 
                                 <h4 class="search-result-heading"><%----%>
-                                    <a href='<cms:link>${searchResult.fields["path"]}</cms:link>'><%----%>
+                                    <c:set var="resultLink" value="${empty searchResult.fields['mercury.detail.link_dprop'] ? searchResult.fields['path'] : searchResult.fields['mercury.detail.link_dprop']}" />
+                                    <a href='<cms:link>${resultLink}</cms:link>'><%----%>
                                         <span class="result-title">${title}</span><%----%>
                                         <c:out value="${showTypeBadge ? typeName : ''}" escapeXml="${false}" />
                                     </a><%----%>

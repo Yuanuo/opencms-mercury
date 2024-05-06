@@ -14,6 +14,9 @@
     description="Can be used to scale the image in a specific ratio.
     Example values are: '1-1', '4-3', '3-2', '16-9', '2-1', '2,35-1' or 3-1." %>
 
+<%@ attribute name="imageTitle" type="java.lang.String" required="false"
+    description="If provided, use this title for the image, otherwise generate a title frm the contact names." %>
+
 <%@ attribute name="link" type="org.opencms.jsp.util.CmsJspContentAccessValueWrapper" required="false"
     description="Value wrapper for the contact link." %>
 
@@ -25,6 +28,15 @@
 
 <%@ attribute name="organization" type="org.opencms.jsp.util.CmsJspContentAccessValueWrapper" required="false"
     description="Value wrapper for the contact organization." %>
+
+<%@ attribute name="linkToRelated" type="java.lang.String" required="false"
+    description="Link to the parent organization (for persons) or the contact persion (for organizations)." %>
+
+<%@ attribute name="linkToDetail" type="java.lang.String" required="false"
+    description="Link to the detail page." %>
+
+<%@ attribute name="notice" type="org.opencms.jsp.util.CmsJspContentAccessValueWrapper" required="false"
+    description="Value wrapper for the notice." %>
 
 <%@ attribute name="description" type="org.opencms.jsp.util.CmsJspContentAccessValueWrapper" required="false"
     description="Value wrapper for the contact description." %>
@@ -50,8 +62,11 @@
 <%@ attribute name="showOrganization" type="java.lang.Boolean" required="false"
     description="Show the contact organization." %>
 
-<%@ attribute name="showDescription" type="java.lang.Boolean" required="false"
-    description="Show the contact description." %>
+<%@ attribute name="showNotice" type="java.lang.String" required="false"
+    description="Controls how the additional info is displayed. Can be either 'top', 'bottom', 'true' or 'false'. 'true' is the same as 'top'." %>
+
+<%@ attribute name="showDescription" type="java.lang.String" required="false"
+    description="Controls how the description info is displayed. Can be either 'top', 'bottom', 'true' or 'false'. 'true' is the same as 'bottom'." %>
 
 <%@ attribute name="showAddress" type="java.lang.Boolean" required="false"
     description="Show the contact address." %>
@@ -104,13 +119,21 @@
 <c:set var="showPosition"       value="${showPosition and (not empty position)}"/>
 <c:set var="showImage"          value="${showImage and (not empty image)}" />
 <c:set var="showOrganization"   value="${showOrganization and (not empty organization)}"/>
-<c:set var="showDescription"    value="${showDescription and (not empty description)}"/>
 <c:set var="showAddressAlways"  value="${showAddressAlways and (not empty data or not empty addressData)}"/>
 <c:set var="showAddress"        value="${showAddressAlways or (showAddress and (not empty data or not empty addressData))}"/>
 <c:set var="showPhone"          value="${showPhone and (not empty data)}"/>
 <c:set var="showWebsite"        value="${showWebsite and (not empty data) and (not empty data.value.Website)}"/>
 <c:set var="showEmail"          value="${showEmail and (not empty data) and (not empty data.value.Email) and (not empty data.value.Email.value.Email)}"/>
 
+<%-- Notice is by default displayed on top of address / phone / link. Optinal placement below can be enabled by setting overrides for a template variant. --%>
+<c:set var="showNote"           value="${(not empty notice) and ((showNotice eq 'true') or (showNotice eq 'top') or (showNotice eq 'bottom'))}" />
+<c:set var="showNoteTop"        value="${showNote and (showNotice ne 'bottom')}" />
+<c:set var="showNoteBottom"     value="${showNote and not showNoteTop}" />
+
+<%-- Description is by default displayed below address / phone / link. Optinal placement on top can be enabled by setting overrides for a template variant. --%>
+<c:set var="showDesc"           value="${(not empty description) and ((showDescription eq 'true') or (showDescription eq 'top') or (showDescription eq 'bottom'))}" />
+<c:set var="showDescTop"        value="${showDesc and (showDescription eq 'top')}" />
+<c:set var="showDescBottom"     value="${showDesc and not showDescTop}" />
 
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
@@ -129,7 +152,7 @@
 
 <c:if test="${not empty link}">
     <c:choose>
-        <c:when test="${linkOption eq 'button'}">
+        <c:when test="${not empty linkOption and fn:contains(linkOption, 'button')}">
             <c:set var="showLinkAsButton" value="${true}" />
         </c:when>
         <c:when test="${linkOption eq 'text'}">
@@ -140,6 +163,9 @@
 
 <%-- #### Contact exposed as 'Person' or 'Organization', see http://schema.org/ #### --%>
 <c:choose>
+    <c:when test="${showImage and (not empty imageTitle)}">
+         <c:set var="imgtitle" value="${imageTitle eq 'none' ? null : imageTitle}" />
+    </c:when>
     <c:when test="${showImage and (not empty name)}">
         <c:set var="persontxtname">
             <c:if test="${name.value.Title.isSet}">${name.value.Title}${' '}</c:if>
@@ -162,6 +188,7 @@
     </c:when>
 </c:choose>
 
+
 <mercury:image-animated
     image="${image}"
     test="${showImage}"
@@ -169,26 +196,25 @@
     showCopyright="${showImageCopyright}"
     ratio="${imageRatio}"
     cssImage="photo"
-    attrImage='itemprop="image"'
     showImageZoom="${showImageZoom}"
     >
 
-    <c:if test="${showName or showOrganization or showDescription or showAddress or showPhone or showEmail or showLinkAsButton}">
+    <c:if test="${showName or showOrganization or showDesc or showNote or showAddress or showPhone or showEmail or showLinkAsButton}">
         <div class="text-box"><%----%>
         <mercury:nl />
 
             <c:if test="${showName}">
                 <c:set var="personname">
                     <c:if test="${name.value.Title.isSet}">
-                        <span itemprop="honorificPrefix">${name.value.Title}${' '}</span><%----%>
+                        <span>${name.value.Title}${' '}</span><%----%>
                     </c:if>
-                    <span itemprop="givenName"> ${name.value.FirstName}</span><%----%>
+                    <span> ${name.value.FirstName}</span><%----%>
                     <c:if test="${name.value.MiddleName.isSet}">
-                        <span itemprop="additionalName"> ${name.value.MiddleName}</span><%----%>
+                        <span> ${name.value.MiddleName}</span><%----%>
                     </c:if>
-                    <span itemprop="familyName"> ${name.value.LastName}</span><%----%>
+                    <span> ${name.value.LastName}</span><%----%>
                     <c:if test="${name.value.Suffix.isSet}">
-                        <span itemprop="honorificSuffix"> ${name.value.Suffix}</span><%----%>
+                        <span> ${name.value.Suffix}</span><%----%>
                     </c:if>
                 </c:set>
             </c:if>
@@ -196,16 +222,18 @@
             <c:choose>
                 <c:when test="${kind eq 'org'}">
                     <c:if test="${showOrganization}">
-                        <mercury:heading level="${hsize}" css="fn n" attr="itemprop='name'" text="${organization}" suffix="${nameSuffix}" ade="${false}" />
+                        <mercury:heading level="${hsize}" css="fn n" text="${organization}" suffix="${nameSuffix}" ade="${false}" />
                     </c:if>
                     <c:if test="${showOrganization and (showName or showPosition)}">
                         <%-- In case of organization 'showOrganization' means 'showContactPerson'  --%>
-                        <div itemprop="employee" itemscope itemtype="http://schema.org/Person"><%----%>
+                        <div><%----%>
                             <c:if test="${showName}">
-                                <div class="h${hsize + 1} org">${personname}</div><%----%>
+                                <div class="h${hsize + 1} org"><%----%>
+                                    <mercury:link link="${linkToRelated}">${personname}</mercury:link>
+                                </div><%----%>
                             </c:if>
                             <c:if test="${showPosition}"><%----%>
-                                <div class="pos" itemprop="description" class="title"><%----%>
+                                <div class="pos" class="title"><%----%>
                                     ${position}
                                 </div><%----%>
                             </c:if>
@@ -214,44 +242,52 @@
                 </c:when>
                 <c:otherwise>
                     <c:if test="${showName}">
-                        <mercury:heading level="${hsize}" css="fn n" attr="itemprop='name'" suffix="${nameSuffix}" ade="${false}">
+                        <mercury:heading level="${hsize}" css="fn n" suffix="${nameSuffix}" ade="${false}">
                             <jsp:attribute name="markupText">${personname}</jsp:attribute>
                         </mercury:heading>
                         <c:if test="${showPosition}">
-                            <div class="h${hsize + 1} pos" itemprop="description" class="title"><%----%>
+                            <div class="h${hsize + 1} pos" class="title"><%----%>
                                 ${position}
                             </div><%----%>
                         </c:if>
                     </c:if>
                     <c:if test="${showOrganization}">
-                        <div class="org" itemprop="worksFor">${organization}</div><%----%>
+                        <div class="org"><%----%>
+                            <mercury:link link="${linkToRelated}">${organization}</mercury:link>
+                        </div><%----%>
                     </c:if>
                 </c:otherwise>
             </c:choose>
+
+            <c:if test="${showNoteTop}">
+                <div class="note top notice">${notice}</div><%----%>
+            </c:if>
+
+            <c:if test="${showDescTop}">
+                <div class="note top description">${description}</div><%----%>
+            </c:if>
 
             <c:if test="${showAddress}">
                 <mercury:location-vars data="${addressData}">
 
                     <c:set var="animatedAddress" value="${not showAddressAlways}" />
                     <div class="${animatedAddress ? 'clickme-showme adr-p' : 'adr-p'}"><%----%>
-                        <div class="adr ${animatedAddress ? 'clickme' : ''}" <%--
-                        --%>itemprop="address" itemscope <%--
-                        --%>itemtype="http://schema.org/PostalAddress"><%----%>
-                            <div itemprop="streetAddress" class="street-address">${locData.streetAddress}</div><%----%>
+                        <div class="adr ${animatedAddress ? 'clickme' : ''}"><%----%>
+                            <div class="street-address">${locData.streetAddress}</div><%----%>
                             <c:if test="${not empty locData.extendedAddress}">
-                                <div itemprop="streetAddress" class="extended-address">${locData.extendedAddress}</div><%----%>
+                                <div class="extended-address">${locData.extendedAddress}</div><%----%>
                             </c:if>
                             <div><%----%>
-                                <span itemprop="postalCode" class="postal-code">${locData.postalCode}</span>${' '}<%----%>
-                                <span itemprop="addressLocality" class="locality">${locData.locality}</span><%----%>
+                                <span class="postal-code">${locData.postalCode}</span>${' '}<%----%>
+                                <span class="locality">${locData.locality}</span><%----%>
                             </div><%----%>
                             <c:if test="${(not empty locData.region) or (not empty locData.country)}">
                                 <div><%----%>
                                     <c:if test="${not empty locData.region}">
-                                        <span itemprop="addressRegion" class="region">${locData.region}${' '}</span><%----%>
+                                        <span class="region">${locData.region}${' '}</span><%----%>
                                     </c:if>
                                     <c:if test="${not empty locData.country}">
-                                        <span itemprop="addressCountry" class="country-name">${locData.country}</span><%----%>
+                                        <span class="country-name">${locData.country}</span><%----%>
                                     </c:if>
                                 </div><%----%>
                             </c:if>
@@ -289,7 +325,7 @@
                         </mercury:icon-prefix>
                         <span><%----%>
                             <a href="tel:${fn:replace(data.value.Phone, ' ','')}" ${data.rdfa.Phone}><%----%>
-                                <span itemprop="telephone" class="tel">${data.value.Phone}</span><%----%>
+                                <span class="tel">${data.value.Phone}</span><%----%>
                             </a><%----%>
                         </span><%----%>
                     </div><%----%>
@@ -301,7 +337,7 @@
                         </mercury:icon-prefix>
                         <span><%----%>
                             <a href="tel:${fn:replace(data.value.Mobile, ' ','')}" ${data.rdfa.Mobile}><%----%>
-                                <span itemprop="telephone" class="tel">${data.value.Mobile}</span><%----%>
+                                <span class="tel">${data.value.Mobile}</span><%----%>
                             </a><%----%>
                         </span><%----%>
                     </div><%----%>
@@ -313,7 +349,7 @@
                         </mercury:icon-prefix>
                         <span><%----%>
                             <a href="tel:${fn:replace(data.value.Fax, ' ','')}" ${data.rdfa.Fax}><%----%>
-                                <span itemprop="faxNumber" class="tel">${data.value.Fax}</span><%----%>
+                                <span class="tel">${data.value.Fax}</span><%----%>
                             </a><%----%>
                         </span><%----%>
                     </div><%----%>
@@ -328,50 +364,68 @@
                         </mercury:icon-prefix>
                     </c:if>
                     <span><%----%>
-                        <mercury:email email="${data.value.Email}">
-                            <jsp:attribute name="placeholder"><fmt:message key="msg.page.contact.obfuscatedemail"/></jsp:attribute>
-                        </mercury:email>
+                        <mercury:email email="${data.value.Email}" linkToForm="${linkToDetail}" />
                     </span><%----%>
                 </div><%----%>
             </c:if>
 
-            <c:set var="linkattr">itemprop="url"</c:set>
             <c:if test="${showWebsite}">
-                <c:set var="websiteURL" value="${data.value.Website.toLink}" />
-                <c:if test="${fn:startsWith(websiteURL, '/')}">
-                    <c:set var="websiteURL" value="${cms.site.url}${websiteURL}" />
-                </c:if>
-                <c:if test="${fn:endsWith(websiteURL, '/')}">
-                    <c:set var="websiteURL" value="${fn:substring(websiteURL, 0, fn:length(websiteURL)-1)}"/>
-                </c:if>
+
+                <c:set var="websiteLink" value="${data.value.Website}" />
                 <c:choose>
-                    <c:when test="${fn:startsWith(websiteURL, 'https://')}">
-                        <c:set var="websiteURL" value="${fn:trim(fn:substringAfter(websiteURL, 'https://'))}" />
+                    <c:when test="${websiteLink.isSet and websiteLink.value.URI.isSet}">
+                        <c:set var="websiteURL" value="${websiteLink.value.Text.isSet ? websiteLink.value.Text.toString : websiteLink.value.URI.toLink.toString}" />
+                        <c:set var="websiteNewWin" value="${websiteNewWin or websiteLink.value.NewWindow.toBoolean}" />
+                        <c:if test="${websiteLink.value.Text.isSet}">
+                            <c:set var="websiteTitle" value="${websiteLink.value.Text.toString}" />
+                        </c:if>
                     </c:when>
-                    <c:when test="${fn:startsWith(websiteURL, 'http://')}">
-                        <c:set var="websiteURL" value="${fn:trim(fn:substringAfter(websiteURL, 'http://'))}" />
+                    <c:when test="${websiteLink.isSet and not empty websiteLink.toString}">
+                         <c:set var="websiteURL" value="${websiteLink.toLink.toString}" />
                     </c:when>
                 </c:choose>
-                <div class="${showMinLabels ? 'website' : 'website tablerow'}"><%----%>
-                     <c:if test="${not showMinLabels}">
-                        <mercury:icon-prefix icon="globe" showText="${showTextLabels}" showIcon="${showIconLabels}">
-                            <jsp:attribute name="text"><fmt:message key="msg.page.contact.website"/></jsp:attribute>
-                        </mercury:icon-prefix>
+
+                <c:if test="${not empty websiteURL}">
+                    <c:if test="${not websiteLink.value.Text.isSet}">
+                        <c:if test="${fn:startsWith(websiteURL, '/')}">
+                            <c:set var="websiteURL" value="${cms.site.url}${websiteURL}" />
+                        </c:if>
+                        <c:if test="${fn:endsWith(websiteURL, '/')}">
+                            <c:set var="websiteURL" value="${fn:substring(websiteURL, 0, fn:length(websiteURL)-1)}"/>
+                        </c:if>
+                        <c:choose>
+                            <c:when test="${fn:startsWith(websiteURL, 'https://')}">
+                                <c:set var="websiteURL" value="${fn:trim(fn:substringAfter(websiteURL, 'https://'))}" />
+                            </c:when>
+                            <c:when test="${fn:startsWith(websiteURL, 'http://')}">
+                                <c:set var="websiteURL" value="${fn:trim(fn:substringAfter(websiteURL, 'http://'))}" />
+                            </c:when>
+                        </c:choose>
                     </c:if>
-                    <span><%----%>
-                         <mercury:link link="${data.value.Website}" attr="${linkattr}" newWin="${websiteNewWin}">${websiteURL}</mercury:link><%----%>
-                    </span><%----%>
-                </div><%----%>
-                <c:set var="linkattr" value="" />
+                    <div class="${showMinLabels ? 'website' : 'website tablerow'}"><%----%>
+                         <c:if test="${not showMinLabels}">
+                            <mercury:icon-prefix icon="globe" showText="${showTextLabels}" showIcon="${showIconLabels}">
+                                <jsp:attribute name="text"><fmt:message key="msg.page.contact.website"/></jsp:attribute>
+                            </mercury:icon-prefix>
+                        </c:if>
+                        <span><%----%>
+                             <mercury:link link="${data.value.Website}" newWin="${websiteNewWin}">${websiteURL}</mercury:link><%----%>
+                        </span><%----%>
+                    </div><%----%>
+                </c:if>
             </c:if>
 
-            <c:if test="${showDescription}">
-                <div itemprop="description" class="note">${description}</div><%----%>
+            <c:if test="${showNoteBottom}">
+                <div class="note bottom notice">${notice}</div><%----%>
+            </c:if>
+
+            <c:if test="${showDescBottom}">
+                <div class="note bottom description">${description}</div><%----%>
             </c:if>
 
             <c:if test="${showLinkAsText}">
                 <div class="contactlink"><%----%>
-                    <mercury:link link="${link}" css="piece-text-link" attr="${linkattr}" newWin="${websiteNewWin}" />
+                    <mercury:link link="${link}" css="piece-text-link" newWin="${websiteNewWin}" />
                 </div><%----%>
             </c:if>
 
@@ -384,7 +438,18 @@
             </c:if>
 
             <c:if test="${showLinkAsButton}">
-                <mercury:link link="${link}" css="contactlink btn btn-sm" attr="${linkattr}" newWin="${websiteNewWin}" />
+            <c:choose>
+                <c:when test="${linkOption eq 'button-lg'}">
+                    <c:set var="btnClass" value="btn" />
+                </c:when>
+                <c:when test="${linkOption eq 'button-full'}">
+                    <c:set var="btnClass" value="btn btn-block" />
+                </c:when>
+                <c:otherwise>
+                    <c:set var="btnClass" value="btn btn-sm" />
+                </c:otherwise>
+            </c:choose>
+                <mercury:link link="${link}" css="contactlink ${btnClass}" newWin="${websiteNewWin}" />
             </c:if>
 
         </div><%----%>

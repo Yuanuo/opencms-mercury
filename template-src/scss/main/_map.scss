@@ -20,13 +20,16 @@
  */
 
 .type-map {
+    --#{$prefix}map-popup-color: #{$map-popup-color};
+    --#{$prefix}map-popup-bg: #{$map-popup-bg};
+    --#{$prefix}map-marker-margin: #{$map-marker-margin};
 
     .mapbuttons {
-        margin-top: $default-margin-small;
+        margin-top: calc(0.5 * var(--#{$prefix}element-margin));
 
         .btn {
-            margin-top: $default-margin-verysmall;
-            margin-right: $default-margin-verysmall;
+            margin-top: calc(0.25 * var(--#{$prefix}element-margin));
+            margin-right: var(--#{$prefix}ws-margin);
         }
     }
 
@@ -51,12 +54,14 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                @include round-corners($map-border-radius, true);
+                border-radius: $map-border-radius;
+                overflow: hidden;
+                z-index: $overflow-z-index;
 
                 &.placeholder {
 
                     &::after {
-                        content: "\f279";
+                        content: "\f279"; // mercury:icon - fa-map
                     }
                 }
             }
@@ -67,19 +72,31 @@
     }
 
     .map-marker {
-        color: $map-text-color;
+        color: var(--#{$prefix}map-popup-color);
         font-size: $map-text-size;
         font-weight: $map-text-weight;
 
         .markhead {
-            font-family: $font-family-headings;
+            font-family: var(--#{$prefix}font-family-headings);
             font-size: $map-header-size;
             font-weight: $map-header-weight;
-            margin-bottom: $default-margin-verysmall;
+            margin-bottom: var(--#{$prefix}map-marker-margin);
         }
 
-        .marktxt {
+        .facility-icons {
+            transform: scale(0.75);
+            transform-origin: top left;
+            margin-bottom: 0; // scale will add empty space below
+        }
+
+        .marktxt,
+        .marklink {
             line-height: 1.2;
+        }
+
+        .marklink {
+            display: block;
+            margin-top: var(--#{$prefix}map-marker-margin);
         }
 
         .markroute {
@@ -99,33 +116,60 @@
 }
 
 .map-osm {
-    .mapboxgl-map {
-        color: $map-text-color;
-        font-family: $font-family-base;
+
+    .maplibregl-map,
+    .maplibregl-popup-content {
+        color: var(--#{$prefix}map-popup-color);
+        background-color: var(--#{$prefix}map-popup-bg);
+        font-family: var(--#{$prefix}body-font-family);
+        font-weight: var(--#{$prefix}body-font-weight);
+    }
+
+    .maplibregl-popup-content {
         font-size: 1.0rem;
-        font-weight: $font-weight-base;
         line-height: 1.2;
     }
 
-    .mapboxgl-marker {
+    .maplibregl-popup-anchor-top .maplibregl-popup-tip,
+    .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+    .maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+        border-bottom-color: var(--#{$prefix}map-popup-bg);
+    }
+
+    .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+    .maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+    .maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+        border-top-color: var(--#{$prefix}map-popup-bg);
+    }
+
+    .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+        border-right-color: var(--#{$prefix}map-popup-bg);
+    }
+
+    .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+        border-left-color: var(--#{$prefix}map-popup-bg);
+    }
+
+    .maplibregl-marker {
         cursor: pointer;
     }
 
-    .mapboxgl-popup-content {
+    .maplibregl-popup-content {
         border-radius: $map-border-radius;
         padding: 10px 20px 10px 10px;
     }
 
-    .mapboxgl-popup-close-button {
+    .maplibregl-popup-close-button {
+        color: var(--#{$prefix}map-popup-color);
         font-size: 20px;
         &:hover {
             background-color: $white;
             opacity: 0.8;
-            color: $main-theme;
+            color: var(--#{$prefix}main-theme)
         }
     }
 
-    .mapboxgl-ctrl-attrib {
+    .maplibregl-ctrl-attrib {
         a {
             color: $grey-dark !important;
         }

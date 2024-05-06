@@ -85,11 +85,11 @@
                 > a {
                     &[aria-controls] {
                         &::after {
+                            @include icon-font();
+                            content: "\f107"; // mercury:icon - fa-angle-down
                             position: absolute;
                             display: inline-block;
-                            font-family: ForkAwesome;
                             font-weight: normal;
-                            content: "\f107";
                             font-size: round($nav-font-size * 1.75);
                             right: $nav-mobile-box-right;
                             transform: rotate(0);
@@ -114,7 +114,7 @@
                         height: $nav-mobile-line-target-height;
                         display: block;
                         border: none;
-                        padding: 0;
+                        padding: $nav-mobile-line-padding 0;
                         margin: 0;
                     }
                 }
@@ -232,35 +232,39 @@
         pointer-events: auto;
     }
 
-    .nav-toggle {
+    .nav-toggle-btn {
         // the button used to show / hide the nav on small screens
+        @include remove-default-button-style;
+        float: right;
         display: block;
         position: relative;
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-        width: $nav-toggle-size;
-        height: $nav-toggle-size;
-        font-size: 0;
-        text-indent: -9999px;
-        box-shadow: none;
-        border-radius: $nav-border-radius;
-        border: none;
         cursor: pointer;
-        transition: background $nav-animation-time;
-        color: $nav-toggle-text;
-        background-color: $nav-toggle-bg;
         z-index: $above-oc-z-index + 1; // nav toggle should be above OC edit points
-        float: right;
 
-        span {
+        .nav-toggle {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            width: $nav-toggle-size;
+            height: $nav-toggle-size;
+            font-size: 0;
+            text-indent: -9999px;
+            box-shadow: none;
+            border-radius: $nav-border-radius;
+            border: none;
+            transition: background $nav-animation-time;
+            color: var(--#{$prefix}nav-toggle-fg);
+            background-color: var(--#{$prefix}nav-toggle-bg);
+        }
+
+        .nav-burger {
             display: block;
             position: absolute;
             top: round(0.48 * $nav-toggle-size);
             left: round(0.2 * $nav-toggle-size);
             right: round(0.2 * $nav-toggle-size);
             height: $nav-toggle-stroke-height;
-            background: $nav-toggle-text;
+            background: var(--#{$prefix}nav-toggle-fg);
             transition: background 0s $nav-animation-time;
 
             &::before,
@@ -270,7 +274,7 @@
                 left: 0;
                 width: 100%;
                 height: $nav-toggle-stroke-height;
-                background-color: $nav-toggle-text;
+                background-color: var(--#{$prefix}nav-toggle-fg);
                 content: "";
                 transition-duration: $nav-animation-time, $nav-animation-time;
                 transition-delay: $nav-animation-time, 0s;
@@ -289,10 +293,8 @@
             }
         }
 
-        &.active {
-            background-color: $nav-toggle-bg-active;
-
-            span {
+        &.active-nav {
+            .nav-burger {
                 background: none;
 
                 &::before,
@@ -313,13 +315,15 @@
         }
 
         @if ($nav-mobile-smaller-xs-toggle != false) {
-            @include media-breakpoint-down(xs) {
-                // on very small screens use a smaller button
-                // otherwise the button may become larger than the head itself
-                width: round($nav-toggle-size-xs);
-                height: round($nav-toggle-size-xs);
+            @include media-breakpoint-down(sm) {
+                .nav-toggle {
+                    // on very small screens use a smaller button
+                    // otherwise the button may become larger than the head itself
+                    width: round($nav-toggle-size-xs);
+                    height: round($nav-toggle-size-xs);
+                }
 
-                span {
+                .nav-burger {
                     top: round(0.46 * $nav-toggle-size-xs);
                     left: round(0.2 * $nav-toggle-size-xs);
                     right: round(0.2 * $nav-toggle-size-xs);
@@ -365,12 +369,27 @@
             padding-right: 0;
             background-color: $nav-mobile-menu-bg-color;
             // make space above the nav entries for the toggle button
-            padding-top: $grid-gutter-width + $nav-toggle-size;
+            padding-top: calc(#{$grid-gutter-width} + #{$nav-toggle-size});
             min-width: $nav-mobile-side-size;
             width: $nav-mobile-width-xs;
 
             &.has-sidelogo {
                 padding-top: 0;
+            }
+
+            &.meta-seperate {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+
+                .nav-main-items {
+                    flex-grow: 100;
+                }
+
+                .nav-meta-items {
+                    margin: 0;
+                    padding: 0;
+                }
             }
 
             .nav-main-items {
@@ -390,7 +409,7 @@
                 width: $nav-mobile-width-md;
             }
         }
-        @if (($nav-breakpoint-mobile == lg) or ($nav-breakpoint-mobile == xl)) {
+        @if (($nav-breakpoint-mobile == lg) or ($nav-breakpoint-mobile == xl) or ($nav-breakpoint-mobile == xxl)) {
             @include media-breakpoint-up(lg) {
                 .nav-main-group  {
                     width: $nav-mobile-width-lg;
@@ -412,12 +431,26 @@
         transition: opacity 0.5s, height 0.001s 0.5s, width 0.001s 0.5s;
     }
 
-    html.active-nav .area-header {
-        .head-overlay {
-            width: 100vw;
-            height: 100vh;
-            opacity: 0.75;
-            transition: opacity 0.5s;
+    html.active-nav {
+        .area-header {
+            .head-overlay {
+                width: 100vw;
+                height: 100vh;
+                opacity: 0.75;
+                transition: opacity 0.5s;
+            }
+        }
+        &.keyboard-nav {
+            .nav-main-items {
+                *,
+                .dropdown > a,
+                .dropdown-menu > a {
+
+                    &:focus {
+                        @include focus-outline(false);
+                    }
+                }
+            }
         }
     }
 
@@ -425,7 +458,7 @@
         position: relative;
     }
 
-    @if (not $feature-use-burger-header) {
+    @if ($feature-header-type == 'flexible') {
 
         .nav-main-container {
 
@@ -438,7 +471,7 @@
             @include media-breakpoint-up(md) {
                 #{$nav-mobile-position}: -1 * $nav-mobile-width-md;
             }
-            @if (($nav-breakpoint-mobile == lg) or ($nav-breakpoint-mobile == xl)) {
+            @if (($nav-breakpoint-mobile == lg) or ($nav-breakpoint-mobile == xl) or or ($nav-breakpoint-mobile == xxl)) {
                 @include media-breakpoint-up(lg) {
                     #{$nav-mobile-position}: -1 * $nav-mobile-width-lg;
                 }
@@ -466,7 +499,7 @@
             #{$nav-mobile-position}: $nav-mobile-toggle-side;
 
             @if ($nav-mobile-toggle-side-xs != $nav-mobile-toggle-side) {
-                @include media-breakpoint-down(xs) {
+                @include media-breakpoint-down(sm) {
                     #{$nav-mobile-position}:  $nav-mobile-toggle-side-xs;
                 }
             }
@@ -488,7 +521,7 @@
                 }
 
                 @if ($nav-mobile-box-offset-xs != $nav-mobile-box-offset) {
-                    @include media-breakpoint-down(xs) {
+                    @include media-breakpoint-down(sm) {
                         li.expand > a::after {
                             right: $nav-mobile-box-offset-xs;
                         }
@@ -522,7 +555,7 @@
 
         .nav-main-container {
             .nav-main-group {
-                padding-top: $grid-gutter-width + $nav-toggle-size + $opencms-toolbar-height;
+                padding-top: calc(#{$grid-gutter-width} + #{$nav-toggle-size} + #{$opencms-toolbar-height});
                 &.has-sidelogo {
                     padding-top: $opencms-toolbar-height;
                 }
@@ -558,7 +591,7 @@
                 border: 0;
                 > a {
                     // sidebar padding may be different
-                    padding: $nav-mobile-line-padding $grid-gutter-width-half $nav-mobile-line-padding #{$grid-gutter-width-half + ($nav-mobile-indent * 2)};
+                    padding: $nav-mobile-line-padding $grid-gutter-width-half $nav-mobile-line-padding calc(#{$grid-gutter-width-half} + (#{$nav-mobile-indent} * 2));
                     @if ($nav-mobile-font-family != $font-family-base) {
                         font-family: $nav-mobile-font-family;
                     }
@@ -628,9 +661,9 @@
                 padding: $nav-header-padding;
 
                 &::after {
+                    @include icon-font();
                     position: absolute;
                     display: inline-block;
-                    font-family: ForkAwesome;
                 }
             }
 
@@ -825,12 +858,12 @@
             > a {
                 // add caret labels to menus that have submenus
                 &[aria-controls]::after {
+                    @include icon-font();
+                    content: "\f105"; // mercury:icon - fa-angle-right
                     position: absolute;
                     display: inline-block;
-                    font-family: ForkAwesome;
                     right: round(($nav-menu-hor-padding - 2px) * 0.5);
                     font-size: $nav-font-size;
-                    content: "\f105"; // right arrow for default large screens
                     font-weight: normal;
                 }
 
@@ -957,18 +990,23 @@
                 left: 0; // this will be modified by JS later
                 position: absolute;
                 margin: 0;
-                width: calc(#{container-useable-width(lg)} + #{2 * $default-margin});
-                padding: $default-margin $default-margin 0 $default-margin;
+                width: calc(#{container-useable-width(lg, true)} + (2 * var(--#{$prefix}default-margin)));
+                padding: var(--#{$prefix}default-margin) var(--#{$prefix}default-margin) 0 var(--#{$prefix}default-margin);
                 background-color: $nav-megamenu-bg;
             }
 
-            .nav-main-items > li.expand.mega {
+            .nav-main-items > li.expand.ed.mega {
                 position: static;
             }
 
             @include media-breakpoint-up(xl) {
                 .nav-mega-menu {
-                    width: calc(#{container-useable-width(xl)} + #{2 * $default-margin});
+                    width: calc(#{container-useable-width(xl, true)} + 2 * var(--#{$prefix}default-margin));
+                }
+            }
+            @include media-breakpoint-up(xxl) {
+                .nav-mega-menu {
+                    width: calc(#{container-useable-width(xxl, true)} + 2 * var(--#{$prefix}default-margin));
                 }
             }
         }
@@ -1004,8 +1042,8 @@
 
 #mega-menu-editor {
     background: $grey;
-    padding-top: $default-margin;
-    padding-bottom: $default-margin;
+    padding-top: var(--#{$prefix}default-margin);
+    padding-bottom: var(--#{$prefix}default-margin);
     height: calc(100vh - #{$opencms-toolbar-height});
 
     > .container {
@@ -1017,7 +1055,7 @@
     }
 
     .nav-main-items,
-    li.mega, {
+    li.mega {
         display: block;
     }
 
@@ -1028,7 +1066,7 @@
         display: block;
         overflow: visible;
         position: static;
-        margin-left: calc(#{$grid-gutter-width-half} - #{$default-margin});
+        margin-left: calc(#{$grid-gutter-width-half} - var(--#{$prefix}default-margin));
         animation-name: none;
     }
 }

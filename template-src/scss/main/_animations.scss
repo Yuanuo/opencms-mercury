@@ -38,7 +38,7 @@
                 }
                 &:hover {
                     > .visual .effect-box {
-                        @include round-corners($image-border-radius);
+                        border-radius: var(--#{$prefix}image-border-radius);
                     }
                 }
             }
@@ -56,7 +56,7 @@
 
                 &:hover {
                     z-index: #{$overflow-z-index + 1};
-                    @include round-corners($image-border-radius);
+                    border-radius: var(--#{$prefix}image-border-radius);
 
                     > .visual .subtitle,
                     > .body {
@@ -177,14 +177,9 @@ html.desktop .effect-rotate {
 
     // limit the effect to the borders of this box
     .image-src-box {
+        border-radius: var(--#{$prefix}image-border-radius);
         overflow: hidden;
         z-index: $overflow-z-index;
-    }
-
-    @if ($image-border-radius != 0) {
-        .image-src-box {
-             @include round-corners($image-border-radius, true);
-        }
     }
 }
 
@@ -271,7 +266,7 @@ html.desktop .effect-rotate {
     }
 
     left: 50%;
-    .fa-spinner {
+    .spinner-icon {
         animation: spinner 1s infinite;
         animation-timing-function: steps(4, end);
     }
@@ -293,17 +288,4 @@ html.desktop .effect-rotate {
     top: initial;
     position: fixed;
     bottom: 80px;
-}
-
-
-// parallax background effect with background cover image
-.effect-parallax-bg {
-
-    background-image: none;
-    background-position: 50% 0;
-    background-size: cover;
-    background-clip: border-box;
-    background-origin: border-box;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
 }

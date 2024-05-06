@@ -56,8 +56,14 @@
 <%@ variable name-given="imageTitle" declare="true"
     description="The title of the image." %>
 
+<%@ variable name-given="imageDescription" declare="true"
+    description="The description of the image." %>
+
 <%@ variable name-given="imageTitleCopyright" declare="true"
     description="The combination of title and copyright." %>
+
+<%@ variable name-given="imageDescriptionCopyright" declare="true"
+    description="The combination of description and copyright." %>
 
 <%@ variable name-given="imageWidth" declare="true"
     description="The width of the image in pixel." %>
@@ -76,6 +82,9 @@
     description="A JSON-LD object created for the image.
     This will only be created if the attribute 'createJsonLd' has been set to ''true'." %>
 
+<%@ variable name-given="imageIsSvg" declare="true"
+    description="Will be set to 'true' in case the image type is SVG.
+    The type is determined from the image name." %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
@@ -88,10 +97,14 @@
 <c:set var="imageCopyright" value="" />
 <c:set var="imageCopyrightHtml" value="" />
 <c:set var="imageTitle" value="" />
+<c:set var="imageTitleCopyright" value="" />
+<c:set var="imageDescription" value="" />
+<c:set var="imageDescriptionCopyright" value="" />
 <c:set var="imageWidth" value="" />
 <c:set var="imageHeight" value="" />
 <c:set var="imageOrientation" value="" />
 <c:set var="imageDndAttr" value="" />
+<c:set var="imageIsSvg" value="${false}" />
 
 <c:choose>
     <c:when test="${cms:isWrapper(image)}">
@@ -119,6 +132,11 @@
         <c:set var="imageBean" value="${image}" />
         <c:set var="imageLink" value="${image.srcUrl}" />
     </c:when>
+    <c:when test="${image['class'].simpleName eq 'CmsJspResourceWrapper'}">
+        <c:set var="isXmlContent" value="${false}" />
+        <c:set var="imageBean" value="${image.toImage}" />
+        <c:set var="imageLink" value="${imageBean.srcUrl}" />
+    </c:when>
     <c:when test="${image['class'].simpleName eq 'String'}">
         <c:set var="isXmlContent" value="${false}" />
         <cms:scaleImage var="imageBean" src="${image}"/>
@@ -143,7 +161,15 @@
     </c:if>
 
     <c:set var="imageUnscaledLink" value="${imageBean.vfsUri}" />
-    <c:set var="imageUrl" value="${imageBean.srcUrl}" />
+    <c:set var="imageIsSvg" value="${fn:endsWith(imageBean.vfsUri, '.svg')}" />
+    <c:choose>
+        <c:when test="${imageIsSvg}">
+            <c:set var="imageUrl" value="${imageBean.resource.link}" />
+        </c:when>
+        <c:otherwise>
+            <c:set var="imageUrl" value="${imageBean.srcUrl}" />
+        </c:otherwise>
+    </c:choose>
     <c:set var="imageWidth" value="${imageBean.scaler.width}" />
     <c:set var="imageHeight" value="${imageBean.scaler.height}" />
 
@@ -185,7 +211,11 @@
             <c:set var="imageTitle"><cms:property name="Title" file="${imageUnscaledLink}" locale="${cms.locale}" default="" /></c:set>
         </c:otherwise>
     </c:choose>
-    <c:set var="imageTitleCopyright">${fn:replace(imageTitle, '"', '')}</c:set>
+
+    <%--
+        Set the image description from the property.
+    --%>
+    <c:set var="imageDescription"><cms:property name="Description" file="${imageUnscaledLink}" locale="${cms.locale}" default="" /></c:set>
 
     <%--
         Add copyright symbol. Make sure &copy; is replaced
@@ -218,7 +248,13 @@
                 <c:set var="imageTitleCopyright">${imageCopyright}</c:set>
             </c:otherwise>
         </c:choose>
+        <c:set var="imageDescriptionCopyright">${imageDescription}${' '}${imageCopyright}</c:set>
     </c:if>
+
+    <c:set var="imageTitle">${fn:replace(imageTitle, '"', '\'')}</c:set>
+    <c:set var="imageDescription">${fn:replace(imageDescription, '"', '\'')}</c:set>
+    <c:set var="imageTitleCopyright">${fn:replace(imageTitleCopyright, '"', '\'')}</c:set>
+    <c:set var="imageDescriptionCopyright">${fn:replace(imageDescriptionCopyright, '"', '\'')}</c:set>
 
     <c:if test="${createJsonLd}">
         <cms:jsonobject var="imageJsonLd" mode="object">

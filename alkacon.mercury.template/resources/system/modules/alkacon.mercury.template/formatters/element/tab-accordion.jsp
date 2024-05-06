@@ -29,12 +29,8 @@
 
 <c:set var="ade"                    value="${cms.isEditMode}" />
 
-<c:set var="parentId"><mercury:idgen prefix="acco" uuid="${cms.element.instanceId}" /></c:set>
-<c:set var="param_parts"        value="${fn:split(cms.container.param, '#')}" />
-<c:set var="parent_role"        value="${param_parts[0]}" />
-<c:set var="parent_classes"     value="${param_parts[1]}" />
-
-
+<c:set var="tabHsize"               value="${hsize > 0 ? hsize + 1 : 2}" />
+<c:set var="parentId"><mercury:idgen prefix="a" uuid="${cms.element.instanceId}" /></c:set>
 
 <c:choose>
     <c:when test="${containerType eq 'row'}">
@@ -55,36 +51,24 @@
 
         <c:forEach var="tabEntry" items="${content.valueList.TabEntry}" varStatus="status">
 
-            <c:set var="tabLabel"           value="${tabEntry.value.Label}" />
-            <c:set var="tabContainerName"   value="${tabEntry.value.Id}" />
-            <c:set var="open"               value="${firstOpen and status.first}" />
-            <c:set var="itemId"             value="${parentId}_${status.count}" />
-            <c:set var="itemHsize"          value="${hsize > 0 ? hsize + 1 : 2}" />
+            <mercury:accordion
+                cssWrapper="${cssWrapper}"
+                parentId="${parentId}"
+                tabId="${parentId}_${fn:replace(tabEntry.value.Id, 'tab-', '')}"
+                tabLabel="${tabEntry.value.Label}"
+                tabHsize="${tabHsize}"
+                open="${firstOpen and status.first}"
+                multipleOpen="${multipleOpen}">
 
-            <mercury:nl />
-            <article class="accordion ${cssWrapper}"><%----%>
-                ${'<h'}${itemHsize} class="acco-header pivot"${'>'}
-                    <a class="acco-toggle ${open ? '':'collapsed'}"<%--
-                    --%>data-toggle="collapse" <%--
-                    --%>data-target="#${itemId}" <%--
-                    --%>href="#${itemId}"><%----%>
-                        <c:out value="${tabLabel}"></c:out>
-                    </a><%----%>
-                ${'</h'}${itemHsize}${'>'}
+                <mercury:container
+                    title="${msg}"
+                    name="${tabEntry.value.Id}"
+                    hideName="${true}"
+                    hideParentType="${true}"
+                    type="${containerType}"
+                />
 
-                <div id="${itemId}" class="acco-body collapse ${open ? 'show' : ''}"${multipleOpen ? '' : ' data-parent=\"#'.concat(parentId).concat('\"')}><%----%>
-
-                        <mercury:container
-                            title="${msg}"
-                            name="${tabContainerName}"
-                            hideName="${true}"
-                            hideParentType="${true}"
-                            type="${containerType}"
-                        />
-
-                </div><%----%>
-            </article><%----%>
-            <mercury:nl />
+            </mercury:accordion>
 
         </c:forEach>
 

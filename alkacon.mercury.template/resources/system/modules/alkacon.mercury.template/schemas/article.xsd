@@ -1,8 +1,9 @@
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+<xsd:schema version="0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
 
     <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/image.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/paragraph.xsd" />
+    <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/author.xsd"/>
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/teaser-data.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/meta-info-detail.xsd" />
     <xsd:include schemaLocation="opencms://system/modules/alkacon.mercury.template/schemas/nested/availability.xsd" />
@@ -13,6 +14,7 @@
         <xsd:sequence>
             <xsd:element name="Article" type="OpenCmsArticle" minOccurs="0" maxOccurs="unbounded" />
         </xsd:sequence>
+        <xsd:attribute name="version" type="xsd:int" use="optional" />
     </xsd:complexType>
 
     <xsd:complexType name="OpenCmsArticle">
@@ -30,6 +32,7 @@
             <xsd:element name="Category" type="OpenCmsDynamicCategory" />
             <xsd:element name="Order" type="OpenCmsString" minOccurs="0" />
             <xsd:element name="Availability" type="OpenCmsAvailability" minOccurs="0" />
+            <xsd:element name="NavPathRes" type="OpenCmsVfsFile" minOccurs="0" />
             <xsd:element name="GalleryTitle" type="OpenCmsString" minOccurs="0" />
         </xsd:sequence>
         <xsd:attribute name="language" type="OpenCmsLocale" use="required" />
@@ -37,6 +40,7 @@
 
     <xsd:annotation>
         <xsd:appinfo>
+            <versiontransformation>/system/modules/alkacon.mercury.template/schemas/transformations/article.xslt</versiontransformation>
             <resourcebundles>
                 <propertybundle name="alkacon.mercury.template.messages" />
             </resourcebundles>
@@ -149,6 +153,13 @@
                     <Error><![CDATA[%(key.msg.error.Order)]]></Error>
                     <Search>listorder</Search>
                     <Synchronization>true</Synchronization>
+                </Setting>
+                <Setting>
+                    <PropertyName>NavPathRes</PropertyName>
+                    <DisplayName><![CDATA[%(key.label.NavPathRes)]]></DisplayName>
+                    <Description><![CDATA[%(key.label.NavPathRes.help)]]></Description>
+                    <Search>false</Search>
+                    <Visibility>ROLE.ROOT_ADMIN</Visibility>
                 </Setting>
                 <Setting>
                     <PropertyName>GalleryTitle</PropertyName>

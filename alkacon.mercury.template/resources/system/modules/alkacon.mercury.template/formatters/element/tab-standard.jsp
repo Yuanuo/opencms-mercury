@@ -28,10 +28,7 @@
 <c:set var="ade"                    value="${cms.isEditMode}" />
 <c:set var="showTabs"               value="${showSingleTab or (content.valueList.TabEntry.size() ne 1)}" />
 
-<c:set var="itemId"><mercury:idgen prefix="acco" uuid="${cms.element.instanceId}" /></c:set>
-<c:set var="param_parts"            value="${fn:split(cms.container.param, '#')}" />
-<c:set var="parent_role"            value="${param_parts[0]}" />
-<c:set var="parent_classes"         value="${param_parts[1]}" />
+<c:set var="itemId"><mercury:idgen prefix="t" uuid="${cms.element.instanceId}" /></c:set>
 
 <c:choose>
     <c:when test="${containerType eq 'row'}">
@@ -51,16 +48,37 @@
     <c:choose>
         <c:when test="${showTabs}">
 
-            <div class="tabs-parent"><%----%>
+            <div class="tabs-parent" id="${itemId}"><%----%>
 
                 <mercury:nl />
-                <ul class="tab-list nav pivot"><%----%>
-
+                <ul class="tab-list nav pivot" role="tablist"><%----%>
+                    <c:set var="tabIds" value="${[]}" />
                     <c:forEach var="tabEntry" items="${content.valueList.TabEntry}" varStatus="status">
                         <c:set var="tabLabel" value="${tabEntry.value.Label}" />
+                        <c:set var="tabId" value="${itemId}_${fn:replace(tabEntry.value.Id, 'tab-', '')}" />
+                        <c:set var="ignore" value="${tabIds.add(tabId)}" />
                         <mercury:nl />
-                        <li><%----%>
-                            <a href="#${itemId}_${status.count}" ${status.first ? ' class="active"' : ''} data-toggle="tab">${tabLabel}</a><%----%>
+                        <li role="presentation"><%----%>
+
+                            <button <%--
+                            --%>id="b_${tabId}" <%--
+                            --%>class="tab-toggle${status.first ? ' active' : ''}" <%--
+                            --%>type="button" <%--
+                            --%>role="tab" <%--
+                            --%>aria-controls="${tabId}" <%--
+                            --%>data-bs-target="#${tabId}" <%--
+                            --%>data-bs-toggle="tab"><%----%>
+                                <mercury:out value="${tabLabel}" lenientEscaping="${true}" />
+                            </button><%----%>
+
+                            <c:if test="${cms.isEditMode}">
+                                <a href="#${tabId}" class="hash-link"><%----%>
+                                    <span class="badge oct-meta-info"><%----%>
+                                        <mercury:icon icon="hashtag" tag="span" />
+                                    </span><%----%>
+                                </a><%----%>
+                            </c:if>
+
                         </li><%----%>
                     </c:forEach>
 
@@ -72,16 +90,16 @@
                 <mercury:nl />
 
                     <c:forEach var="tabEntry" items="${content.valueList.TabEntry}" varStatus="status">
-                        <c:set var="tabContainerName" value="${tabEntry.value.Id}" />
 
                         <mercury:nl />
-                        <div id="${itemId}_${status.count}" class="tab-pane fade ${status.first? 'active show':''}" ><%----%>
+                        <div <%--
+                        --%>id="${tabIds[status.index]}" <%--
+                        --%>aria-labelledby="b_${tabIds[status.index]}" <%--
+                        --%>class="tab-pane fade ${status.first? 'show active':''}" ><%----%>
                             <mercury:nl />
-                            <mercury:nl />
-
                             <mercury:container
                                 title="${msg}"
-                                name="${tabContainerName}"
+                                name="${tabEntry.value.Id}"
                                 hideName="${true}"
                                 hideParentType="${true}"
                                 type="${containerType}"

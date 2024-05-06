@@ -28,6 +28,7 @@ import alkacon.mercury.webform.captcha.CmsCaptchaStore;
 import alkacon.mercury.webform.captcha.CmsCaptchaToken;
 
 import org.opencms.flex.CmsFlexController;
+import org.opencms.i18n.CmsEncoder;
 import org.opencms.i18n.CmsMessages;
 import org.opencms.json.JSONException;
 import org.opencms.jsp.CmsJspActionElement;
@@ -131,10 +132,12 @@ public class CmsCaptchaField extends A_CmsField {
         } else {
             CmsCaptchaSettings captchaSettings = getCaptchaSettings();
             String tokenId = formHandler.getParameter(C_PARAM_CAPTCHA_TOKEN_ID);
+            LOG.debug(tokenId + ": Form did send this token ID.");
             if (tokenId.isEmpty()) {
                 tokenId = UUID.randomUUID().toString();
+                LOG.debug(tokenId + ": Created a new random token ID.");
             }
-            CmsCaptchaStore captchaStore = new CmsCaptchaStore(formHandler);
+            tokenId = CmsEncoder.escapeXml(tokenId);
             String hiddenInput = "<input type=\"hidden\" id=\""
                 + C_PARAM_CAPTCHA_TOKEN_ID
                 + "\" name=\""
@@ -147,8 +150,8 @@ public class CmsCaptchaField extends A_CmsField {
             if (m_captchaSettings.isMathField()) {
                 // this is a math captcha, print the challenge directly
                 captchaHtml.append("<div style=\"margin: 0 0 2px 0;\">");
-                if (captchaStore.contains(tokenId)) {
-                    captchaHtml.append(captchaStore.get(tokenId).getText());
+                if (CmsCaptchaStore.contains(tokenId)) {
+                    captchaHtml.append(CmsCaptchaStore.get(tokenId).getText());
                 } else {
                     TextCaptchaService service = (TextCaptchaService)CmsCaptchaServiceCache.getSharedInstance().getCaptchaService(
                         m_captchaSettings,
@@ -157,7 +160,7 @@ public class CmsCaptchaField extends A_CmsField {
                         tokenId,
                         formHandler.getCmsObject().getRequestContext().getLocale());
                     captchaHtml.append(captchaChallenge);
-                    captchaStore.put(tokenId, new CmsCaptchaToken(captchaChallenge));
+                    CmsCaptchaStore.put(tokenId, new CmsCaptchaToken(captchaChallenge));
                 }
                 captchaHtml.append("</div>\n");
             } else {
@@ -179,7 +182,7 @@ public class CmsCaptchaField extends A_CmsField {
 
             // set captcha HTML code as additional attribute
             stAttributes.put("captcha", captchaHtml.toString());
-            if (captchaStore.isPhraseValid(tokenId)) {
+            if (CmsCaptchaStore.isPhraseValid(tokenId)) {
                 stAttributes.put("readonly", "readonly");
             }
         }
@@ -229,8 +232,8 @@ public class CmsCaptchaField extends A_CmsField {
             }
         } else {
             String tokenId = formHandler.getParameter(C_PARAM_CAPTCHA_TOKEN_ID);
-            CmsCaptchaStore captchaStore = new CmsCaptchaStore(formHandler);
-            if (captchaStore.isPhraseValid(tokenId)) {
+            if (CmsCaptchaStore.isPhraseValid(tokenId)) {
+                LOG.debug(tokenId + ": Phrase was successfully validated earlier, returning true.");
                 return true;
             }
             CmsCaptchaSettings settings = m_captchaSettings;
@@ -242,12 +245,13 @@ public class CmsCaptchaField extends A_CmsField {
                         settings,
                         formHandler.getCmsObject());
                     if (captchaService != null) {
+                        LOG.debug(tokenId + ": Validating phrase " + captchaPhrase);
                         result = captchaService.validateResponseForID(tokenId, captchaPhrase).booleanValue();
                         if (result == false) {
-                            captchaStore.remove(tokenId);
+                            CmsCaptchaStore.remove(tokenId);
                             formHandler.getFormConfiguration().getCaptchaField().setValue("");
                         } else {
-                            captchaStore.setPhraseValid(tokenId);
+                            CmsCaptchaStore.setPhraseValid(tokenId);
                             formHandler.getFormConfiguration().getCaptchaField().setParameters("readonly");
                         }
                     }
@@ -255,7 +259,9 @@ public class CmsCaptchaField extends A_CmsField {
                     // most often this will be
                     // "com.octo.captcha.service.CaptchaServiceException: Invalid ID, could not validate unexisting or already validated captcha"
                     // in case someone hits the back button and submits again
-                    captchaStore.remove(tokenId);
+                    LOG.debug(cse.getLocalizedMessage(), cse);
+                    LOG.debug(tokenId + ": Removing token because of CaptchaServiceException.");
+                    CmsCaptchaStore.remove(tokenId);
                     formHandler.getFormConfiguration().getCaptchaField().setValue("");
                 }
             }
@@ -273,10 +279,10 @@ public class CmsCaptchaField extends A_CmsField {
     public void writeCaptchaImage(CmsJspActionElement cms) throws IOException {
 
         String tokenId = cms.getRequest().getParameter(C_PARAM_CAPTCHA_TOKEN_ID);
-        CmsCaptchaStore captchaStore = new CmsCaptchaStore(cms);
         BufferedImage captchaImage = null;
-        if (captchaStore.contains(tokenId)) {
-            captchaImage = captchaStore.get(tokenId).getImage();
+        if (CmsCaptchaStore.contains(tokenId)) {
+            LOG.debug(tokenId + ": Token is already stored.");
+            captchaImage = CmsCaptchaStore.get(tokenId).getImage();
         } else {
             Locale locale = cms.getRequestContext().getLocale();
             int maxTries = 10;
@@ -297,10 +303,11 @@ public class CmsCaptchaField extends A_CmsField {
                     }
                     m_captchaSettings.setImageHeight((int)(m_captchaSettings.getImageHeight() * 1.1));
                     m_captchaSettings.setImageWidth((int)(m_captchaSettings.getImageWidth() * 1.1));
+                    LOG.debug(cex.getLocalizedMessage(), cex);
                 }
             } while ((captchaImage == null) && (maxTries > 0));
-            LOG.info("Creating new captcha token for token ID " + tokenId + ".");
-            captchaStore.put(tokenId, new CmsCaptchaToken(captchaImage));
+            LOG.debug(tokenId + ": Storing new captcha token.");
+            CmsCaptchaStore.put(tokenId, new CmsCaptchaToken(captchaImage));
         }
 
         ServletOutputStream out = null;

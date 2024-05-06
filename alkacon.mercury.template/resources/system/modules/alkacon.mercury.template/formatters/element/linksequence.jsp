@@ -18,10 +18,11 @@
 
 <mercury:setting-defaults>
 
-<c:set var="addCssWrapper"          value="${setting.addCssWrapper.isSetNotNone ? ' '.concat(setting.addCssWrapper.toString) : null}" />
+<c:set var="addCssWrapper"          value="${setting.addCssWrapper.isSetNotNone ? ' '.concat(setting.addCssWrapper.toString) : ''}" />
 <c:set var="hsize"                  value="${setting.hsize.toInteger}" />
 <c:set var="iconClass"              value="${setting.iconClass.useDefault('caret-right').toString}" />
 <c:set var="linksequenceType"       value="${setting.linksequenceType.toString}" />
+<c:set var="expandOption"           value="${setting.expandOption.useDefault('closed disable-lg').toString}" />
 
 <c:set var="emptyLinkSequence"      value="${empty content.valueList.LinkEntry}" />
 <c:set var="ade"                    value="${cms.isEditMode}" />
@@ -48,21 +49,44 @@
     <c:when test="${linksequenceType eq 'ls-navigation'}">
         <c:set var="ulWrapper">class="nav-side"</c:set>
         <c:if test="${listBulletStyle eq 'custom-icon'}">
-            <c:set var="aWrapper">fa-${iconClass}</c:set>
+            <c:set var="iconPrefix" value="${fn:startsWith(iconClass, 'cif-') ? 'cif ' : 'fa-'}" />
+            <c:set var="aWrapper">${iconPrefix}${iconClass}</c:set><%-- mercury:icon --%>
         </c:if>
     </c:when>
-    <c:when test="${listBulletStyle eq 'custom-icon'}">
-        <c:set var="liWrapper">class="fa-${iconClass}"</c:set>
-    </c:when>
+    <c:otherwise>
+        <c:set var="expanding"  value="${linksequenceType eq 'ls-expand' and not emptyLinkSequence}" />
+        <c:if test="${expanding}">
+            <c:set var="open" value="${not fn:contains(expandOption, 'closed')}" />
+            <c:set var="disableLg" value="${fn:contains(expandOption, 'disable-lg')}" />
+            <c:set var="elementId"><mercury:idgen prefix="lsc" uuid="${cms.element.instanceId}" /></c:set>
+            <c:set var="linksequenceType"  value="ls-bullets ls-expand${disableLg ? ' disable-lg' : ''}" />
+            <c:set var="ulWrapper">class="collapse${open ? ' show' : ''}" id="${elementId}"</c:set>
+            <c:set var="expanderMarkup">
+                <button class="ls-toggle${open ? '':' collapsed'}" <%--
+                --%>data-bs-toggle="collapse" type="button" <%--
+                --%>aria-expanded="${open}" <%--
+                --%>aria-controls="${elementId}" <%--
+                --%>data-bs-target="#${elementId}"><%----%>
+                    <mercury:out value="${value.Title}" lenientEscaping="${true}" />
+                </button><%----%>
+            </c:set>
+        </c:if>
+        <c:if test="${listBulletStyle eq 'custom-icon'}">
+            <c:set var="iconPrefix" value="${fn:startsWith(iconClass, 'cif-') ? 'cif ' : 'fa-'}" />
+            <c:set var="liWrapper">${iconPrefix}${iconClass}</c:set><%-- mercury:icon --%>
+        </c:if>
+    </c:otherwise>
 </c:choose>
 
 <mercury:nl />
 <div class="element type-linksequence pivot ${linksequenceType}${' '}${listBulletStyle}${addCssWrapper}${setCssWrapperAll}"><%----%>
 <mercury:nl />
 
-    <mercury:heading level="${hsize}" text="${value.Title}" css="heading" ade="${ade}" />
+    <mercury:heading level="${hsize}" text="${value.Title}" css="heading" ade="${ade and not expanding}" id="${not expanding ? 'auto' : ''}" tabindex="${not expanding}">
+        <jsp:attribute name="markupText">${expanderMarkup}</jsp:attribute>
+    </mercury:heading>
 
-    <c:if test="${value.Text.isSet}">
+    <c:if test="${not expanding and value.Text.isSet}">
         <div class="text-box" ${value.Text.rdfaAttr}>${value.Text}</div><%----%>
     </c:if>
 
@@ -70,9 +94,7 @@
         <c:when test="${not emptyLinkSequence}">
             <ul ${ulWrapper}><%----%>
                 <c:forEach var="link" items="${content.valueList.LinkEntry}" varStatus="status">
-                    <li ${liWrapper}><%----%>
-                        <mercury:link-icon link="${link}" css="${aWrapper}" addSpan="ls-item" />
-                    </li><%----%>
+                    <mercury:link-icon link="${link}" css="${aWrapper}" addSpan="ls-item" addLi="ls-li${not empty liWrapper ? ' '.concat(liWrapper) : ''}" />
                 </c:forEach>
             </ul><%----%>
         </c:when>

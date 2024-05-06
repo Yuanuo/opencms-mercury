@@ -81,6 +81,14 @@
         </c:when>
         <c:otherwise>
             <c:set var="variant" value="special" />
+            <c:set var="ci" value="${cms.getContainerTypeInfo(type)}" />
+            <c:set var="cels" value="${ci.allowedElements}" />
+            <c:if test="${(cels.size() > 0) and (cels.size() <= 3)}">
+                <c:set var="type" value="" />
+                <c:forEach var="el" items="${cels}" varStatus="status">
+                    <c:set var="type" value="${type}${status.count > 1 ? ', ' : ''}${el.niceName}" />
+                </c:forEach>
+            </c:if>
         </c:otherwise>
     </c:choose>
 
@@ -139,21 +147,23 @@
         </div><%----%>
         <div class="text capital"><%----%>
             <div class="main">${label}</div><%----%>
-            <div class="small"><%----%>
-                <c:choose>
-                    <c:when test="${not hideParentType and not empty cms.container.type}">
-                        <fmt:message key="msg.page.layout.infor">
-                            <fmt:param><mercury:container-name type="${parentType}" /></fmt:param>
-                            <fmt:param><mercury:container-name type="${type}" /></fmt:param>
-                        </fmt:message>
-                    </c:when>
-                    <c:otherwise>
-                        <fmt:message key="msg.page.layout.for">
-                            <fmt:param><mercury:container-name type="${type}" /></fmt:param>
-                        </fmt:message>
-                    </c:otherwise>
-                </c:choose>
-            </div><%----%>
+            <c:if test="${type ne 'none'}">
+                <div class="small"><%----%>
+                    <c:choose>
+                        <c:when test="${not hideParentType and not empty cms.container.type}">
+                            <fmt:message key="msg.page.layout.infor">
+                                <fmt:param><mercury:container-name type="${parentType}" /></fmt:param>
+                                <fmt:param><mercury:container-name type="${type}" /></fmt:param>
+                            </fmt:message>
+                        </c:when>
+                        <c:otherwise>
+                            <fmt:message key="msg.page.layout.for">
+                                <fmt:param><mercury:container-name type="${type}" /></fmt:param>
+                            </fmt:message>
+                        </c:otherwise>
+                    </c:choose>
+                </div><%----%>
+            </c:if>
         </div><%----%>
     </div><%----%>
 

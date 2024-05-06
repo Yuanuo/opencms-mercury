@@ -69,22 +69,19 @@ function initAudio($audioData, aP) {
         sound.$progressBarWrapper = $audioElement.find('.audio-progress');
         sound.$progressBar = sound.$progressBarWrapper.find('.progress-bar');
 
-        sound.$playPauseButton = $audioElement.find('.audio-play');
-        sound.$playPauseButton.on('click', function(){
+        const playPauseFn = () => {
             if (sound.playing()) {
                 sound.pause();
             } else {
                 sound.play();
             }
-        });
+        }
 
-        sound.$stopButton = $audioElement.find('.audio-stop');
-        sound.$stopButton.on('click', function(){
+        const stopFn = () => {
             sound.stop();
-        });
+        }
 
-        sound.$skipButton = $audioElement.find('.audio-skip');
-        sound.$skipButton.on('click', function(){
+        const skipFn = () => {
             var seek = (sound.seek() || 0) + 15;
             if (DEBUG) console.info("Audio: Skip btn click seek=" + seek + " duration=" + sound.duration());
             if (seek < sound.duration()) {
@@ -92,7 +89,32 @@ function initAudio($audioData, aP) {
             } else {
                 sound.stop();
             }
+        }
+
+        sound.$playPauseButton = $audioElement.find('.audio-play');
+        sound.$playPauseButton.on('click', playPauseFn);
+        sound.$playPauseButton.on("keydown", function(e) {
+            if (e.type == "keydown" && (e.which == 13 || e.which == 32)) {
+                playPauseFn();
+            }
         });
+
+        sound.$stopButton = $audioElement.find('.audio-stop');
+        sound.$stopButton.on('click', stopFn);
+        sound.$stopButton.on("keydown", function(e) {
+            if (e.type == "keydown" && (e.which == 13 || e.which == 32)) {
+                stopFn();
+            }
+        });
+
+        sound.$skipButton = $audioElement.find('.audio-skip');
+        sound.$skipButton.on('click', skipFn);
+        sound.$skipButton.on("keydown", function(e) {
+            if (e.type == "keydown" && (e.which == 13 || e.which == 32)) {
+                skipFn();
+            }
+        });
+
 
         sound.$progressBarWrapper.on('click', function(event){
             var $bar = sound.$progressBarWrapper;
@@ -108,13 +130,13 @@ function initAudio($audioData, aP) {
 
         sound.on('play', function() {
             if (DEBUG) console.info("Audio: play event for [" + src + "]");
-            sound.$playPauseButton.removeClass("fa-play").addClass("fa-pause");
+            sound.$playPauseButton.removeClass("fa-play").addClass("fa-pause"); // mercury:icon
             updateProgress(sound);
         });
 
         sound.on('pause', function() {
             if (DEBUG) console.info("Audio: pause event for [" + src + "]");
-            sound.$playPauseButton.removeClass("fa-pause").addClass("fa-play");
+            sound.$playPauseButton.removeClass("fa-pause").addClass("fa-play"); // mercury:icon
             updateProgress(sound);
         });
 
@@ -126,13 +148,13 @@ function initAudio($audioData, aP) {
 
         sound.on('stop', function() {
             if (DEBUG) console.info("Audio: stop event for [" + src + "]");
-            sound.$playPauseButton.removeClass("fa-pause").addClass("fa-play");
+            sound.$playPauseButton.removeClass("fa-pause").addClass("fa-play"); // mercury:icon
             updateProgress(sound);
         });
 
         sound.on('end', function() {
             if (DEBUG) console.info("Audio: end event for [" + src + "]");
-            sound.$playPauseButton.removeClass("fa-pause").addClass("fa-play");
+            sound.$playPauseButton.removeClass("fa-pause").addClass("fa-play"); // mercury:icon
             updateProgress(sound);
         });
     });

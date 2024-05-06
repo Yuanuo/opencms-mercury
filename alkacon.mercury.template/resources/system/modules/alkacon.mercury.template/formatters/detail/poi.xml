@@ -13,26 +13,20 @@
         <uuid>bc38c5f6-8c7d-4355-9d3a-f756faeb857a</uuid>
       </link>
     </Jsp>
-    <Rank><![CDATA[3000]]></Rank>
+    <Description><![CDATA[%(key.type.m-poi.description.formatter) %(key.type.general.description.detail.direct)]]></Description>
+    <Rank><![CDATA[45000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[poi]]></ContainerType>
       </Types>
     </Match>
     <AutoEnabled>false</AutoEnabled>
     <SearchContent>true</SearchContent>
     <StrictContainers>true</StrictContainers>
+    <Detail>true</Detail>
     <Preview>true</Preview>
-    <Plugin>
-      <Group><![CDATA[css]]></Group>
-      <Target>
-        <link internal="true" type="WEAK">
-          <target><![CDATA[/system/modules/alkacon.mercury.template/osmviewer/map.css]]></target>
-          <uuid>bb1e189e-24ab-11e9-bcf4-0242ac11002b</uuid>
-        </link>
-      </Target>
-    </Plugin>
     <IncludeSettings>
       <link type="WEAK">
         <target><![CDATA[/system/modules/alkacon.mercury.template/configuration/shared-settings.xml]]></target>
@@ -87,5 +81,31 @@
     <Setting>
       <IncludeName><![CDATA[showImageZoom.true]]></IncludeName>
     </Setting>
+    <MetaMapping>
+      <Key><![CDATA[ogTitle]]></Key>
+      <Element><![CDATA[Title]]></Element>
+      <Order><![CDATA[3500]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[ogDescriptionAlt]]></Key>
+      <Element><![CDATA[Paragraph/Text]]></Element>
+      <Order><![CDATA[3500]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[ogDescriptionAltCaption]]></Key>
+      <Element><![CDATA[Paragraph/Caption]]></Element>
+      <Order><![CDATA[3500]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[ogImageAlt]]></Key>
+      <Element><![CDATA[Paragraph/Image/Image]]></Element>
+      <Order><![CDATA[3500]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[ogType]]></Key>
+      <Element><![CDATA[none]]></Element>
+      <Order><![CDATA[3500]]></Order>
+      <Default><![CDATA[article]]></Default>
+    </MetaMapping>
   </NewFormatter>
 </NewFormatters>

@@ -20,10 +20,10 @@
  */
 
 %ls-icon-base {
-    padding-left: $ls-margin-left;
+    padding-left: calc(var(--#{$prefix}ls-li-padding));
     &::before {
         float: left;
-        margin-left: -$ls-margin-left;
+        margin-left: calc(-1 * var(--#{$prefix}ls-li-padding));
         display: inline-block;
         line-height: $line-height-base;
     }
@@ -32,12 +32,9 @@
 %ls-icon-custom {
     @extend %ls-icon-base;
     &::before {
-        font-family: ForkAwesome;
+        @include icon-font();
         font-size: inherit;
         line-height: inherit;
-        text-rendering: auto;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
     }
 }
 
@@ -45,7 +42,7 @@
     @extend %ls-icon-base;
     &::before {
         font-family: sans-serif;
-        font-size: 2.0rem;
+        font-size: inherit;
         content: "\2022";
     }
 }
@@ -58,11 +55,37 @@
     }
 }
 
-@if $nav-hyphens {
-    .type-linksequence {
+.type-linksequence {
+    --#{$prefix}ls-li-padding: #{$ls-li-padding};
+
+    @if $nav-hyphens {
         hyphens: auto;
         overflow-wrap: anywhere;
         word-break: break-word;
+    }
+
+    li.ls-li {
+        a:hover {
+            text-decoration: none;
+            .ls-item {
+                span:not(.ls-icon) {
+                    text-decoration: $link-hover-decoration;
+                }
+            }
+        }
+
+        .ls-item.icon-last {
+            display: inline-flex;
+            align-items: baseline;
+            flex-direction: row;
+            .ls-icon {
+                order: 10;
+                + span {
+                    margin-left: 0;
+                    margin-right: var(--#{$prefix}ws-margin);
+                }
+            }
+        }
     }
 }
 
@@ -90,6 +113,8 @@
 }
 
 .ls-row {
+    --#{$prefix}ls-row-spacing: #{$ls-row-spacing};
+
     li {
         display: inline-block;
         list-style: outside none none;
@@ -97,30 +122,45 @@
     }
 
     &.line-icon {
-        li:not(:last-child) {
+        li:not(:last-of-type) {
             &::after {
                 content: "|";
-                margin: 0 $ls-margin-small;
+                margin: 0 calc(0.5 * var(--#{$prefix}ls-row-spacing));
             }
         }
     }
 
     &.no-icon {
-        li:not(:last-child) {
-            margin-right: $ls-margin;
+        li:not(:last-of-type) {
+            margin-right: var(--#{$prefix}ls-row-spacing);
         }
     }
 
     &.custom-icon,
     &.default-icon {
         li {
+            padding-left: 0;
             &::before {
                 float: none;
-                padding-right: $ls-margin-verysmall;
+                padding-right: var(--#{$prefix}ws-margin);
+                margin-left: 0;
             }
-            + li {
+            &:not(:last-of-type) {
+                padding-right: var(--#{$prefix}ls-row-spacing);
                 &::before {
-                    padding-left: $ls-margin-small + $ls-margin-verysmall;
+                    margin-left: 0;
+                }
+            }
+        }
+        &.icon-last {
+            li {
+                display: inline-flex;
+                align-items: baseline;
+                flex-direction: row;
+                &::before {
+                    order: 10;
+                    padding-right: 0;
+                    margin-left: var(--#{$prefix}ws-margin);
                 }
             }
         }
@@ -146,5 +186,63 @@
 }
 
 .ls-icon + span {
-    margin-left: $ls-margin-verysmall;
+    // for "icon:" display from linksequence text - see link-icon.tag
+    --#{$prefix}ls-row-spacing: #{$ls-row-spacing};
+    margin-left: var(--#{$prefix}ws-margin);
+}
+
+.ls-expand {
+    .heading {
+        overflow: visible !important;
+        margin-bottom: 0;
+
+        button {
+            @include remove-default-button-style;
+            position: relative;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-bottom: var(--#{$prefix}headings-margin-bottom);
+
+            &::after {
+                @include toggle-arrow-open-after;
+                right: 0;
+            }
+
+            &.collapsed {
+                margin-bottom: 0;
+                transition: margin-bottom 0.2s linear 0.2s;
+                &::after {
+                    @include toggle-arrow-closed-after;
+                }
+            }
+        }
+    }
+
+    @include media-breakpoint-up(lg) {
+        &.disable-lg {
+            .collapse {
+                &:not(.show) {
+                    display: block;
+                }
+            }
+            .collapsing {
+                height: unset !important;
+                transition: none;
+            }
+            button {
+                cursor: default;
+                &::after {
+                    content: none;
+                }
+                &.collapsed {
+                    margin-bottom: var(--#{$prefix}headings-margin-bottom);
+                    transition: none;
+                    &::after {
+                        @include toggle-arrow-closed-after;
+                    }
+                }
+            }
+        }
+    }
 }

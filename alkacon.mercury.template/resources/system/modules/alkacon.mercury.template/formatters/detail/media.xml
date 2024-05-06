@@ -11,10 +11,12 @@
         <uuid>30af8db2-0a8e-4d4a-9000-1cee553edc35</uuid>
       </link>
     </Jsp>
+    <Description><![CDATA[%(key.type.m-media.description.formatter) %(key.type.general.description.detail.direct)]]></Description>
     <Rank><![CDATA[45000]]></Rank>
     <Match>
       <Types>
         <ContainerType><![CDATA[element]]></ContainerType>
+        <ContainerType><![CDATA[m-element]]></ContainerType>
         <ContainerType><![CDATA[media]]></ContainerType>
       </Types>
     </Match>
@@ -92,6 +94,11 @@
     <MetaMapping>
       <Key><![CDATA[Keywords]]></Key>
       <Element><![CDATA[MetaInfo/Keywords]]></Element>
+      <Order><![CDATA[4800]]></Order>
+    </MetaMapping>
+    <MetaMapping>
+      <Key><![CDATA[Robots]]></Key>
+      <Element><![CDATA[MetaInfo/Robots]]></Element>
       <Order><![CDATA[4800]]></Order>
     </MetaMapping>
     <MetaMapping>

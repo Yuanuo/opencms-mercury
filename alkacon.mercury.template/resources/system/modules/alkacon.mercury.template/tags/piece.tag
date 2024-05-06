@@ -37,15 +37,14 @@
     description="The tag to generate. Defaults to 'div' if not provided." %>
 
 <%@ attribute name="pieceClass" type="java.lang.String" required="false"
-    description="The class to generate. Defaults to 'piece' if not provided.
-    If this is set a special css selector 'plo-x' will be added to the generated markup where x is the pieceLayout number." %>
+    description="The class to generate. Defaults to 'piece' if not provided." %>
 
 <%@ attribute name="gridOption" type="java.lang.String" required="false"
     description="The piece grid option to generate.
     By default this will be calculated automatically from 'sizeDesktop' and 'sizeMobile'.
     If provided as attribute, the attribute value will be inserted instead verbatim without any further check.
     Note that if visual and body are not shown in columns, or if one of the columns is empty,
-    the pice will fall back to full width and not use the gridOption at all. " %>
+    the piece will fall back to full width and not use the gridOption at all. " %>
 
 <%@ attribute name="cssWrapper" type="java.lang.String" required="false"
     description="'class' selectors to add to the generated piece tag." %>
@@ -61,6 +60,9 @@
 
 <%@ attribute name="cssHeading" type="java.lang.String" required="false"
     description="'class' selectors to add to the tag surrounding the heading." %>
+
+<%@ attribute name="bodyHeading" type="java.lang.Boolean" required="false"
+    description="If 'true', force the heading to be inlined in the body." %>
 
 <%@ attribute name="visual" fragment="true" required="false"
     description="Markup shown for the content piece visual." %>
@@ -109,10 +111,13 @@
     description="'class' selectors to add to the generated body div." %>
 
 <%@ attribute name="bodyPreMarkup" type="java.lang.String" required="false"
-    description="Markup to append before the body content." %>
+    description="Markup to add inside the body before the regular body content." %>
 
 <%@ attribute name="bodyPostMarkup" type="java.lang.String" required="false"
-    description="Markup to append after the body content." %>
+    description="Markup to add inside the body after the regular body content." %>
+
+<%@ attribute name="piecePreMarkup" type="java.lang.String" required="false"
+    description="Markup to add inside the piece before the heading, body and everything else." %>
 
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -126,24 +131,26 @@
 <c:set var="fullWidth"      value="${(pieceLayout <= 1) or (pieceLayout == 10) or (pieceLayout == 11)}" />
 <c:set var="inlineLink"     value="${empty inlineLink ? not fullWidth : inlineLink}" />
 
-<c:set var="inlineHeading"  value="${(pieceLayout == 1) or (pieceLayout >= 6)}" />
-<c:set var="visualLast"     value="${pieceLayout == 10 or (pieceLayout == 11)}" />
+<c:set var="inlineHeading"  value="${bodyHeading or (pieceLayout == 1) or (pieceLayout >= 6)}" />
 <c:set var="linkLast"       value="${pieceLayout == 11}" />
+
+<c:set var="defSizeDesktop" value="${(empty sizeDesktop) or (sizeDesktop == 99)}" />
+<c:set var="defSizeMobile"  value="${(empty sizeMobile) or (sizeMobile == 99)}" />
 
 <c:choose>
     <c:when test="${fullWidth}">
         <c:set var="pieceIsFull"    value="${true}" />
-        <c:set var="sizeDesktop"    value="${(empty sizeDesktop or (sizeDesktop == 99)) ? 12 : (sizeDesktop > 12 ? 12 : (sizeDesktop < 0 ? 0 : sizeDesktop))}" />
+        <c:set var="sizeDesktop"    value="${defSizeDesktop ? 12 : (sizeDesktop > 12 ? 12 : (sizeDesktop < 0 ? 0 : sizeDesktop))}" />
     </c:when>
     <c:otherwise>
         <c:set var="pieceIsFlex"    value="${(pieceLayout == 2) or (pieceLayout == 3) or (pieceLayout == 6) or (pieceLayout == 7)}" />
         <c:set var="pieceIsFloat"   value="${not fullWidth and not pieceIsFlex}" />
         <c:set var="pieceDirection" value="${not fullWidth ? (pieceLayout % 2 == 0 ? 'left' : 'right') : ''}" />
-        <c:set var="sizeDesktop"    value="${(empty sizeDesktop or (sizeDesktop == 99) or (sizeDesktop > 12)) ? 4 : (sizeDesktop < 0 ? 0 : sizeDesktop)}" />
+        <c:set var="sizeDesktop"    value="${(defSizeDesktop or (sizeDesktop > 12)) ? 4 : (sizeDesktop < 0 ? 0 : sizeDesktop)}" />
     </c:otherwise>
 </c:choose>
 
-<c:set var="sizeMobile"     value="${(empty sizeMobile or (sizeMobile == 99) or (sizeMobile > 12)) ? (sizeDesktop < 10 ? (sizeDesktop > 3 ? 12 : sizeDesktop * 2) : 12) : (sizeMobile < 0 ? 0 : sizeMobile)}" />
+<c:set var="sizeMobile"     value="${(defSizeMobile or (sizeMobile > 12)) ? (sizeDesktop < 10 ? (sizeDesktop > 3 ? 12 : sizeDesktop * 2) : 12) : (sizeMobile < 0 ? 0 : sizeMobile)}" />
 
 <c:set var="useVisual"      value="${(sizeMobile != 0) or (sizeDesktop != 0)}" />
 
@@ -162,9 +169,18 @@
     <c:if test="${sizeMobile < 12}">
         <c:set var="gridOption" value="${'p-xs-'}${sizeMobile}" />
     </c:if>
+    <c:if test="${defSizeMobile}">
+        <c:set var="gridOption" value="${empty gridOption ? '' : gridOption.concat(' ')}${'p-dm'}" />
+    </c:if>
     <c:if test="${sizeDesktop < 12}">
+        <%-- Note regardin p-md breakpoint: This always uses 'md' regardless of the 'template.piece.breakpoint' sitemap attribute. --%>
         <c:set var="gridOption" value="${empty gridOption ? '' : gridOption.concat(' ')}${'p-md-'}${sizeDesktop}" />
     </c:if>
+    <c:if test="${defSizeDesktop}">
+        <c:set var="gridOption" value="${empty gridOption ? '' : gridOption.concat(' ')}${'p-dd'}" />
+    </c:if>
+    <%-- "p-dm" means "piece uses default visual size on mobile". --%>
+    <%-- "p-dd" means "piece uses default visual size on desktop". --%>
 </c:if>
 
 <c:if test="${not empty heading}">
@@ -183,9 +199,10 @@
 <c:set var="showLink"       value="${not empty pieceLink}" />
 
 <c:if test="${useVisual and not empty visual}">
+    <c:set var="pieceBreakpoint" value="${cms.sitemapConfig.attribute['template.piece.breakpoint'].useDefault('md').toString}" />
     <%-- It is important to make this check AFTER the body because the grid size must be 12 if there is no body. --%>
     <cms:addparams>
-        <cms:param name="cssgrid" value="${'col-xs-'.concat(sizeMobile).concat(sizeDesktop < 12 ? ' col-md-'.concat(sizeDesktop) : '')}" />
+        <cms:param name="cssgrid" value="${'col-xs-'.concat(sizeMobile).concat(sizeDesktop < 12 ? ' col-'.concat(pieceBreakpoint).concat('-').concat(sizeDesktop) : '')}" />
         <jsp:invoke fragment="visual" var="pieceVisual" />
     </cms:addparams>
 </c:if>
@@ -193,9 +210,10 @@
 
 <c:if test="${not showVisual}">
     <%-- If there is no visual and we get 'full' piece, make sure the div structure for does not use inline heading or link. --%>
-    <%-- These are required only in case there is a visual. --%>
+    <%-- These are usually required only in case there is a visual. --%>
+    <%-- Exception: The heading was specifically requested to be written in the body with 'bodyHeading' being true. --%>
     <c:set var="inlineLink"     value="${false}" />
-    <c:set var="inlineHeading"  value="${false}" />
+    <c:set var="inlineHeading"  value="${bodyHeading}" />
 </c:if>
 
 <c:set var="showBody"           value="${showText or (showHeading and inlineHeading) or (showLink and inlineLink)}" />
@@ -204,6 +222,7 @@
     <%-- In this case there are no columns, so we revert to layout option 0 i.e. full with output. --%>
     <c:set var="pieceOption"    value="full" />
     <c:set var="gridOption"     value="" />
+    <c:set var="pieceLayout"    value="${0}" />
 </c:if>
 
 <c:choose>
@@ -216,27 +235,67 @@
 </c:choose>
 
 <c:choose>
+    <c:when test="${not showVisual}">
+        <%-- noop --%>
+    </c:when>
+    <c:when test="${pieceLayout eq 0}">
+        <%-- Heading, Image, Text, Link (full width) --%>
+        <c:set var="visualFirst"    value="${not showHeading or inlineHeading}" />
+        <c:set var="linkLast"       value="${showLink and not ((showBody or allowEmptyBodyColumn) and inlineLink)}" />
+        <c:set var="visualLast"     value="${not showBody and not allowEmptyBodyColumn and not (showLink and not inlineLink and linkLast)}" />
+    </c:when>
+    <c:when test="${pieceLayout eq 1}">
+        <%-- Image, Heading, Text, Link (full width)  --%>
+        <c:set var="visualFirst"    value="${true}" />
+        <c:set var="visualLast"     value="${false}" />
+    </c:when>
+    <c:when test="${pieceLayout eq 10}">
+        <%-- Heading, Text, Link, Image (full width)  --%>
+        <c:set var="visualFirst"    value="${false}" />
+        <c:set var="visualLast"     value="${true}" />
+    </c:when>
+    <c:when test="${pieceLayout eq 11}">
+        <%-- Heading, Text, Image, Link (full width) --%>
+        <c:set var="visualFirst"    value="${not showBody and not allowEmptyBodyColumn and not (showHeading or inlineHeading)}" />
+        <c:set var="visualLast"     value="${not (showLink and not inlineLink and linkLast)}" />
+    </c:when>
+</c:choose>
+
+<c:choose>
     <c:when test="${showHeading and not showVisual and not showBody and not showLink}">
-        <c:set var="pieceFeatureMarker" value=" only-heading" />
+        <c:set var="pieceFeatureMarker" value=" lay-0 only-heading" />
         <c:set var="onlyHeading" value="${true}" />
     </c:when>
     <c:when test="${showVisual and not showHeading and not showBody and not showLink}">
-        <c:set var="pieceFeatureMarker" value=" only-visual" />
+        <c:set var="pieceFeatureMarker" value=" lay-0 only-visual" />
         <c:set var="onlyVisual" value="${true}" />
     </c:when>
     <c:when test="${showBody and not showHeading and not showVisual and not showLink}">
-        <c:set var="pieceFeatureMarker" value=" only-text" />
+        <c:set var="pieceFeatureMarker" value=" lay-0 only-text" />
         <c:set var="onlyText" value="${true}" />
     </c:when>
     <c:when test="${showLink and not showHeading and not showVisual and not showBody}">
-        <c:set var="pieceFeatureMarker" value=" only-link" />
+        <c:set var="pieceFeatureMarker" value=" lay-0 only-link" />
         <c:set var="onlyLink" value="${true}" />
     </c:when>
     <c:otherwise>
-        <%-- "phh" means "piece has heading", "phv" means "piece has visual" and so on... --%>
+        <%-- "phh" means "piece has heading". --%>
+        <%-- "pnh" means "piece (has) no heading". --%>
+        <%-- "phb" means "piece has body". --%>
+        <%-- "phv" means "piece has visual". --%>
+        <%-- "pnv" means "piece (has) no visual". --%>
+        <%-- "phl" means "piece has link". --%>
+        <%-- "pvf" means "piece visual first". --%>
         <%-- "pvl" means "piece visual last". --%>
-        <%-- "plo-x" contains the selected piece layout option, where x is the pieceLayout number. Only added if the pieceClass is emtpy.--%>
-        <c:set var="pieceFeatureMarker" value="${showHeading ? ' phh': ''}${showVisual ? ' phv': ''}${visualLast ? ' pvl': ''}${showBody ? ' phb': ''}${showLink ? ' phl': ''}${empty pieceClass ? '' : ' plo-'.concat(pieceLayout)}" />
+        <%-- "pnm" means "(next) piece needs margin". --%>
+        <c:set var="pieceFeatureMarker" value=" lay-${pieceLayout}${
+            showHeading and not inlineHeading ? ' phh': ' pnh'}${
+            showBody ? ' phb': ''}${
+            showVisual ? ' phv': ' pnv'}${
+            showLink and not inlineLink ? ' phl': ''}${
+            visualFirst ? ' pvf': ''}${
+            visualLast ? ' pvl': ''}${
+            visualLast or (showLink and not inlineLink) ? ' pnm' : ''}" />
     </c:otherwise>
 </c:choose>
 
@@ -267,8 +326,6 @@
     </c:set>
 </c:if>
 
-
-<mercury:nl />
 ${'<'}${pieceTag}${' '}
     ${'class=\"'}
         ${empty cssWrapper ? '' : cssWrapper.concat(' ')}
@@ -281,6 +338,8 @@ ${'<'}${pieceTag}${' '}
     ${empty attrWrapper ? '' : ' '.concat(attrWrapper)}
 ${'>'}
 <mercury:nl />
+
+${piecePreMarkup}
 
 <c:if test="${showHeading and not inlineHeading}">
     ${headingMarkup}
