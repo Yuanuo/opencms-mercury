@@ -7,14 +7,14 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <cms:secureparams />
-<mercury:init-messages>
+<m:init-messages>
 
 <cms:formatter var="content" val="value">
-<mercury:teaser-settings content="${content}">
+<m:teaser-settings content="${content}">
 
 <c:set var="intro"      value="${value['TeaserData/TeaserIntro'].isSet ? value['TeaserData/TeaserIntro'] : value.Intro}" />
 <c:set var="title"      value="${value['TeaserData/TeaserTitle'].isSet ? value['TeaserData/TeaserTitle'] : value.Title}" />
@@ -23,7 +23,7 @@
 <c:set var="isAudio"    value="${value.MediaContent.value.Audio.isSet}" />
 <c:set var="isFlexible" value="${value.MediaContent.value.Flexible.isSet}" />
 
-<mercury:teaser-piece
+<m:teaser-piece
     cssWrapper="type-media${isAudio ? ' audio ' : ' '}${setCssWrapperAll}"
     intro="${setShowIntro ? intro : null}"
     headline="${title}"
@@ -31,6 +31,7 @@
     date="${value.Date.toInstanceDate}"
     paraText="${value.Text}"
     noLinkOnVisual="${true}"
+    piecePreMarkup="${setElementPreMarkup}"
     pieceLayout="${setPieceLayout}"
     sizeDesktop="${setSizeDesktop}"
     sizeMobile="${setSizeMobile}"
@@ -47,9 +48,10 @@
 
     <jsp:attribute name="markupVisual">
         <c:if test="${setShowVisual}">
-            <mercury:media-box
+            <m:media-box
                 content="${content}"
                 ratio="${setRatio}"
+                ratioLg="${setRatioLg}"
                 link="${isFlexible ? linkToDetail : ''}"
                 showMediaTime="${true}"
                 showCopyright="${setShowCopyright}"
@@ -57,8 +59,8 @@
         </c:if>
     </jsp:attribute>
 
-</mercury:teaser-piece>
+</m:teaser-piece>
 
-</mercury:teaser-settings>
+</m:teaser-settings>
 </cms:formatter>
-</mercury:init-messages>
+</m:init-messages>

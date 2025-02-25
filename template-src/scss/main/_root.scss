@@ -25,6 +25,7 @@
     --#{$prefix}body-bg: #{$body-bg};
     --#{$prefix}body-bg-rgb: #{to-rgb($body-bg)};
     --#{$prefix}body-color: #{$body-color};
+    --#{$prefix}body-color-rgb: #{to-rgb($body-color)};
 
     --#{$prefix}link-color: #{$link-color};
     --#{$prefix}link-color-rgb: #{to-rgb($link-color)};
@@ -146,16 +147,8 @@
         --#{$prefix}headings-margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
     }
 
-}
-
-.copyright {
-    --#{$prefix}copyright-padding: #{$copyright-padding};
-    --#{$prefix}copyright-font-size: #{$copyright-font-size};
-    --#{$prefix}copyright-color: #{$copyright-color};
-    --#{$prefix}copyright-bg-color: #{$copyright-bg-color};
-    --#{$prefix}copyright-opacity: #{$copyright-opacity};
-    --#{$prefix}copyright-pos-right: initial;
-    --#{$prefix}copyright-border-radius: #{$copyright-border-radius} 0 0 0;
-    --#{$prefix}copyright-font-family: var(--#{$prefix}body-font-family);
-    --#{$prefix}copyright-text-shadow: none;
+    --#{$prefix}100dvh: 100vh;
+    @supports (height: 100dvh) {
+        --#{$prefix}100dvh: 100dvh;
+    }
 }

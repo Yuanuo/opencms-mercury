@@ -41,6 +41,10 @@
 <%@ variable name-given="imageLink" declare="true"
     description="The internal resource path of the image, including optional scaling parameters." %>
 
+<%@ variable name-given="imageUnscaledBean" declare="true"
+    variable-class="org.opencms.jsp.util.CmsJspImageBean"
+    description="The original image bean for the image, without optional scaling or ratio parameters." %>
+
 <%@ variable name-given="imageUnscaledLink" declare="true"
     description="The internal resource path of the image, without optional scaling parameters." %>
 
@@ -66,9 +70,11 @@
     description="The combination of description and copyright." %>
 
 <%@ variable name-given="imageWidth" declare="true"
+    variable-class="java.lang.Integer"
     description="The width of the image in pixel." %>
 
 <%@ variable name-given="imageHeight" declare="true"
+    variable-class="java.lang.Integer"
     description="The height of the image in pixel." %>
 
 <%@ variable name-given="imageOrientation" declare="true"
@@ -155,6 +161,7 @@
     <%-- Apply a global quality factor of 75% for JPEG compression --%>
     <%-- OpenCms SimAPI otherwise applies 95% which makes images more than twice as large --%>
     <c:set target="${imageBean}" property="quality" value="${75}" />
+    <c:set var="imageUnscaledBean" value="${imageBean}" />
 
     <c:if test="${(not empty ratio) and (ratio != 'none')}">
         <c:set var="imageBean" value="${imageBean.scaleRatio[ratio]}" />

@@ -87,9 +87,10 @@
             label {
                 margin-right: calc(2 * var(--#{$prefix}ws-margin));
                 margin-bottom: 0;
-                padding-left: 30px;
                 cursor: pointer;
                 position: relative;
+                display: inline-flex;
+                align-items: center;
 
                 input {
                     position: absolute;
@@ -97,7 +98,7 @@
                 }
 
                 i {
-                    position: absolute;
+                    position: relative;
                     top: 0;
                     left: 0;
                     display: block;
@@ -105,6 +106,7 @@
                     height: 20px;
                     outline: none;
                     background-color: get-text-color($policy-banner-background);
+                    margin-right: 10px;
                 }
 
                 input + i::after {
@@ -357,13 +359,15 @@
     }
 }
 
+.type-privacy-policy {
+    > div + div {
+        margin-top: calc(2 * var(--#{$prefix}paragraph-margin-bottom));
+    }
+}
+
 .pp-toggle {
     position: relative;
     display: flex;
-
-    + .pp-toggle {
-        margin-top: var(--#{$prefix}default-margin);
-    }
 
     .toggle-label {
         display: block;
@@ -490,7 +494,10 @@
 }
 
 .pp-element {
-    margin-top: var(--#{$prefix}default-margin);
+    padding: var(--#{$prefix}box-padding);
+    border-radius: var(--#{$prefix}border-radius);
+    color: var(--#{$prefix}highlight-fg-color);
+    background-color: var(--#{$prefix}highlight-color);
 }
 
 #pp-matomo-jst {
@@ -498,12 +505,12 @@
         margin-top: var(--#{$prefix}default-margin-small);
     }
     .jst-msg {
+        @include use-hyphens-text;
         > * {
             &:last-child {
                 margin-bottom: 0;
             }
         }
-        @include use-hyphens-text;
     }
     .jst-btn {
         label.checkbox {
@@ -589,6 +596,7 @@ html.keyboard-nav {
     justify-content: center;
     overflow: scroll !important;
     padding: var(--#{$prefix}box-padding);
+    scrollbar-width: none;
     cursor: auto;
     // must set this because some elements (e.g. OSM) add another class that changes the font
     font: $font-weight-base #{$cookie-notice-font-size-mobile} / #{$line-height-base} $font-family-base;

@@ -206,14 +206,16 @@
 
     .input-file .button {
         @include button-base;
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        float: none;
-        height: calc(100% - 8px);
-        line-height: 31px;
-        padding: 0 var(--#{$prefix}form-spacing);
-        font-size: 80%;
+        & {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            float: none;
+            height: calc(100% - 8px);
+            line-height: 31px;
+            padding: 0 var(--#{$prefix}form-spacing);
+            font-size: 80%;
+        }
 
         input {
             position: absolute;
@@ -248,17 +250,21 @@
             }
             // generates the select arrows after the select text
             &::before {
-                top: 12px;
+                top: calc(50% - 5px - 3px);
                 border-bottom: 5px solid var(--#{$prefix}form-icon-color);
             }
             &::after {
-                bottom: 12px;
+                bottom: calc(50% - 5px - 3px);
                 border-top: 5px solid var(--#{$prefix}form-icon-color);
             }
         }
         select {
             cursor: pointer;
             padding-right: 28px;
+
+            &[disabled] {
+                color: var(--#{$prefix}form-placeholder-color);
+            }
         }
     }
     .select-multiple {

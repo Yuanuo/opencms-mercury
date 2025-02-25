@@ -9,8 +9,11 @@
     description="The media content to use." %>
 
 <%@ attribute name="ratio" type="java.lang.String" required="true"
-    description="Can be used to scale the media in a specific ratio,
+    description="Can be used to scale the media in a specific ratio.
     Example values are: '1-1', '4-3', '3-2', '16-9', '2-1', '2,35-1' or 3-1." %>
+
+<%@ attribute name="ratioLg" type="java.lang.String" required="false"
+    description="Media ratio for large screens." %>
 
 <%@ attribute name="showPrefaceAsSubtitle" type="java.lang.Boolean" required="false"
     description="Controls if the preface is displayed as subtitle below the media. Default is 'false'." %>
@@ -42,6 +45,12 @@
 <%@ attribute name="autoPlay" type="java.lang.Boolean" required="false"
     description="Controls if the media is directly played without clicking on the element first. Default is 'false'." %>
 
+<%@ attribute name="minimalDisplay" type="java.lang.Boolean" required="false"
+    description="ONLY FOR AUDIO PLAYER! Controls if only the audio player is rendered without anything else . Default is 'false'." %>
+
+<%@ attribute name="mediaAttrs" type="java.lang.String" required="false"
+    description="Additional attributes that will be appended to the generated media element." %>
+
 <%@ attribute name="cssWrapper" type="java.lang.String" required="false"
     description="'class' selectors to add to the generated piece tag." %>
 
@@ -57,14 +66,15 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
-<mercury:media-vars content="${content}" ratio="${ratio}" autoPlay="${autoPlay}">
+<m:media-vars content="${content}" ratio="${ratio}" autoPlay="${autoPlay}" mediaAttrs="${mediaAttrs}">
 
     <c:set var="addPaddingBox"      value="${not (isAudio and empty image)}" />
     <c:set var="addPlaceholder"     value="${autoPlay and not empty placeholderMessage}" />
     <c:set var="effect"             value="${(empty effect) or (effect eq 'none') ? ' effect-box' : effect.concat(' effect-piece')}" />
+    <c:set var="minimalDisplay"     value="${minimalDisplay and isAudio}" />
     <c:set var="cssWrapper"         value="${(empty cssWrapper) or (cssWrapper eq 'none') ? '' : cssWrapper.concat(' ')}" />
 
     <c:if test="${not empty markupBottomText and not isAudio}">
@@ -75,22 +85,22 @@
         <c:if test="${not isAudio}">
             <div class="centered icon"><%----%>
                 <c:if test="${icon ne 'none'}">
-                    <mercury:icon icon="${icon}" tag="span" inline="${true}" />
+                    <m:icon icon="${icon}" tag="span" inline="${true}" />
                 </c:if>
                 <c:if test="${caseDynamicListNoscript or caseStandardElement}">
-                    <mercury:alert-online showJsWarning="${true}" addNoscriptTags="${caseStandardElement}" />
+                    <m:alert-online showJsWarning="${true}" addNoscriptTags="${caseStandardElement}" />
                 </c:if>
             </div><%----%>
         </c:if>
-        <c:if test="${showTitleOverlay}">
+        <c:if test="${showTitleOverlay and not minimalDisplay}">
             <c:set var="hsize" value="${empty hsize ? 2 : hsize}" />
             <c:set var="introHeadline">
-                <mercury:intro-headline
+                <m:intro-headline
                     intro="${empty showIntro or showIntro ? content.value.Intro : null}"
                     headline="${content.value.Title}"
                     level="${hsize}"
                 />
-                <mercury:heading
+                <m:heading
                     text="${content.value.Preface}"
                     level="${hsize + 1}"
                     css="sub-header"
@@ -115,18 +125,19 @@
         </c:if>
     </c:set>
 
-    <mercury:padding-box
-        cssWrapper="${cssWrapper}media-box${not autoPlay ? ' '.concat(effect) : ''}${isFlexible ? ' removable' : ''}"
+    <m:padding-box
+        cssWrapper="${cssWrapper}media-box${not autoPlay ? (effect.startsWith(' ') ? effect : ' '.concat(effect)) : ''}${isFlexible ? ' removable' : ''}"
         height="${height}"
         width="${width}"
         ratio="${usedRatio}"
-        test="${addPaddingBox}">
+        ratioLg="${ratioLg}"
+        test="${addPaddingBox and not minimalDisplay}">
 
         <c:set var="previewBgColor" value="${not empty flexibleType and empty image ? ' pbg-'.concat(flexibleType) : ''}" />
 
         <div class="content${not addPaddingBox ? ' compact' : ''}${previewBgColor}"><%----%>
 
-            <mercury:link
+            <m:link
                 link="${link}"
                 test="${not empty link}">
 
@@ -135,7 +146,7 @@
                         <c:if test="${not empty template}">
                             <c:set var="mediaTemplate"><%--
                                 --%>data-preview='{"template":"${cms:encode(template)}"}'<%--
-                                --%><mercury:data-external-cookies modal="${isAudio or not autoPlay}" message="${cookieMessage}" />
+                                --%><m:data-external-cookies modal="${isAudio or not autoPlay}" message="${cookieMessage}" />
                             </c:set>
                         </c:if>
                         <c:set var="previewAttrs">${' '}<%--
@@ -155,15 +166,16 @@
                 <div ${previewAttrs} tabindex="0" title="${placeholderMessage}"><%----%>
                     <c:choose>
                         <c:when test="${isAudio}">
-                            <c:if test="${not empty image}">
-                                <mercury:image-animated
+                            <c:if test="${not empty image and not minimalDisplay}">
+                                <m:image-animated
                                     image="${image}"
                                     ratio="${usedRatio}"
+                                    ratioLg="${ratioLg}"
                                     showCopyright="${false}"
                                     setTitle="${false}"
                                 />
                             </c:if>
-                            <mercury:audio-player
+                            <m:audio-player
                                 audioUri="${content.value.MediaContent.value.Audio.value.Data.toLink}"
                                 intro="${empty showIntro or showIntro ? content.value.Intro : null}"
                                 headline="${hsize == 0 ? content.value.Title : null}"
@@ -172,14 +184,17 @@
                                 copyright="${showCopyright ? copyright : null}"
                                 autoPlay="${autoPlay}"
                             />
-                            ${markupVisualOverlay}
+                            <c:if test="${not minimalDisplay}">
+                                ${markupVisualOverlay}
+                            </c:if>
                         </c:when>
                         <c:when test="${not empty link or not autoPlay}">
                             <c:choose>
                                 <c:when test="${not empty image}">
-                                    <mercury:image-animated
+                                    <m:image-animated
                                         image="${image}"
                                         ratio="${usedRatio}"
+                                        ratioLg="${ratioLg}"
                                         showCopyright="${showCopyright}"
                                         setTitle="${false}"
                                     />
@@ -194,7 +209,7 @@
                             ${markupVisualOverlay}
                         </c:when>
                         <c:when test="${autoPlay}">
-                            <mercury:alert-online showJsWarning="${true}" addNoscriptTags="${true}" />
+                            <m:alert-online showJsWarning="${true}" addNoscriptTags="${true}" />
                         </c:when>
                     </c:choose>
                 </div><%----%>
@@ -202,13 +217,13 @@
                     <div class="copyright" aria-hidden="true"><div>&copy; ${copyright}</div></div><%----%>
                 </c:if>
 
-            </mercury:link>
+            </m:link>
 
         </div><%----%>
-    </mercury:padding-box>
+    </m:padding-box>
 
     <c:if test="${showPreface and showPrefaceAsSubtitle and content.value.Preface.isSet}">
         <div class="subtitle"><c:out value="${content.value.Preface}" /></div><%----%>
     </c:if>
 
-</mercury:media-vars>
+</m:media-vars>

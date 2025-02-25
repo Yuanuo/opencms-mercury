@@ -71,6 +71,8 @@
 .box,
 .box-inner {
     padding: var(--#{$prefix}box-padding);
+    border-radius: var(--#{$prefix}border-radius);
+    overflow: hidden;
 
     &.fully-linked {
         // for boxed elements that are linked ffully, link icon-box or link-box, we want the complete colored space to be clickable
@@ -79,9 +81,6 @@
             padding: var(--#{$prefix}box-padding);
         }
     }
-
-    border-radius: var(--#{$prefix}border-radius);
-    overflow: hidden;
 
     &.oc-drag-element {
         // in edit mode allow overflow, otherwise edit points may not be visible (e.g. for lists)
@@ -95,22 +94,22 @@
 
 .box {
     &.box-ratio-1-1 {
-        min-height: 100cqw;
+        aspect-ratio: 1 / 1;
     }
-    &.box-ration-4-3 {
-        min-height: #{100cqw * divide(3, 4, $divide-precision)};
+    &.box-ratio-4-3 {
+        aspect-ratio: 4 / 3;
     }
     &.box-ratio-3-2 {
-        min-height: #{100cqw * divide(2, 3, $divide-precision)};
+        aspect-ratio: 3 / 2;
     }
     &.box-ratio-16-9 {
-        min-height: #{100cqw * divide(9, 16, $divide-precision)};
+        aspect-ratio: 16 / 9;
     }
     &.box-ratio-35-45 {
-        min-height: #{100cqw * divide(45, 35, $divide-precision)};
+        aspect-ratio: 35 / 45;
     }
     &.box-ratio-2-3 {
-        min-height: #{100cqw * divide(3, 2, $divide-precision)};
+        aspect-ratio: 2 / 3;
     }
 }
 
@@ -312,6 +311,18 @@
     }
 }
 
+.mt-pm {
+    margin-top: var(--#{$prefix}paragraph-margin-bottom) !important;
+}
+.mb-pm {
+    margin-bottom: var(--#{$prefix}paragraph-margin-bottom) !important;
+}
+.mt-xs {
+    margin-top: var(--#{$prefix}default-margin-verysmall-bottom) !important;
+}
+.mb-xs {
+    margin-bottom: var(--#{$prefix}default-margin-verysmall-bottom) !important;
+}
 .mt-sm {
     margin-top: var(--#{$prefix}default-margin-small) !important;
 }
@@ -404,36 +415,6 @@
 
         .mb-0#{$infix} {
             margin-bottom: 0 !important;
-        }
-    }
-}
-
-html {
-    // opencms inserted controls in mouse mode should not get the focus
-    .opencms,
-    .opencms * {
-        &:focus {
-            outline: none;
-            box-shadow: none;
-        }
-    }
-
-    // opencms inserted controls in keyboard mode can get the focus
-    &.keyboard-nav .opencms,
-    &.keyboard-nav .opencms * {
-        &:focus {
-            outline-color: $focus-outline-color;
-            outline-width: 3px;
-            outline-style: solid;
-            outline-offset: -2px;
-            box-shadow: none;
-        }
-    }
-
-    // hide selected elements if JS is available
-    &.hasscript {
-        .hide-hasscript {
-            display: none;
         }
     }
 }

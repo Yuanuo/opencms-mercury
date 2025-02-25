@@ -45,7 +45,7 @@
                 <Setting>
                     <PropertyName>Link</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Link)]]></DisplayName>
-                    <Description><![CDATA[%(key.label.Link.help)]]></Description>
+                    <Description><![CDATA[%(key.label.Link.Slider.help)%(key.label.Link.External.help)]]></Description>
                     <Widget>file</Widget>
                     <Search>false</Search>
                     <Display>singleline</Display>
@@ -62,20 +62,23 @@
                     <DisplayName><![CDATA[%(key.label.SliderImage.SuperTitle)]]></DisplayName>
                     <Description><![CDATA[%(key.label.SliderImage.SuperTitle.help)]]></Description>
                     <Widget>string</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                     <Display>singleline</Display>
                 </Setting>
                 <Setting>
                     <PropertyName>TitleLine1</PropertyName>
                     <DisplayName><![CDATA[%(key.label.SliderImage.TitleLine1)]]></DisplayName>
                     <Description><![CDATA[%(key.label.SliderImage.TitleLine1.help)]]></Description>
-                    <Widget>string</Widget>
+                    <Widget>textarea</Widget>
+                    <WidgetConfig>3|proportional|%(attribute:stringConfigTypo)</WidgetConfig>
                     <Display>singleline</Display>
                 </Setting>
                 <Setting>
                     <PropertyName>TitleLine2</PropertyName>
                     <DisplayName><![CDATA[%(key.label.SliderImage.TitleLine2)]]></DisplayName>
                     <Description><![CDATA[%(key.label.SliderImage.TitleLine2.help)]]></Description>
-                    <Widget>string</Widget>
+                    <Widget>textarea</Widget>
+                    <WidgetConfig>3|proportional|%(attribute:stringConfigTypo)</WidgetConfig>
                     <Display>singleline</Display>
                 </Setting>
                 <Setting>
@@ -83,6 +86,7 @@
                     <DisplayName><![CDATA[%(key.label.Copyright)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Copyright.help)]]></Description>
                     <Widget>string</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                     <Search>false</Search>
                     <Display>singleline</Display>
                 </Setting>

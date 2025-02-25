@@ -30,13 +30,14 @@
                     <DisplayName><![CDATA[%(key.label.MapCoord.Caption)]]></DisplayName>
                     <Description><![CDATA[%(key.label.MapCoord.Caption.help)]]></Description>
                     <Widget>string</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>Address</PropertyName>
                     <DisplayName><![CDATA[%(key.label.MapCoord.Address)]]></DisplayName>
                     <Description><![CDATA[%(key.label.MapCoord.Address.help)]]></Description>
                     <Widget>textarea</Widget>
-                    <WidgetConfig>4|proportional</WidgetConfig>
+                    <WidgetConfig>4|proportional|%(attribute:stringConfigTypo)</WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>Link</PropertyName>

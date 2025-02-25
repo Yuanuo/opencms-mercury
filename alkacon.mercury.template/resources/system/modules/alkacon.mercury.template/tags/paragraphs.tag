@@ -37,8 +37,11 @@
     description="Controls if ADE is enabled or not." %>
 
 <%@ attribute name="imageRatio" type="java.lang.String" required="false"
-    description="Can be used to scale the image in a specific ratio,
-    Allowed valued are: '1-1', '4-3', '3-2', '16-9', '2-1' and '2,35-1'" %>
+    description="Can be used to scale the image in a specific ratio.
+    Example values are: '1-1', '4-3', '3-2', '16-9', '2-1', '2,35-1' or 3-1." %>
+
+<%@ attribute name="imageRatioLg" type="java.lang.String" required="false"
+    description="Image ratio for large screens." %>
 
 <%@ attribute name="cssWrapper" type="java.lang.String" required="false"
     description="'class' atttributes to add to the generated div surrounding section." %>
@@ -64,13 +67,13 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms" %>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 <c:if test="${not empty paragraphs}">
     <c:set var="textOption" value="${((empty showText) or showText) ? 'default' : 'none'}" />
     <c:set var="linkOption" value="${empty linkOption ? 'button' : linkOption}" />
 
-    <mercury:paragraph-split
+    <m:paragraph-split
         paragraphs="${paragraphs}"
         splitFirst="${false}"
         splitDownloads="${splitDownloads}">
@@ -91,7 +94,7 @@
                     <c:set var="valAde" value="${false}" />
                 </c:when>
             </c:choose>
-            <mercury:section-piece
+            <m:section-piece
                 heading="${valCaption}"
                 pieceLayout="${pieceLayout}"
                 sizeMobile="${sizeMobile}"
@@ -102,6 +105,7 @@
                 cssWrapper="${cssWrapper}"
                 hsize="${hsize}"
                 imageRatio="${imageRatio}"
+                imageRatioLg="${imageRatioLg}"
                 textOption="${textOption}"
                 linkOption="${linkOption}"
                 showImageCopyright="${showImageCopyright}"
@@ -111,7 +115,7 @@
                 ade="${valAde}"
             />
         </c:forEach>
-        <mercury:paragraph-downloads paragraphs="${paragraphsDownload}" />
-    </mercury:paragraph-split>
+        <m:paragraph-downloads paragraphs="${paragraphsDownload}" />
+    </m:paragraph-split>
 
 </c:if>

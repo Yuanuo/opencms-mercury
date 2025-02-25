@@ -8,14 +8,14 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <cms:secureparams />
-<mercury:init-messages>
+<m:init-messages>
 
 <cms:formatter var="content" val="value">
-<mercury:teaser-settings content="${content}">
+<m:teaser-settings content="${content}">
 
 <c:set var="title"                  value="${value.Title}" />
 
@@ -42,20 +42,24 @@
 <c:set var="hsize"                  value="${showTitle and title.isSet ? hsizeTitle + 1 : hsizeTitle}" />
 
 
-<mercury:contact-vars
+<m:contact-vars
     content="${content}"
     showPosition="${showPosition}"
     showOrganization="${showOrganization}">
 
 <c:set var="linkTarget"             value="${(setLinkOption ne 'none') and (linkTarget ne 'none') ? (linkTarget eq 'detail' ? linkToDetail : value.Link) : null}" />
+<c:set var="image"                  value="${value.Image.isSet ? value.Image : (value.Paragraph.value.Image.isSet ? value.Paragraph.value.Image : null)}" />
+<c:set var="description"            value="${value.Description.isSet ? value.Description : (value.Paragraph.value.Text.isSet ? value.Paragraph.value.Text : null)}" />
 
-<mercury:teaser-piece
+
+<m:teaser-piece
     cssWrapper="type-contact ${kindCss}${compactLayout}${setCssWrapperAll}"
     attrWrapper="${kind}"
-    headline="${showTitle ? title : null}"
+    headline="${showTitle and (valName ne title) ? title : null}"
     pieceLayout="${setPieceLayout}"
     sizeDesktop="${setSizeDesktop}"
     sizeMobile="${setSizeMobile}"
+    piecePreMarkup="${setElementPreMarkup}"
 
     teaserType="${displayType}"
     link="${linkTarget}"
@@ -65,12 +69,13 @@
 
     <jsp:attribute name="markupVisual">
         <c:if test="${setShowVisual}">
-            <mercury:contact
+            <m:contact
                 kind="${valKind}"
-                image="${value.Image}"
+                image="${image}"
                 name="${valKind eq 'org' ? null : valName}"
                 organization="${valOrganization}"
                 imageRatio="${setRatio}"
+                imageRatioLg="${setRatioXs}"
                 hsize="${hsize}"
                 showImageCopyright="${setShowCopyright}"
                 showImage="${true}"
@@ -79,18 +84,19 @@
     </jsp:attribute>
 
     <jsp:attribute name="markupBody">
-        <mercury:contact
+        <m:contact
             kind="${valKind}"
             name="${valName}"
             position="${valPosition}"
             organization="${valOrganization}"
             notice="${value.Notice}"
-            description="${value.Description}"
+            description="${description}"
             data="${value.Contact}"
             address="${valAddress}"
             labelOption="${labelOption}"
             linkToRelated="${showOrganizationLink ? valLinkToRelated : null}"
             linkToDetail="${linkToDetail}"
+            linkToWebsite="${valLinkToWebsite}"
             hsize="${hsize}"
             showName="${setShowName}"
             showPosition="${setShowPosition}"
@@ -107,9 +113,9 @@
         />
     </jsp:attribute>
 
-</mercury:teaser-piece>
-</mercury:contact-vars>
+</m:teaser-piece>
+</m:contact-vars>
 
-</mercury:teaser-settings>
+</m:teaser-settings>
 </cms:formatter>
-</mercury:init-messages>
+</m:init-messages>

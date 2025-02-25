@@ -8,24 +8,24 @@
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
-<mercury:init-messages>
+<m:init-messages>
 
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
 <cms:formatter var="content" val="value">
 
-<mercury:setting-defaults>
+<m:setting-defaults>
 
 <c:set var="hsize"                  value="${setting.hsize.toInteger}" />
 <c:set var="allOpen"                value="${setting.allOpen.toBoolean}" />
 <c:set var="ade"                    value="${cms.isEditMode}" />
 
-<mercury:nl />
+<m:nl />
 
-<mercury:nav-vars params="${param}">
-<mercury:nav-items
+<m:nav-vars params="${param}">
+<m:nav-items
     type="forSite"
     content="${content}"
     currentPageFolder="${currentPageFolder}"
@@ -34,13 +34,13 @@
     <%-- If no navigation items are found, no output must be generated online --%>
 
     <div class="element type-nav-side pivot${setCssWrapperAll}"><%----%>
-    <mercury:nl />
+    <m:nl />
 
-        <mercury:heading level="${hsize}" text="${value.Title}" css="heading" ade="${ade}" />
+        <m:heading level="${hsize}" text="${value.Title}" css="heading" ade="${ade}" />
 
         <c:set var="navLength" value="${empty navItems ? 0 : fn:length(navItems) - 1}" />
         <ul class="nav-side"><%----%>
-            <mercury:nl />
+            <m:nl />
             <c:forEach var="i" begin="0" end="${navLength}" >
 
                 <c:set var="navElem" value="${navItems[i]}" />
@@ -51,7 +51,7 @@
                 <c:set var="navTarget" value="${fn:trim(navElem.info) eq 'extern' ? ' target=\"_blank\"' : ''}" />
 
                 <c:if test="${startSubMenu}">
-                    <c:set var="instanceId"><mercury:idgen prefix="" uuid="${cms.element.instanceId}" /></c:set>
+                    <c:set var="instanceId"><m:idgen prefix="" uuid="${cms.element.instanceId}" /></c:set>
                     <c:set var="parentLabelId">label${instanceId}_${i}</c:set>
                     <c:set var="targetMenuId">nav${instanceId}_${i}</c:set>
                     <c:set var="lastNavLevel" value="${navElem}" />
@@ -73,28 +73,39 @@
                 <c:out value="<li${isCurrentPage ? ' class=\"currentpage'.concat(isFinalCurrentPage ? ' final\"' : '\"') : ''}>" escapeXml="false" />
 
                 <c:choose>
-                    <c:when test="${startSubMenu and navElem.navigationLevel}">
+                    <c:when test="${startSubMenu and not navElem.navigationLevel}">
+                        <%-- Navigation item with sub-menu and direct child pages --%>
+                        <a href="${navLink}"${navTarget}${' '}<%--
+                        --%>id="${parentLabelId}"${' '}<%--
+                        --%>class="nav-label"${' '}<%--
+                        --%>${'>'}${navText}</a><%----%>
+
+                        <c:if test="${not allOpen}">
+                            <a href="${navLink}"${navTarget}${' '}<%--
+                            --%>role="button"${' '}<%--
+                            --%>data-bs-toggle="collapse"${' '}<%--
+                            --%>data-bs-target="#${targetMenuId}"${' '}<%--
+                            --%>${isCurrentPage ? 'aria-expanded=\"true\" class=\"collapse show\"' : 'aria-expanded=\"false\"'}${' '}<%--
+                            --%>aria-controls="${targetMenuId}"${' '}<%--
+                            --%>aria-label="<fmt:message key="msg.page.navigation.sublevel.further"><fmt:param>${navText}</fmt:param></fmt:message>"<%--
+                            --%>${'>'}&nbsp;</a><%----%>
+                        </c:if>
+                    </c:when>
+
+                    <c:when test="${startSubMenu}">
                         <%-- Navigation item with sub-menu but without direct child pages --%>
                         <a href="${navLink}"${navTarget}${' '}<%--
                         --%>id="${parentLabelId}"${' '}<%--
                         --%><c:if test="${not allOpen}"><%--
+                            --%>role="button"${' '}<%--
+                            --%>data-bs-toggle="collapse"${' '}<%--
+                            --%>data-bs-target="#${targetMenuId}"${' '}<%--
                             --%>${isCurrentPage ? 'aria-expanded=\"true\" class=\"collapse show\"' : 'aria-expanded=\"false\"'}${' '}<%--
-                            --%>data-bs-toggle="collapse" data-bs-target="#${targetMenuId}"${' '}<%--
                             --%>aria-controls="${targetMenuId}"<%--
+                            --%>aria-label="<fmt:message key="msg.page.navigation.sublevel.toggle"><fmt:param>${navText}</fmt:param></fmt:message>"<%--
                         --%></c:if><%--
-                        --%>><%--
-                        --%>${navText}</a><%--
-                --%></c:when>
-
-                    <c:when test="${startSubMenu}">
-                        <%-- Navigation item with sub-menu and direct child pages --%>
-                        <a href="${navLink}"${navTarget} class="nav-label" id="${parentLabelId}">${navText}</a><%--
-                        --%><c:if test="${not allOpen}"><%--
-                            --%><a href="${navLink}"${navTarget} data-bs-toggle="collapse" data-bs-target="#${targetMenuId}"${' '}<%--
-                            --%>${isCurrentPage ? 'aria-expanded=\"true\" class=\"collapse show\"' : 'aria-expanded=\"false\"'}${' '}<%--
-                            --%>aria-controls="${targetMenuId}" aria-label="<fmt:message key="msg.page.navigation.sublevel" />">&nbsp;</a><%--
-                        --%></c:if><%--
-                --%></c:when>
+                        --%>${'>'}${navText}</a><%----%>
+                    </c:when>
 
                     <c:otherwise>
                         <%--Navigation item without sub-menu --%>
@@ -104,35 +115,35 @@
 
                 <c:if test="${startSubMenu}">
                    <c:set var="collapseIn" value="${isCurrentPage and not allOpen ? ' show' : ''}" />
-                   <mercury:nl />
-                   <c:out value="<ul${allOpen ? ' ' : ' class=\"collapse'.concat(collapseIn).concat('\" ')} id=\"${targetMenuId}\">" escapeXml="false" />
+                   <m:nl />
+                   <c:out value="<ul${allOpen ? ' ' : ' class=\"collapse'.concat(collapseIn).concat('\" ')} id=\"${targetMenuId}\" aria-label=\"${navText}\">" escapeXml="false" />
                 </c:if>
 
                 <c:if test="${nextLevel < navElem.navTreeLevel}">
                     <c:forEach begin="1" end="${navElem.navTreeLevel - nextLevel}" >
                         <c:out value='</li></ul>' escapeXml="false" />
-                        <mercury:nl />
+                        <m:nl />
                     </c:forEach>
                 </c:if>
 
                 <c:if test="${not startSubMenu}">
                     <c:out value='</li>' escapeXml="false" />
-                    <mercury:nl />
+                    <m:nl />
                 </c:if>
 
             </c:forEach>
         </ul><%----%>
-        <mercury:nl />
+        <m:nl />
 
     </div><%----%>
 
-</mercury:nav-items>
-</mercury:nav-vars>
+</m:nav-items>
+</m:nav-vars>
 
-<mercury:nl />
+<m:nl />
 
-</mercury:setting-defaults>
+</m:setting-defaults>
 
 </cms:formatter>
 </cms:bundle>
-</mercury:init-messages>
+</m:init-messages>

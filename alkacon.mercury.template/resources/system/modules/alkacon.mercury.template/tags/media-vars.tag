@@ -15,6 +15,9 @@
 <%@ attribute name="autoPlay" type="java.lang.Boolean" required="false"
     description="Controls if the media is directly played without clicking on the element first. Default is 'false'." %>
 
+<%@ attribute name="mediaAttrs" type="java.lang.String" required="false"
+    description="Additional attributes that will be appended to the generated media element." %>
+
 
 <%@ variable name-given="image" declare="true"
     description="The optional image of the media file, as set in the content." %>
@@ -88,7 +91,7 @@
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <c:set var="width" value="${cms:mathRound(cms:toNumber(fn:substringBefore(ratio, '-'), 4))}" />
@@ -113,7 +116,7 @@
     </c:when>
 </c:choose>
 
-<mercury:list-element-status>
+<m:list-element-status>
 
 <c:if test="${content.value.Image.isSet}">
     <c:set var="image" value="${content.value.Image}" />
@@ -134,7 +137,7 @@
         <c:set var="cookieMessage"><fmt:message key="msg.page.privacypolicy.message.media.youtube" /></c:set>
         <c:set var="placeholderMessage"><fmt:message key="msg.page.placeholder.media.youtube" /></c:set>
         <c:set var="youTubeId" value="${content.value.MediaContent.value.YouTube.value.YouTubeId}" />
-        <c:set var="defaultPreview"><mercury:attribute-schema-param param="mercuryYouTubePreviewDefault" /></c:set>
+        <c:set var="defaultPreview"><m:attribute-schema-param param="mercuryYouTubePreviewDefault" /></c:set>
         <c:set var="youTubePreviewImg" value="${content.value.MediaContent.value.YouTube.value.YouTubePreview.isSet
             ? content.value.MediaContent.value.YouTube.value.YouTubePreview
             : defaultPreview}"
@@ -144,9 +147,11 @@
             : youTubePreviewImg}"
         />
         <c:set var="template"><%--
-        --%><iframe src="https://www.youtube-nocookie.com/embed/${youTubeId}?<%--
-            --%>autoplay=1&rel=0&iv_load_policy=3&modestbranding=1" <%--
-            --%>style="border: none;" allow="autoplay; encrypted-media" allowfullscreen><%--
+        --%><iframe class="youtube-video" src="https://www.youtube-nocookie.com/embed/${youTubeId}?<%--
+            --%>autoplay=1&rel=0&iv_load_policy=3&fs=0&enablejsapi=1${autoPlay ? '&mute=1':''}" <%--
+            --%>style="border: none;" allow="autoplay; encrypted-media" allowfullscreen<%--
+            --%>${empty mediaAttrs ? '' : ' '.concat(mediaAttrs)}<%--
+            --%>${'>'}<%--
         --%></iframe><%----%>
         </c:set>
         <c:choose>
@@ -168,7 +173,7 @@
                 <c:if test="${not (youTubePreviewImg eq 'hqdefault.jpg')}">
                     <c:set var="srcSet" value="${srcSet}, https://img.youtube.com/vi/${youTubeId}/${youTubePreviewImg} 640w" />
                 </c:if>
-                <mercury:image-lazyload
+                <m:image-lazyload
                     srcUrl="https://img.youtube.com/vi/${youTubeId}/${youTubePreviewImg}"
                     srcSet="${srcSet}"
                     alt="${content.value.Title}"
@@ -218,11 +223,12 @@
                 </c:when>
                 <c:otherwise>
                     <video <%--
-                        --%>class="fitin" <%--
+                        --%>class="html-video fitin" <%--
                         --%>controls <%--
-                        --%>autoplay <%--
+                        --%>autoplay ${autoPlay ? 'playsinline muted ':''}<%--
                         --%>preload="auto" <%--
                         --%>src="${videoSrc}" <%--
+                        --%>${empty mediaAttrs ? '' : mediaAttrs.concat(' ')}<%--
                         --%><c:if test="${not empty videoPreviewImg}">poster="${videoPreviewImg}"></c:if><%----%>
                     </video><%----%>
                 </c:otherwise>
@@ -233,7 +239,7 @@
                 <c:set var="srcSet"><%--
                 --%>${fn:replace(videoPreviewImg, 'webimage', 'thul')} 250w, <%--
                 --%>${videoPreviewImg} 800w</c:set>
-                <mercury:image-lazyload
+                <m:image-lazyload
                     srcUrl="${videoPreviewImg}"
                     srcSet="${srcSet}"
                     alt="${content.value.Title}"
@@ -262,8 +268,9 @@
         <c:set var="placeholderMessage"><fmt:message key="msg.page.placeholder.media.soundcloud" /></c:set>
         <c:set var="soundCloudTrackId" value="${content.value.MediaContent.value.SoundCloud.value.SoundCloudTrackId}" />
         <c:set var="template"><%--
-            --%><iframe width="100%" height="100%" scrolling="no" style="border: none;" allow="autoplay" <%--
-            --%>src="https://w.soundcloud.com/player/?url=<%--
+            --%><iframe class="soundcloud-audio" width="100%" height="100%" scrolling="no" style="border: none;" allow="autoplay"<%--
+            --%>${empty mediaAttrs ? '' : ' '.concat(mediaAttrs)}<%--
+            --%>${' '}src="https://w.soundcloud.com/player/?url=<%--
                 --%>https%3A//api.soundcloud.com/tracks/${soundCloudTrackId}&<%--
                     --%>auto_play=true&<%--
                     --%>color=%23XXcolor-main-themeXX&<%--
@@ -321,7 +328,7 @@
 
 </cms:bundle>
 
-</mercury:list-element-status>
+</m:list-element-status>
 
 
 <jsp:doBody/>

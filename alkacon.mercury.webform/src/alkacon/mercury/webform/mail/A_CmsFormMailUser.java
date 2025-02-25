@@ -27,9 +27,12 @@
 
 package alkacon.mercury.webform.mail;
 
+import alkacon.mercury.template.mail.A_CmsDkimMailSettings;
 import alkacon.mercury.webform.CmsFormDataField;
 import alkacon.mercury.webform.CmsFormHandler;
+import alkacon.mercury.webform.CmsFormMailSettings;
 
+import org.opencms.file.CmsResource;
 import org.opencms.util.CmsStringUtil;
 
 import java.util.List;
@@ -87,9 +90,20 @@ public abstract class A_CmsFormMailUser extends A_CmsFormMail {
     protected void setAddresses() throws EmailException, AddressException {
 
         String mailTo = m_macroResolver.resolveMacros(getMailReceiver());
-        String mailFrom = m_macroResolver.resolveMacros(m_form.getConfirmationMailFrom());
-        if (CmsStringUtil.isEmptyOrWhitespaceOnly(mailFrom)) {
-            mailFrom = m_macroResolver.resolveMacros(m_form.getMailFrom());
+        String mailFrom = null;
+        CmsResource resource = getResource();
+        if ((resource != null) && CmsFormMailSettings.getInstance().useDkimMailHost(m_cms, resource)) {
+            String dkimMailFrom = CmsFormMailSettings.getInstance().getAttributeDkimMailFrom(m_cms);
+            if (dkimMailFrom.equals(A_CmsDkimMailSettings.SITEMAP_ATTRVALUE_DKIM_MAILFROM_DEFAULT)) {
+                mailFrom = ""; // use the sender address configured in opencms-system.xml
+            } else {
+                mailFrom = dkimMailFrom;
+            }
+        } else {
+            mailFrom = m_macroResolver.resolveMacros(m_form.getConfirmationMailFrom());
+            if (CmsStringUtil.isEmptyOrWhitespaceOnly(mailFrom)) {
+                mailFrom = m_macroResolver.resolveMacros(m_form.getMailFrom());
+            }
         }
         String mailFromName = m_macroResolver.resolveMacros(m_form.getConfirmationMailFromName());
         if (CmsStringUtil.isEmptyOrWhitespaceOnly(mailFromName)) {
@@ -99,18 +113,29 @@ public abstract class A_CmsFormMailUser extends A_CmsFormMail {
         if (CmsStringUtil.isEmptyOrWhitespaceOnly(mailReplyTo)) {
             mailReplyTo = m_macroResolver.resolveMacros(m_form.getMailReplyTo());
         }
+        String mailFromAsReplyTo = m_macroResolver.resolveMacros(m_form.getConfirmationMailFrom());
+        if (CmsStringUtil.isEmptyOrWhitespaceOnly(mailFromAsReplyTo)) {
+            mailFromAsReplyTo = m_macroResolver.resolveMacros(m_form.getMailFrom());
+        }
         if (CmsStringUtil.isNotEmptyOrWhitespaceOnly(mailTo)) {
-            if (CmsStringUtil.isNotEmptyOrWhitespaceOnly(mailFromName)) {
-                m_htmlMail.setFrom(mailFrom, mailFromName);
-                m_simpleMail.setFrom(mailFrom, mailFromName);
-            } else {
-                m_htmlMail.setFrom(mailFrom);
-                m_simpleMail.setFrom(mailFrom);
+            if (CmsStringUtil.isNotEmptyOrWhitespaceOnly(mailFrom)) {
+                if (CmsStringUtil.isNotEmptyOrWhitespaceOnly(mailFromName)) {
+                    m_htmlMail.setFrom(mailFrom, mailFromName);
+                    m_simpleMail.setFrom(mailFrom, mailFromName);
+                } else {
+                    m_htmlMail.setFrom(mailFrom);
+                    m_simpleMail.setFrom(mailFrom);
+                }
             }
             if (CmsStringUtil.isNotEmptyOrWhitespaceOnly(mailReplyTo)) {
                 m_htmlMail.addReplyTo(mailReplyTo);
                 m_simpleMail.addReplyTo(mailReplyTo);
-            }
+            } else if ((resource != null)
+                && CmsFormMailSettings.getInstance().useDkimMailHost(m_cms, resource)
+                && CmsStringUtil.isNotEmptyOrWhitespaceOnly(mailFromAsReplyTo)) {
+                    m_htmlMail.addReplyTo(mailFromAsReplyTo);
+                    m_simpleMail.addReplyTo(mailFromAsReplyTo);
+                }
             m_htmlMail.setTo(createInternetAddresses(mailTo));
             m_simpleMail.setTo(createInternetAddresses(mailTo));
         }

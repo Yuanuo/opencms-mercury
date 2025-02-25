@@ -45,6 +45,12 @@
       <Widget><![CDATA[hidden]]></Widget>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[cssWrapperListOption.default]]></IncludeName>
+      <PropertyName><![CDATA[cssWrapperListOption]]></PropertyName>
+      <Visibility><![CDATA[element]]></Visibility>
+      <Widget><![CDATA[hidden]]></Widget>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[cssWrapperInner.default]]></IncludeName>
       <PropertyName><![CDATA[cssWrapperInner]]></PropertyName>
       <DisplayName><![CDATA[%(key.msg.setting.cssWrapperInner)]]></DisplayName>
@@ -267,6 +273,160 @@
         ]]></WidgetConfig>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[imageRatio.sizeMobile.default]]></IncludeName>
+      <PropertyName><![CDATA[imageRatio]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.small)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.small.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[none]]></Default>
+      <WidgetConfig><![CDATA[
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.sizeDesktop.default]]></IncludeName>
+      <PropertyName><![CDATA[imageRatioLg]]></PropertyName>
+      <PropertyNameAlias><![CDATA[imageRatioXs]]></PropertyNameAlias>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.large)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.large.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[desk]]></Default>
+      <WidgetConfig><![CDATA[
+            desk:   %(key.msg.setting.imageRatio.desk)|
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.contact]]></IncludeName>
+      <PropertyName><![CDATA[imageRatio]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[none]]></Default>
+      <WidgetConfig><![CDATA[
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)|
+            no-img: %(key.msg.setting.imageRatio.noimage)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.sizeMobile.allowHide]]></IncludeName>
+      <PropertyName><![CDATA[imageRatio]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.small)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.small.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[none]]></Default>
+      <WidgetConfig><![CDATA[
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)|
+            no-img: %(key.msg.setting.imageRatio.noimage)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.sizeDesktop.allowHide]]></IncludeName>
+      <PropertyName><![CDATA[imageRatioLg]]></PropertyName>
+      <PropertyNameAlias><![CDATA[imageRatioXs]]></PropertyNameAlias>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.large)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.large.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[desk]]></Default>
+      <WidgetConfig><![CDATA[
+            desk:   %(key.msg.setting.imageRatio.desk)|
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)|
+            no-img: %(key.msg.setting.imageRatio.noimage)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.textTile]]></IncludeName>
+      <PropertyName><![CDATA[imageRatio]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[1-1]]></Default>
+      <WidgetConfig><![CDATA[
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.sizeMobile.textTile]]></IncludeName>
+      <PropertyName><![CDATA[imageRatio]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.small)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.small.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[1-1]]></Default>
+      <WidgetConfig><![CDATA[
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[imageRatio.detail]]></IncludeName>
       <PropertyName><![CDATA[imageRatio]]></PropertyName>
       <DisplayName><![CDATA[%(key.msg.setting.imageRatio)]]></DisplayName>
@@ -309,6 +469,50 @@
         ]]></WidgetConfig>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[keyPieceimageRatio.sizeMobile]]></IncludeName>
+      <PropertyName><![CDATA[imageRatio]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.keyPieceimageRatio.small)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.small.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[2-1]]></Default>
+      <WidgetConfig><![CDATA[
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[keyPieceimageRatio.sizeDesktop]]></IncludeName>
+      <PropertyName><![CDATA[imageRatioLg]]></PropertyName>
+      <PropertyNameAlias><![CDATA[imageRatioXs]]></PropertyNameAlias>
+      <DisplayName><![CDATA[%(key.msg.setting.keyPieceimageRatio.large)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.large.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[desk]]></Default>
+      <WidgetConfig><![CDATA[
+            desk:   %(key.msg.setting.imageRatio.desk)|
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[imageRatioParagraphs.detail]]></IncludeName>
       <PropertyName><![CDATA[imageRatioParagraphs]]></PropertyName>
       <DisplayName><![CDATA[%(key.msg.setting.imageRatioParagraphs)]]></DisplayName>
@@ -330,16 +534,15 @@
         ]]></WidgetConfig>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[imageRatio.contact]]></IncludeName>
-      <PropertyName><![CDATA[imageRatio]]></PropertyName>
-      <DisplayName><![CDATA[%(key.msg.setting.imageRatio)]]></DisplayName>
-      <Description><![CDATA[%(key.msg.setting.imageRatio.help)]]></Description>
+      <IncludeName><![CDATA[imageRatioParagraphs.sizeMobile]]></IncludeName>
+      <PropertyName><![CDATA[imageRatioParagraphs]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatioParagraphs.small)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.small.help)]]></Description>
       <Visibility><![CDATA[elementAndParentShared]]></Visibility>
       <Widget><![CDATA[selectcombo]]></Widget>
       <Default><![CDATA[none]]></Default>
       <WidgetConfig><![CDATA[
             none:   %(key.msg.setting.imageRatio.none)|
-            no-img: %(key.msg.setting.imageRatio.noimage)|
             1-1:    %(key.msg.setting.imageRatio.1-1)|
             4-3:    %(key.msg.setting.imageRatio.4-3)|
             3-2:    %(key.msg.setting.imageRatio.3-2)|
@@ -348,18 +551,20 @@
             2,35-1: %(key.msg.setting.imageRatio.235-1)|
             3-1:    %(key.msg.setting.imageRatio.3-1)|
             35-45:  %(key.msg.setting.imageRatio.35-45)|
-            2-3:    %(key.msg.setting.imageRatio.2-3)
+            2-3:    %(key.msg.setting.imageRatio.2-3)|
+            no-img: %(key.msg.setting.imageRatio.noimage)
         ]]></WidgetConfig>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[imageRatio.textTile]]></IncludeName>
-      <PropertyName><![CDATA[imageRatio]]></PropertyName>
-      <DisplayName><![CDATA[%(key.msg.setting.imageRatio)]]></DisplayName>
-      <Description><![CDATA[%(key.msg.setting.imageRatio.help)]]></Description>
+      <IncludeName><![CDATA[imageRatioParagraphs.sizeDesktop]]></IncludeName>
+      <PropertyName><![CDATA[imageRatioParagraphsLg]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatioParagraphs.large)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.large.help)]]></Description>
       <Visibility><![CDATA[elementAndParentShared]]></Visibility>
       <Widget><![CDATA[selectcombo]]></Widget>
-      <Default><![CDATA[1-1]]></Default>
+      <Default><![CDATA[desk]]></Default>
       <WidgetConfig><![CDATA[
+            desk:   %(key.msg.setting.imageRatio.desk)|
             none:   %(key.msg.setting.imageRatio.none)|
             1-1:    %(key.msg.setting.imageRatio.1-1)|
             4-3:    %(key.msg.setting.imageRatio.4-3)|
@@ -369,7 +574,8 @@
             2,35-1: %(key.msg.setting.imageRatio.235-1)|
             3-1:    %(key.msg.setting.imageRatio.3-1)|
             35-45:  %(key.msg.setting.imageRatio.35-45)|
-            2-3:    %(key.msg.setting.imageRatio.2-3)
+            2-3:    %(key.msg.setting.imageRatio.2-3)|
+            no-img: %(key.msg.setting.imageRatio.noimage)
         ]]></WidgetConfig>
     </Setting>
     <Setting>
@@ -391,6 +597,30 @@
             3-1:    %(key.msg.setting.imageRatio.3-1)|
             35-45:  %(key.msg.setting.imageRatio.35-45)|
             2-3:    %(key.msg.setting.imageRatio.2-3)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.media.withphone]]></IncludeName>
+      <PropertyName><![CDATA[imageRatio]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[16-9]]></Default>
+      <WidgetConfig><![CDATA[
+            none:   %(key.msg.setting.imageRatio.none)|
+            1-1:    %(key.msg.setting.imageRatio.1-1)|
+            4-3:    %(key.msg.setting.imageRatio.4-3)|
+            3-2:    %(key.msg.setting.imageRatio.3-2)|
+            16-9:   %(key.msg.setting.imageRatio.16-9)|
+            2-1:    %(key.msg.setting.imageRatio.2-1)|
+            2,35-1: %(key.msg.setting.imageRatio.235-1)|
+            3-1:    %(key.msg.setting.imageRatio.3-1)|
+            35-45:  %(key.msg.setting.imageRatio.35-45)|
+            2-3:    %(key.msg.setting.imageRatio.2-3)|
+            9-16#200:  %(key.msg.setting.imageRatio.phone.sm)|
+            9-16#300:  %(key.msg.setting.imageRatio.phone.md)|
+            9-16#400:  %(key.msg.setting.imageRatio.phone.lg)
         ]]></WidgetConfig>
     </Setting>
     <Setting>
@@ -1193,14 +1423,6 @@
       <Default><![CDATA[true]]></Default>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[showMap.true]]></IncludeName>
-      <PropertyName><![CDATA[showMap]]></PropertyName>
-      <DisplayName><![CDATA[%(key.msg.setting.showMap)]]></DisplayName>
-      <Description><![CDATA[%(key.msg.setting.showMap.help)]]></Description>
-      <Widget><![CDATA[checkbox]]></Widget>
-      <Default><![CDATA[true]]></Default>
-    </Setting>
-    <Setting>
       <IncludeName><![CDATA[showLink.true]]></IncludeName>
       <PropertyName><![CDATA[showLink]]></PropertyName>
       <DisplayName><![CDATA[%(key.msg.setting.showLink)]]></DisplayName>
@@ -1252,6 +1474,23 @@
         onclick:%(key.msg.setting.showMap.onclick)|
         none:%(key.msg.setting.showMap.none)
       ]]></WidgetConfig>
+      <ValueTranslation><![CDATA[
+          onload: true|
+          none: false
+      ]]></ValueTranslation>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showMap.true]]></IncludeName>
+      <PropertyName><![CDATA[showMap]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.showMap)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.showMap.help)]]></Description>
+      <Widget><![CDATA[checkbox]]></Widget>
+      <Default><![CDATA[true]]></Default>
+      <ValueTranslation><![CDATA[
+          true: onload|
+          true: onclick|
+          false: none
+      ]]></ValueTranslation>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showMetaSummary.true]]></IncludeName>
@@ -1292,6 +1531,14 @@
       <Description><![CDATA[%(key.msg.setting.showFacilities.help)]]></Description>
       <Widget><![CDATA[checkbox]]></Widget>
       <Default><![CDATA[false]]></Default>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showOpeningHours.true]]></IncludeName>
+      <PropertyName><![CDATA[showOpeningHours]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.showOpeningHours)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.showOpeningHours.help)]]></Description>
+      <Widget><![CDATA[checkbox]]></Widget>
+      <Default><![CDATA[true]]></Default>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showCombinedDownloads.true]]></IncludeName>
@@ -1412,54 +1659,7 @@
       <Error><![CDATA[%(key.msg.error.pageSize)]]></Error>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[pieceSizeDesktop.default]]></IncludeName>
-      <PropertyName><![CDATA[pieceSizeDesktop]]></PropertyName>
-      <DisplayName><![CDATA[%(key.msg.setting.visualOption.desktop)]]></DisplayName>
-      <Description><![CDATA[%(key.msg.setting.visualOption.desktop.help)]]></Description>
-      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
-      <Widget><![CDATA[select]]></Widget>
-      <Default><![CDATA[99]]></Default>
-      <WidgetConfig><![CDATA[
-            99:     %(key.msg.setting.visualOption.piece.default)|
-            1:      %(key.msg.setting.visualOption.1)|
-            2:      %(key.msg.setting.visualOption.2)|
-            3:      %(key.msg.setting.visualOption.3)|
-            4:      %(key.msg.setting.visualOption.4)|
-            5:      %(key.msg.setting.visualOption.5)|
-            6:      %(key.msg.setting.visualOption.6)|
-            7:      %(key.msg.setting.visualOption.7)|
-            8:      %(key.msg.setting.visualOption.8)|
-            9:      %(key.msg.setting.visualOption.9)|
-            10:      %(key.msg.setting.visualOption.10)|
-            11:      %(key.msg.setting.visualOption.11)|
-            12:      %(key.msg.setting.visualOption.12)
-        ]]></WidgetConfig>
-    </Setting>
-    <Setting>
-      <IncludeName><![CDATA[pieceLayoutSizeDesktop.default]]></IncludeName>
-      <PropertyName><![CDATA[pieceLayoutSizeDesktop]]></PropertyName>
-      <DisplayName><![CDATA[%(key.msg.setting.pieceLayoutSizeDesktop)]]></DisplayName>
-      <Description><![CDATA[%(key.msg.setting.pieceLayoutSizeDesktop.help)]]></Description>
-      <Widget><![CDATA[select]]></Widget>
-      <Default><![CDATA[99]]></Default>
-      <WidgetConfig><![CDATA[
-            99:     %(key.msg.setting.visualOption.piece.default)|
-            1:      %(key.msg.setting.visualOption.1)|
-            2:      %(key.msg.setting.visualOption.2)|
-            3:      %(key.msg.setting.visualOption.3)|
-            4:      %(key.msg.setting.visualOption.4)|
-            5:      %(key.msg.setting.visualOption.5)|
-            6:      %(key.msg.setting.visualOption.6)|
-            7:      %(key.msg.setting.visualOption.7)|
-            8:      %(key.msg.setting.visualOption.8)|
-            9:      %(key.msg.setting.visualOption.9)|
-            10:      %(key.msg.setting.visualOption.10)|
-            11:      %(key.msg.setting.visualOption.11)|
-            12:      %(key.msg.setting.visualOption.12)
-        ]]></WidgetConfig>
-    </Setting>
-    <Setting>
-      <IncludeName><![CDATA[pieceSizeMobile.default]]></IncludeName>
+      <IncludeName><![CDATA[piece.sizeMobile.default]]></IncludeName>
       <PropertyName><![CDATA[pieceSizeMobile]]></PropertyName>
       <DisplayName><![CDATA[%(key.msg.setting.visualOption.mobile)]]></DisplayName>
       <Description><![CDATA[%(key.msg.setting.visualOption.mobile.help)]]></Description>
@@ -1477,9 +1677,58 @@
             7:      %(key.msg.setting.visualOption.7)|
             8:      %(key.msg.setting.visualOption.8)|
             9:      %(key.msg.setting.visualOption.9)|
-            10:      %(key.msg.setting.visualOption.10)|
-            11:      %(key.msg.setting.visualOption.11)|
-            12:      %(key.msg.setting.visualOption.12)
+            10:     %(key.msg.setting.visualOption.10)|
+            11:     %(key.msg.setting.visualOption.11)|
+            12:     %(key.msg.setting.visualOption.12)|
+            0:      %(key.msg.setting.visualOption.none)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[piece.sizeDesktop.default]]></IncludeName>
+      <PropertyName><![CDATA[pieceSizeDesktop]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.visualOption.desktop)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.visualOption.desktop.help)]]></Description>
+      <Visibility><![CDATA[elementAndParentShared]]></Visibility>
+      <Widget><![CDATA[select]]></Widget>
+      <Default><![CDATA[99]]></Default>
+      <WidgetConfig><![CDATA[
+            99:     %(key.msg.setting.visualOption.piece.default)|
+            1:      %(key.msg.setting.visualOption.1)|
+            2:      %(key.msg.setting.visualOption.2)|
+            3:      %(key.msg.setting.visualOption.3)|
+            4:      %(key.msg.setting.visualOption.4)|
+            5:      %(key.msg.setting.visualOption.5)|
+            6:      %(key.msg.setting.visualOption.6)|
+            7:      %(key.msg.setting.visualOption.7)|
+            8:      %(key.msg.setting.visualOption.8)|
+            9:      %(key.msg.setting.visualOption.9)|
+            10:     %(key.msg.setting.visualOption.10)|
+            11:     %(key.msg.setting.visualOption.11)|
+            12:     %(key.msg.setting.visualOption.12)|
+            0:      %(key.msg.setting.visualOption.none)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[pieceLayout.sizeDesktop.default]]></IncludeName>
+      <PropertyName><![CDATA[pieceLayoutSizeDesktop]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.pieceLayoutSizeDesktop)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.pieceLayoutSizeDesktop.help)]]></Description>
+      <Widget><![CDATA[select]]></Widget>
+      <Default><![CDATA[99]]></Default>
+      <WidgetConfig><![CDATA[
+            99:     %(key.msg.setting.visualOption.piece.default)|
+            1:      %(key.msg.setting.visualOption.1)|
+            2:      %(key.msg.setting.visualOption.2)|
+            3:      %(key.msg.setting.visualOption.3)|
+            4:      %(key.msg.setting.visualOption.4)|
+            5:      %(key.msg.setting.visualOption.5)|
+            6:      %(key.msg.setting.visualOption.6)|
+            7:      %(key.msg.setting.visualOption.7)|
+            8:      %(key.msg.setting.visualOption.8)|
+            9:      %(key.msg.setting.visualOption.9)|
+            10:     %(key.msg.setting.visualOption.10)|
+            11:     %(key.msg.setting.visualOption.11)|
+            12:     %(key.msg.setting.visualOption.12)
         ]]></WidgetConfig>
     </Setting>
     <Setting>
@@ -1628,6 +1877,19 @@
         ]]></WidgetConfig>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[poiDisplayOption.listTeaser]]></IncludeName>
+      <PropertyName><![CDATA[poiDisplayOption]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.poi.displayOption)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.poi.displayOption.help)]]></Description>
+      <Widget><![CDATA[select]]></Widget>
+      <Default><![CDATA[textaddr]]></Default>
+      <WidgetConfig><![CDATA[
+            textaddr:         %(key.msg.setting.poi.displayOption.textaddr)|
+            addr:             %(key.msg.setting.poi.displayOption.addr)|
+            text:             %(key.msg.setting.poi.displayOption.text)
+        ]]></WidgetConfig>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[keyPieceSizeDesktop.detail]]></IncludeName>
       <PropertyName><![CDATA[keyPieceSizeDesktop]]></PropertyName>
       <DisplayName><![CDATA[%(key.msg.setting.keyPieceSizeDesktop)]]></DisplayName>
@@ -1760,7 +2022,19 @@
       <Widget><![CDATA[select]]></Widget>
       <Default><![CDATA[firstMarker]]></Default>
       <WidgetConfig><![CDATA[
-        firstMarker:%(key.msg.setting.map.zoom.firstPoi)|
+        firstMarker:%(key.msg.setting.map.zoom.firstMarker)|
+        20:20|19:19|18:18|17:17|16:16|15:15|14:14|13:13|12:12|11:11|10:10|9:9|8:8|7:7|6:6|5:5|4:4|3:3|2:2|1:1
+      ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[mapZoom.fromCoords]]></IncludeName>
+      <PropertyName><![CDATA[mapZoom]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.map.zoom)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.map.zoom.help)]]></Description>
+      <Widget><![CDATA[select]]></Widget>
+      <Default><![CDATA[firstMarker]]></Default>
+      <WidgetConfig><![CDATA[
+        firstMarker:%(key.msg.setting.map.zoom.fromCoords)|
         20:20|19:19|18:18|17:17|16:16|15:15|14:14|13:13|12:12|11:11|10:10|9:9|8:8|7:7|6:6|5:5|4:4|3:3|2:2|1:1
       ]]></WidgetConfig>
     </Setting>
@@ -1807,13 +2081,31 @@
       ]]></WidgetConfig>
     </Setting>
     <Setting>
-      <IncludeName><![CDATA[mapRatio.default]]></IncludeName>
+      <IncludeName><![CDATA[mapRatio.sizeMobile.default]]></IncludeName>
       <PropertyName><![CDATA[mapRatio]]></PropertyName>
-      <DisplayName><![CDATA[%(key.msg.setting.map.ratio)]]></DisplayName>
-      <Description><![CDATA[%(key.msg.setting.map.ratio.help)]]></Description>
+      <DisplayName><![CDATA[%(key.msg.setting.map.ratio.small)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.map.ratio.small.help)]]></Description>
       <Widget><![CDATA[selectcombo]]></Widget>
       <Default><![CDATA[16-9]]></Default>
       <WidgetConfig><![CDATA[
+        1-1:    %(key.msg.setting.imageRatio.1-1)|
+        4-3:    %(key.msg.setting.imageRatio.4-3)|
+        3-2:    %(key.msg.setting.imageRatio.3-2)|
+        16-9:   %(key.msg.setting.imageRatio.16-9)|
+        2-1:    %(key.msg.setting.imageRatio.2-1)|
+        2,35-1: %(key.msg.setting.imageRatio.235-1)|
+        3-1:    %(key.msg.setting.imageRatio.3-1)
+      ]]></WidgetConfig>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[mapRatio.sizeDesktop.default]]></IncludeName>
+      <PropertyName><![CDATA[mapRatioLg]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.map.ratio.large)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.map.ratio.large.help)]]></Description>
+      <Widget><![CDATA[selectcombo]]></Widget>
+      <Default><![CDATA[desk]]></Default>
+      <WidgetConfig><![CDATA[
+        desk:   %(key.msg.setting.imageRatio.desk)|
         1-1:    %(key.msg.setting.imageRatio.1-1)|
         4-3:    %(key.msg.setting.imageRatio.4-3)|
         3-2:    %(key.msg.setting.imageRatio.3-2)|
@@ -3309,8 +3601,8 @@
     <Setting>
       <IncludeName><![CDATA[imageRatioSmall.slider.hero]]></IncludeName>
       <PropertyName><![CDATA[imageRatioSmall]]></PropertyName>
-      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.small)]]></DisplayName>
-      <Description><![CDATA[%(key.msg.setting.imageRatio.small.help)]]></Description>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.large)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.large.help)]]></Description>
       <Widget><![CDATA[selectcombo]]></Widget>
       <Default><![CDATA[1-1]]></Default>
       <WidgetConfig><![CDATA[
@@ -3347,8 +3639,8 @@
     <Setting>
       <IncludeName><![CDATA[imageRatioLarge.slider.hero]]></IncludeName>
       <PropertyName><![CDATA[imageRatioLarge]]></PropertyName>
-      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.large)]]></DisplayName>
-      <Description><![CDATA[%(key.msg.setting.imageRatio.large.help)]]></Description>
+      <DisplayName><![CDATA[%(key.msg.setting.imageRatio.small)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.imageRatio.small.help)]]></Description>
       <Widget><![CDATA[selectcombo]]></Widget>
       <Default><![CDATA[2,35-1]]></Default>
       <WidgetConfig><![CDATA[
@@ -3790,6 +4082,14 @@
       <Description><![CDATA[%(key.msg.setting.search.showTypeBadge.help)]]></Description>
       <Widget><![CDATA[checkbox]]></Widget>
       <Default><![CDATA[true]]></Default>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showTopBadge.search]]></IncludeName>
+      <PropertyName><![CDATA[showTopBadge]]></PropertyName>
+      <DisplayName><![CDATA[%(key.msg.setting.search.showTopBadge)]]></DisplayName>
+      <Description><![CDATA[%(key.msg.setting.search.showTopBadge.help)]]></Description>
+      <Widget><![CDATA[checkbox]]></Widget>
+      <Default><![CDATA[false]]></Default>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showExcerpt.search]]></IncludeName>

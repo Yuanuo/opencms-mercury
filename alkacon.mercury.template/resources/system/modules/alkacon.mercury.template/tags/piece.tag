@@ -124,7 +124,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <c:set var="pieceTag"       value="${empty pieceTag ? 'div' : pieceTag}" />
@@ -173,7 +173,8 @@
         <c:set var="gridOption" value="${empty gridOption ? '' : gridOption.concat(' ')}${'p-dm'}" />
     </c:if>
     <c:if test="${sizeDesktop < 12}">
-        <%-- Note regardin p-md breakpoint: This always uses 'md' regardless of the 'template.piece.breakpoint' sitemap attribute. --%>
+        <%-- Note regardin p-md breakpoint: This always uses the string 'md' regardless of the 'template.piece.breakpoint' sitemap attribute. --%>
+        <%-- However, since this is no selector used by bootstrap, in your CSS you can modify the behaviour to actually use a differnt breakpoint e.g. 'lg', even if the markup uses 'p-md'. --%>
         <c:set var="gridOption" value="${empty gridOption ? '' : gridOption.concat(' ')}${'p-md-'}${sizeDesktop}" />
     </c:if>
     <c:if test="${defSizeDesktop}">
@@ -199,10 +200,19 @@
 <c:set var="showLink"       value="${not empty pieceLink}" />
 
 <c:if test="${useVisual and not empty visual}">
-    <c:set var="pieceBreakpoint" value="${cms.sitemapConfig.attribute['template.piece.breakpoint'].useDefault('md').toString}" />
-    <%-- It is important to make this check AFTER the body because the grid size must be 12 if there is no body. --%>
+    <c:choose>
+        <c:when test="${not showHeading and not showText and not showLink}">
+            <%-- Check if there are any text elements, if not the grid size must be 12. --%>
+            <c:set var="cssgridVidual" value="col-xs-12 only-visual" />
+        </c:when>
+        <c:otherwise>
+            <c:set var="pieceBreakpoint" value="${cms.sitemapConfig.attribute['template.piece.breakpoint'].useDefault('md').toString}" />
+            <c:set var="pieceBreakpoint" value="${empty pieceBreakpoint ? 'md' : pieceBreakpoint}" />
+             <c:set var="cssgridVidual" value="${'col-xs-'.concat(sizeMobile).concat(sizeDesktop < 12 ? ' col-'.concat(pieceBreakpoint).concat('-').concat(sizeDesktop) : '')}" />
+        </c:otherwise>
+    </c:choose>
     <cms:addparams>
-        <cms:param name="cssgrid" value="${'col-xs-'.concat(sizeMobile).concat(sizeDesktop < 12 ? ' col-'.concat(pieceBreakpoint).concat('-').concat(sizeDesktop) : '')}" />
+        <cms:param name="cssgrid" value="${cssgridVidual}" />
         <jsp:invoke fragment="visual" var="pieceVisual" />
     </cms:addparams>
 </c:if>
@@ -281,21 +291,24 @@
     <c:otherwise>
         <%-- "phh" means "piece has heading". --%>
         <%-- "pnh" means "piece (has) no heading". --%>
+        <%-- "pih" means "piece (has) inline heading". --%>
         <%-- "phb" means "piece has body". --%>
+        <%-- "phl" means "piece has link". --%>
+        <%-- "pnl" means "piece (has) no link". --%>
+        <%-- "pil" means "piece (has) inline link". --%>
         <%-- "phv" means "piece has visual". --%>
         <%-- "pnv" means "piece (has) no visual". --%>
-        <%-- "phl" means "piece has link". --%>
         <%-- "pvf" means "piece visual first". --%>
         <%-- "pvl" means "piece visual last". --%>
-        <%-- "pnm" means "(next) piece needs margin". --%>
         <c:set var="pieceFeatureMarker" value=" lay-${pieceLayout}${
-            showHeading and not inlineHeading ? ' phh': ' pnh'}${
-            showBody ? ' phb': ''}${
-            showVisual ? ' phv': ' pnv'}${
-            showLink and not inlineLink ? ' phl': ''}${
-            visualFirst ? ' pvf': ''}${
-            visualLast ? ' pvl': ''}${
-            visualLast or (showLink and not inlineLink) ? ' pnm' : ''}" />
+            showHeading ? ' phh' : ' pnh'}${
+            showHeading and inlineHeading ? ' pih' : ''}${
+            showBody ? ' phb' : ''}${
+            showLink ? ' phl' : ' pnl'}${
+            showLink and inlineLink ? ' pil' : ''}${
+            showVisual ? ' phv' : ' pnv'}${
+            visualFirst ? ' pvf' : ''}${
+            visualLast ? ' pvl' : ''}" />
     </c:otherwise>
 </c:choose>
 
@@ -304,7 +317,7 @@
         <div class="link${empty cssLink ? '' : ' '.concat(cssLink)}"${empty attrLink ? '' : ' '.concat(attrLink)}><%----%>
             ${pieceLink}
         </div><%----%>
-        <mercury:nl />
+        <m:nl />
     </c:set>
 </c:if>
 
@@ -313,7 +326,7 @@
         <div class="visual${empty cssVisual ? '' : ' '.concat(cssVisual)}"${empty attrVisual ? '' : ' '.concat(attrVisual)}><%----%>
             ${pieceVisual}
         </div><%----%>
-        <mercury:nl />
+        <m:nl />
     </c:set>
 </c:if>
 
@@ -322,7 +335,7 @@
         <div class="heading${empty cssHeading ? '' : ' '.concat(cssHeading)}"${empty attrHeading ? '' : ' '.concat(attrHeading)}><%----%>
             ${pieceHeading}
         </div><%----%>
-        <mercury:nl />
+        <m:nl />
     </c:set>
 </c:if>
 
@@ -337,7 +350,7 @@ ${'<'}${pieceTag}${' '}
     ${'\"'}
     ${empty attrWrapper ? '' : ' '.concat(attrWrapper)}
 ${'>'}
-<mercury:nl />
+<m:nl />
 
 ${piecePreMarkup}
 
@@ -359,14 +372,14 @@ ${piecePreMarkup}
             <div class="text${empty cssText ? '' : ' '.concat(cssText)}"${empty attrText ? '' : ' '.concat(attrText)}><%----%>
                 ${pieceText}
             </div><%----%>
-            <mercury:nl />
+            <m:nl />
         </c:if>
         <c:if test="${showLink and inlineLink}">
             ${linkMarkup}
         </c:if>
         ${bodyPostMarkup}
     </div><%----%>
-    <mercury:nl />
+    <m:nl />
 </c:if>
 
 <c:if test="${showLink and not inlineLink and not linkLast}">
@@ -383,4 +396,4 @@ ${piecePreMarkup}
 
 
 ${'</'}${pieceTag}${'>'}
-<mercury:nl />
+<m:nl />

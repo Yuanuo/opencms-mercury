@@ -31,7 +31,7 @@
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <c:if test="${wheelchairAccess or hearingImpaired or lowVision or publicRestrooms or publicRestroomsAccessible}">
@@ -43,44 +43,29 @@
     <div class="facility-icons${not empty css ? ' '.conact(css) : ''}"><%----%>
         <c:if test="${wheelchairAccess}">
             <div title="<fmt:message key='label.Facility.WheelchairAccess' />" class="acc-icon"${tooltip}><%----%>
-                <span class="acc-inner"><%----%>
-                    <mercury:icon icon="wheelchair" tag="span" />
-                    </span><%----%>
+                <m:icon icon="fa-wheelchair" tag="span" />
             </div><%----%>
         </c:if>
         <c:if test="${hearingImpaired}">
             <div title="<fmt:message key='label.Facility.HearingImpaired' />" class="acc-icon"${tooltip}><%----%>
-                <span class="acc-inner"><%----%>
-                    <mercury:icon icon="assistive-listening-systems" tag="span" />
-                </span><%----%>
+                <m:icon icon="fa-assistive-listening-systems" tag="span" />
             </div><%----%>
         </c:if>
         <c:if test="${lowVision}">
             <div title="<fmt:message key='label.Facility.LowVision' />" class="acc-icon"${tooltip}><%----%>
-                <span class="acc-inner"><%----%>
-                    <mercury:icon icon="low-vision" tag="span" />
-                </span><%----%>
+                <m:icon icon="fa-low-vision" tag="span" />
             </div><%----%>
         </c:if>
         <c:if test="${publicRestrooms}">
             <div title="<fmt:message key='label.Facility.PublicRestrooms' />" class="acc-icon"${tooltip}><%----%>
-                <span class="acc-inner"><%----%>
-                    <mercury:icon icon="male" tag="span" cssWrapper="acc-male" />
-                    <mercury:icon icon="female" tag="span" cssWrapper="acc-female" />
-                </span><%----%>
+                <m:icon icon="my-wc" tag="span" />
             </div><%----%>
         </c:if>
         <c:if test="${publicRestroomsAccessible}">
             <div title="<fmt:message key='label.Facility.PublicRestroomsAccessible' />" class="acc-icon"${tooltip}><%----%>
-                <span class="acc-inner acc-wc"><%----%>
-                    <mercury:icon icon="wheelchair" tag="span" />
-                </span><%----%>
-                <span class="acc-add acc-wc"><%----%>
-                    <mercury:icon icon="male" tag="span" cssWrapper="acc-male" />
-                    <mercury:icon icon="female" tag="span" cssWrapper="acc-female" />
-                </span><%----%>
+                <m:icon icon="my-accessible-wc" tag="span" />
             </div><%----%>
         </c:if>
     </div><%----%>
-    <mercury:nl />
+    <m:nl />
 </c:if>

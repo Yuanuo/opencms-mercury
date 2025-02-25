@@ -3,6 +3,7 @@
     body-content="empty"
     trimDirectiveWhitespaces="true"
     description="Generates a Mercury Webform." %>
+<%@ tag import="alkacon.mercury.webform.CmsFormMailSettings" %>
 
 <%@ attribute name="webform" type="java.lang.Object" required="true"
     description="The object to initialze the form with.
@@ -25,12 +26,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <fmt:setLocale value="${cms.locale}"/>
 <cms:bundle basename="alkacon.mercury.template.messages">
-<mercury:webform-vars
+<m:webform-vars
     webform="${webform}"
     bookingInfo="${bookingInfo}"
     formId="${formId}">
@@ -45,14 +46,14 @@
         </div><%----%>
     </c:if>
     <c:if test="${isContactForm and empty contactEmail and not cms.isEditMode}">
-        <mercury:alert-online>
+        <m:alert-online>
             <jsp:attribute name="head">
                 <fmt:message key="msg.page.contact.notfound.exception.head"/>
             </jsp:attribute>
             <jsp:attribute name="text">
                 <fmt:message key="msg.page.contact.notfound.exception.text"/>
             </jsp:attribute>
-        </mercury:alert-online>
+        </m:alert-online>
     </c:if>
 
     <c:if test="${not isContactForm or not empty contactEmail or cms.isEditMode}">
@@ -77,41 +78,80 @@
                 <c:set var="formHandler" value="${form.createFormHandler(pageContext)}" /><%-- The form handler sets the X-Oc-Webform request header to 'YES'. --%>
                 <c:choose>
                     <c:when test="${formBookingRegistrationClosed}">
-                        <mercury:alert-online>
+                        <m:alert-online>
                             <jsp:attribute name="head">
                                 <fmt:message key="msg.page.form.bookingstatus.registrationClosed.headline" />
                             </jsp:attribute>
                             <jsp:attribute name="text">
                                 <fmt:message key="msg.page.form.bookingstatus.registrationClosed.text" />
                             </jsp:attribute>
-                        </mercury:alert-online>
+                        </m:alert-online>
                     </c:when>
                     <c:when test="${cms.wrap[formXml.file].propertySearch['mercury.form.disabled'] eq 'true'}">
-                        <mercury:alert-online>
+                        <m:alert-online>
                             <jsp:attribute name="head">
                                 <fmt:message key="msg.page.form.disabled.headline" />
                             </jsp:attribute>
                             <jsp:attribute name="text">
                                 <fmt:message key="msg.page.form.disabled.text" />
                             </jsp:attribute>
-                        </mercury:alert-online>
+                        </m:alert-online>
                     </c:when>
                     <c:otherwise>
                         <c:if test="${not empty formCssWrapper}">
                             ${form.addExtraConfig("formCssWrapper", formCssWrapper)}
                         </c:if>
                         <c:if test="${not empty formBookingXml}">
-                            <mercury:icalendar-vars content="${formBookingXml}">
+                            <m:icalendar-vars content="${formBookingXml}">
                             ${formHandler.setICalInfo(iCalLink, iCalFileName, iCalLabel)}
-                            </mercury:icalendar-vars>
+                            </m:icalendar-vars>
                             ${formHandler.setEventConfiguration(formBookingXml.filename)}
                         </c:if>
-                        ${formHandler.createForm()}
+                        <c:set var="formMailSettings" value="${CmsFormMailSettings.getInstance()}"/>
+                        <c:set var="useDkimMailHost" value="${formMailSettings.useDkimMailHost(formHandler.cmsObject, formXml.file)}"/>
+                        <c:set var="validDkimDomains" value="${formMailSettings.validDkimDomains(formHandler.cmsObject)}"/>
+                        <c:set var="dkimDomains" value="${formMailSettings.getAttributeDkimDomains(formHandler.cmsObject)}"/>
+                        <c:set var="validDkimMailFrom" value="${formMailSettings.validDkimMailFrom(formHandler.cmsObject)}"/>
+                        <c:set var="dkimMailFrom" value="${formMailSettings.getAttributeDkimMailFrom(formHandler.cmsObject)}"/>
+                        <c:set var="validMailHost" value="${formMailSettings.validMailHost(formHandler.cmsObject, formXml.file)}"/>
+                        <c:choose>
+                            <c:when test="${validMailHost}">
+                                ${formHandler.createForm()}
+                            </c:when>
+                            <c:otherwise>
+                                <m:alert-online>
+                                    <jsp:attribute name="text">
+                                        <p><fmt:message key="msg.page.form.mailconfigerror.online" /></p>
+                                    </jsp:attribute>
+                                </m:alert-online>
+                                <m:alert type="error" test="${cms.isEditMode}">
+                                    <jsp:attribute name="head">
+                                        <fmt:message key="msg.page.form.mailconfigerror.headline" />
+                                    </jsp:attribute>
+                                    <jsp:attribute name="text">
+                                        <c:choose>
+                                            <c:when test="${useDkimMailHost and not validDkimDomains}">
+                                                <fmt:message key="msg.page.form.mailconfigerror.dkimdomains" />
+                                            </c:when>
+                                            <c:when test="${useDkimMailHost and not validDkimMailFrom}">
+                                                <fmt:message key="msg.page.form.mailconfigerror.dkimmailfrom">
+                                                    <fmt:param>${dkimMailFrom}</fmt:param>
+                                                    <fmt:param>${dkimDomains}</fmt:param>
+                                                </fmt:message>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <fmt:message key="msg.page.form.mailconfigerror.mailhost" />
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </jsp:attribute>
+                                </m:alert>
+                            </c:otherwise>
+                        </c:choose>
                     </c:otherwise>
                 </c:choose>
             </c:otherwise>
         </c:choose>
     </c:if>
 
-</mercury:webform-vars>
+</m:webform-vars>
 </cms:bundle>

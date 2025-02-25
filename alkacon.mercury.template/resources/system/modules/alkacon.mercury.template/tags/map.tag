@@ -19,6 +19,9 @@
 <%@ attribute name="ratio" type="java.lang.String" required="false"
     description="The display ratio of the map, e.g. '1-1' or '16-9'" %>
 
+<%@ attribute name="ratioLg" type="java.lang.String" required="false"
+    description="Map ratio for large screens." %>
+
 <%@ attribute name="zoom" type="java.lang.String" required="false"
     description="The initial map zoom factor. If not set, will use '13' for OSM and '14' for Google as default.
     If set to 'firstMarker' the zoom level of the first marker will be used." %>
@@ -56,12 +59,12 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
-<mercury:content-properties>
+<m:content-properties>
 
 <%-- OSM API key --%>
 <c:set var="osmApiKey" value="${contentPropertiesSearch['osm.apikey']}" />
@@ -83,14 +86,14 @@
     </c:choose>
 </c:if>
 
-<c:set var="isOsm" value="${not (provider eq 'google')}" />
-
-<c:set var="apiKey" value="${isOsm ? osmApiKey : googleApiKey}" />
-<c:set var="noApiKey" value="${empty apiKey or (apiKey eq 'none')}" />
-<c:set var="ratio" value="${empty ratio ? '16-9' : ratio}" />
-<c:set var="showRoute" value="${showRoute and not isOsm}" />
-<c:set var="type" value="${isOsm ? null : type}" />
-<c:set var="disableEditModePlaceholder" value="${disableEditModePlaceholder eq true ? true : false}" />
+<c:set var="isOsm"          value="${not (provider eq 'google')}" />
+<c:set var="type"           value="${isOsm ? null : type}" />
+<c:set var="apiKey"         value="${isOsm ? osmApiKey : googleApiKey}" />
+<c:set var="noApiKey"       value="${empty apiKey or (apiKey eq 'none')}" />
+<c:set var="ratio"          value="${empty ratio ? '16-9' : ratio}" />
+<c:set var="ratioLg"        value="${(empty ratioLg) or ('desk' eq ratioLg) ? ratio : ratioLg}" />
+<c:set var="showRoute"      value="${showRoute and not isOsm}" />
+<c:set var="disableEditModePlaceholder" value="${disableEditModePlaceholder eq true}" />
 
 <%-- Set zoom level --%>
 <c:choose>
@@ -118,51 +121,13 @@
 
     <%-- Generate marker list --%>
     <cms:jsonarray var="markerList" mode="object">
-
         <c:forEach var="marker" items="${markers}" varStatus="status">
-
-            <%-- Note: Route markup is supported only by Google maps --%>
-            <c:if test="${showRoute}">
-                <c:set target="${marker}" property="routeMarkup"><%--
-                --%><div class="markroute"><%--
-                    --%><div class="head"><fmt:message key="msg.page.map.route" /></div><%--
-                    --%><div class="message"><fmt:message key="msg.page.map.start" /></div><%--
-                    --%><form action="https://maps.google.com/maps" method="get" target="_blank" rel="noopener"><%--
-                        --%><input type="text" class="form-control" size="15" maxlength="60" name="saddr" value="" /><%--
-                        --%><input value="<fmt:message key="msg.page.map.route.button" />" type="submit" class="btn btn-xs"><%--
-                        --%><input type="hidden" name="daddr" value="${marker.lat},${marker.lng}"/><%--
-                    --%></form><%--
-                --%></div><%--
-            --%></c:set>
-            </c:if>
-
-            <%-- Markup for map marker info windows --%>
-            <c:set target="${marker}" property="infoMarkup">
-                <div class="map-marker"><%----%>
-                    <c:if test="${not empty marker.name}"><div class="markhead">${marker.name}</div></c:if>
-                    <c:if test="${showFacilities and not empty marker.facilities}">
-                        <mercury:facility-icons
-                            wheelchairAccess="${marker.facilities.value.WheelchairAccess.toBoolean}"
-                            hearingImpaired="${marker.facilities.value.HearingImpaired.toBoolean}"
-                            lowVision="${marker.facilities.value.LowVision.toBoolean}"
-                            publicRestrooms="${marker.facilities.value.PublicRestrooms.toBoolean}"
-                            publicRestroomsAccessible="${marker.facilities.value.PublicRestroomsAccessible.toBoolean}"
-                        />
-                    </c:if>
-                    <c:if test="${not empty marker.addressMarkup}"><div class="marktxt">${marker.addressMarkup}</div></c:if>
-                    <c:if test="${showLink and not empty marker.link}">
-                        <mercury:link link="${marker.link}" noExternalMarker="${true}" css="marklink" text="${linkDefaultText}" />
-                    </c:if>
-                    <c:if test="${not empty marker.routeMarkup}">${marker.routeMarkup}</c:if>
-                </div><%----%>
-            </c:set>
 
             <%-- Generate the actual JSON --%>
             <cms:jsonobject>
                 <cms:jsonvalue key="lat" value="${marker.lat}" />
                 <cms:jsonvalue key="lng" value="${marker.lng}" />
                 <cms:jsonvalue key="geocode" value="${marker.geocode}" />
-                <cms:jsonvalue key="title" value="${marker.name}" />
                 <cms:jsonvalue key="group" value="${empty marker.group ? 'default' : marker.group}" />
                 <cms:jsonvalue key="info" value="${marker.infoMarkup}" />
             </cms:jsonobject>
@@ -176,6 +141,7 @@
 <cms:jsonobject var="mapData">
     <cms:jsonvalue key="zoom" value="${zoom}" />
     <cms:jsonvalue key="ratio" value="${ratio}" />
+    <cms:jsonvalue key="ratioLg" value="${ratioLg}" />
     <cms:jsonvalue key="geocoding" value="true" />
     <cms:jsonvalue key="centerLat" value="${centerLat}" />
     <cms:jsonvalue key="centerLng" value="${centerLng}" />
@@ -186,7 +152,7 @@
         <cms:jsonvalue key="markers" value="${markerList}" />
     </c:if>
     <c:if test="${isOsm}">
-        <c:set var="cssPath"><mercury:link-resource resource="/system/modules/alkacon.mercury.template/osmviewer/map.css" /></c:set>
+        <c:set var="cssPath"><m:link-resource resource="/system/modules/alkacon.mercury.template/osmviewer/map.css" /></c:set>
         <cms:jsonvalue key="css" value="${cssPath}" />
     </c:if>
     <cms:jsonvalue key="markerCluster" value="${empty markerCluster ? false : markerCluster}" />
@@ -196,14 +162,14 @@
 
 <c:if test="${not empty subelementWrapper}">
 ${'<'}div class="${subelementWrapper} type-map map-${provider}"${'>'}
-<mercury:nl />
+<m:nl />
 </c:if>
 
-<mercury:padding-box ratio="${ratio}">
+<m:padding-box ratio="${ratio}" ratioLg="${ratioLg}" test="${ratio ne 'no-ratio'}">
 
     ${'<'}div id="${id}" class="mapwindow placeholder${noApiKey ? ' error' : ''}" <%--
     --%>data-map='${mapData.compact}'<%--
-    --%><mercury:data-external-cookies message="${cookieMessage}" test="${not noApiKey}" /><%--
+    --%><m:data-external-cookies message="${cookieMessage}" test="${not noApiKey}" /><%--
     --%><c:if test="${cms.isEditMode and not disableEditModePlaceholder}">
             <fmt:setLocale value="${cms.workplaceLocale}" />
             <cms:bundle basename="alkacon.mercury.template.messages">
@@ -218,14 +184,14 @@ ${'<'}div class="${subelementWrapper} type-map map-${provider}"${'>'}
             </cms:bundle>
         </c:if>
     ${'>'}
-    <mercury:alert-online showJsWarning="${true}" addNoscriptTags="${true}" />
+    <m:alert-online showJsWarning="${true}" addNoscriptTags="${true}" />
     ${'</div>'}
 
-</mercury:padding-box>
+</m:padding-box>
 
 <c:if test="${not empty subelementWrapper}">
 ${'</div>'}
 </c:if>
 
-</mercury:content-properties>
+</m:content-properties>
 </cms:bundle>

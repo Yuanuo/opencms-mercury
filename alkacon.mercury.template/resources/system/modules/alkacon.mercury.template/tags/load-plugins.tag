@@ -15,7 +15,7 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <c:set var="type" value="${empty type ? group : type}" />
@@ -32,6 +32,10 @@
             </c:if>
         </c:if>
     </c:if>
+    <c:if test="${empty macroResolver and ((type eq 'css') or (type eq 'css-inline'))}">
+        <%-- Initialize a macro resolver for CSS media queries. --%>
+        <m:macro-resolver var="macroResolver" cms="${cms.vfs.cmsObject}" addBreakpoints="${true}" />
+    </c:if>
     <c:choose>
         <c:when test="${type eq 'jsp'}">
             <cms:include file="${plugin.path}" />
@@ -40,13 +44,27 @@
             <cms:include file="${plugin.path}" cacheable="false" />
         </c:when>
         <c:when test="${type eq 'css'}">
-            <link href="${plugin.link}${versionDate}" rel="stylesheet"><mercury:nl />
+            <c:set var="mediaQuery" value="${null}" />
+            <c:set var="mediaAttr" value="${plugin.attributes['media']}" />
+            <c:if test="${not empty mediaAttr}">
+                <c:set var="mediaQuery" value="media=\"(${macroResolver.resolveMacros(mediaAttr)})\" " />
+            </c:if>
+            <link rel="stylesheet" ${mediaQuery}href="${plugin.link}${versionDate}"><m:nl />
+            <c:set var="inlineAttr" value="${plugin.attributes['inline']}" />
+            <c:if test="${not empty inlineAttr}">
+                <m:print delimiter="">
+                    <style>${macroResolver.resolveMacros(inlineAttr)}</style>
+                </m:print>
+            </c:if>
+        </c:when>
+        <c:when test="${type eq 'css-inline'}">
+            <style>${cms.wrap[plugin.path].toResource.content}</style><m:nl />
         </c:when>
         <c:when test="${type eq 'js-defer'}">
-            <script defer src="${plugin.link}${versionDate}"></script><mercury:nl />
+            <script defer src="${plugin.link}${versionDate}"></script><m:nl />
         </c:when>
         <c:when test="${type eq 'js-async'}">
-            <script async src="${plugin.link}${versionDate}"></script><mercury:nl />
+            <script async src="${plugin.link}${versionDate}"></script><m:nl />
         </c:when>
         <c:when test="${type eq 'js-sync'}">
             <script src="${plugin.link}"></script><mercury:nl />

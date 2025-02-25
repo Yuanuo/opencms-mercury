@@ -1,0 +1,118 @@
+// This program is part of the OpenCms Mercury Template.
+//
+// Copyright (c) Alkacon Software GmbH & Co. KG (http://www.alkacon.com)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+/**********
+ * Source file: _opening-hours.scss
+ */
+
+$hours-spacing: $piece-gutter-x !default;
+
+.opening-hours {
+    --#{$prefix}hours-spacing: #{$hours-spacing};
+
+    .hours-table {
+        margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
+
+        .hours-hr {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
+        }
+
+        .hours-days {
+            font-weight: var(--my-font-weight-bold);
+        }
+    }
+}
+
+@include media-breakpoint-up(sm) {
+    .opening-hours {
+        .hours-table {
+            display: table;
+
+            .hours-time {
+                display: table-row;
+            }
+
+            .hours-label,
+            .hours-timerange {
+                display: table-cell;
+            }
+
+            .hours-timerange {
+                padding-right: var(--#{$prefix}hours-spacing);
+            }
+        }
+    }
+}
+
+@include media-breakpoint-up($piece-desktop-breakpoint) {
+
+    .hours-heading {
+        // this makes sure the opeing hours table will NOT float around a previous key visual image aligned left or right
+        @include clearfix-before;
+    }
+
+    .opening-hours {
+        .hours-table {
+            .hours-hr {
+                display: table-row;
+                margin-bottom: 0;
+            }
+
+            .hours-days,
+            .hours-openings {
+                display: table-cell;
+            }
+
+            .hours-times {
+                display: table;
+            }
+
+            .hours-days {
+                padding-right: var(--#{$prefix}hours-spacing);
+            }
+        }
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    // layout breakpoint for aside col is hardcoded in JSP
+    .area-narrow {
+        .opening-hours {
+            .hours-table {
+                .hours-hr {
+                    display: flex;
+                    margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
+                }
+
+                .hours-days,
+                .hours-openings,
+                .hours-label,
+                .hours-timerange,
+                .hours-times {
+                    display: block;
+                }
+
+                .hours-days,
+                .hours-timerange {
+                    padding-right: 0;
+                }
+            }
+        }
+    }
+}

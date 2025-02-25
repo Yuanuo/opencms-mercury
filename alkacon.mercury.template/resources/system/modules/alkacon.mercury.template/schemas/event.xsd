@@ -35,7 +35,7 @@
             <xsd:element name="LocationNote" type="OpenCmsHtml" minOccurs="0" />
             <xsd:element name="Booking" type="OpenCmsBooking" minOccurs="0" />
             <xsd:element name="Costs" type="OpenCmsCosts" minOccurs="0" maxOccurs="10" />
-            <xsd:element name="Note" type="OpenCmsNote" minOccurs="0" maxOccurs="20" />
+            <xsd:element name="Note" type="OpenCmsNote" minOccurs="0" />
             <xsd:element name="TeaserData" type="OpenCmsTeaserData" minOccurs="0" />
             <xsd:element name="MetaInfo" type="OpenCmsDetailMetaInfo" minOccurs="0" />
             <xsd:element name="Category" type="OpenCmsDynamicCategory" />
@@ -66,6 +66,9 @@
                 <mapping element="Availability/Release" mapto="attribute:datereleased" />
                 <mapping element="Availability/Expiration" mapto="attribute:dateexpired" />
             </mappings>
+            <geomapping>
+                <link>AddressChoice/PoiLink</link>
+            </geomapping>
             <searchsettings containerPageOnly="false">
                 <searchsetting element="Type">
                     <solrfield targetfield="event-type" sourcefield="*_s" />
@@ -123,6 +126,7 @@
                     <PropertyName>Intro</PropertyName>
                     <Description><![CDATA[%(key.label.Intro.help)]]></Description>
                     <Widget>string</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>Title</PropertyName>
@@ -130,6 +134,7 @@
                     <Description><![CDATA[%(key.label.Title.help)]]></Description>
                     <Widget>string</Widget>
                     <Default><![CDATA[%(key.type.m-event.title)]]></Default>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                     <RuleRegex>.+</RuleRegex>
                     <RuleType>error</RuleType>
                     <Error><![CDATA[%(key.msg.error.notempty)]]></Error>
@@ -160,7 +165,7 @@
                     <DisplayName><![CDATA[%(key.label.Preface)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Preface.help)]]></Description>
                     <Widget>textarea</Widget>
-                    <WidgetConfig>3|proportional</WidgetConfig>
+                    <WidgetConfig>3|proportional|%(attribute:stringConfigTypo)</WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>Image</PropertyName>
@@ -184,7 +189,7 @@
                 </Setting>
                 <Setting>
                     <PropertyName>AddressChoice/Address/Coord</PropertyName>
-                    <Visibility>hidden</Visibility>
+                    <Search>listgeocoords</Search>
                 </Setting>
                 <Setting>
                     <PropertyName>VirtualLocation</PropertyName>
@@ -233,7 +238,7 @@
                 <Setting>
                     <PropertyName>Order</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Order)]]></DisplayName>
-                    <Description><![CDATA[%(key.label.Order.help)]]></Description>
+                    <Description><![CDATA[%(key.label.Order.help)%(key.label.NotShownOnPage.help)]]></Description>
                     <Widget>string</Widget>
                     <RuleRegex>^[-+]?\d+$</RuleRegex>
                     <RuleType>error</RuleType>

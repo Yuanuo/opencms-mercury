@@ -27,12 +27,13 @@
                     <DisplayName><![CDATA[%(key.label.NestedLink.Text)]]></DisplayName>
                     <Description><![CDATA[%(key.label.NestedLink.Text.help)]]></Description>
                     <Widget>string</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                     <Display>singleline</Display>
                 </Setting>
                 <Setting>
                     <PropertyName>URI</PropertyName>
                     <DisplayName><![CDATA[%(key.label.NestedLink.URI)]]></DisplayName>
-                    <Description><![CDATA[%(key.label.NestedLink.URI.help)]]></Description>
+                    <Description><![CDATA[%(key.label.NestedLink.URI.help)%(key.label.Link.External.help)]]></Description>
                     <Widget>file</Widget>
                     <IfInvalidRelation>removeParent</IfInvalidRelation>
                     <Search>false</Search>

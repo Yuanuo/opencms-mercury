@@ -11,8 +11,11 @@
     description="Attribute(s) to add on the generated div." %>
 
 <%@ attribute name="ratio" type="java.lang.String" required="false"
-    description="Can be used to scale the box in a specific ratio,
-    Example values: '1-1', '4-3', '3-2', '16-9', '2-1' and '2.35-1'" %>
+    description="Can be used to generate the padding box in a specific ratio.
+    Example values are: '1-1', '4-3', '3-2', '16-9', '2-1', '2,35-1' or 3-1." %>
+
+<%@ attribute name="ratioLg" type="java.lang.String" required="false"
+    description="Image ratio for large screens." %>
 
 <%@ attribute name="defaultRatio" type="java.lang.String" required="false"
     description="Alternative default ratio to use" %>
@@ -36,7 +39,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 <c:choose>
 <c:when test="${empty test or test}">
@@ -52,9 +55,31 @@
                 <c:set var="height" value="${cms:mathRound(cms:toNumber(fn:substringAfter(ratio, '-'), 9))}" />
             </c:if>
 
+            <c:set var="useDesktopRatio" value="${(not empty ratioLg) and (ratioLg ne 'none') and (ratioLg ne 'desk')}" />
+            <c:if test="${useDesktopRatio}">
+                <c:set var="widthLg" value="${cms:mathRound(cms:toNumber(fn:substringBefore(ratioLg, '-'), 16))}" />
+                <c:set var="heightLg" value="${cms:mathRound(cms:toNumber(fn:substringAfter(ratioLg, '-'), 9))}" />
+                <c:set var="useDesktopRatio" value="${(width ne widthLg) or (height ne heightLg)}" />
+            </c:if>
+
             <c:if test="${not empty width and not empty height}">
-                <c:set var="cssWrapper">${cssWrapper} presized</c:set>
-                <c:set var="paddingStyle">style="padding-bottom: ${cms:mathCeil((height / width) * 100000) / 1000}%;"</c:set>
+                <c:choose>
+                    <c:when test="${useDesktopRatio}">
+                        <c:set var="cssWrapper">${cssWrapper} presized presized-vars</c:set>
+                        <c:set var="styleAttr">
+                            <m:print script="${true}">
+                                style="
+                                --my-presized-padding: ${cms:mathCeil((height / width) * 100000) / 1000}%;
+                                --my-presized-padding-lg: ${cms:mathCeil((heightLg / widthLg) * 100000) / 1000}%;
+                                "
+                            </m:print>
+                         </c:set>
+                    </c:when>
+                    <c:otherwise>
+                        <c:set var="cssWrapper">${cssWrapper} presized</c:set>
+                        <c:set var="styleAttr">style="padding-bottom: ${cms:mathCeil((height / width) * 100000) / 1000}%;"</c:set>
+                    </c:otherwise>
+                </c:choose>
             </c:if>
         </c:when>
         <c:when test="${heightPercentage eq '0'}">
@@ -62,18 +87,17 @@
         </c:when>
         <c:otherwise>
             <c:set var="cssWrapper">${cssWrapper} presized</c:set>
-            <c:set var="paddingStyle">style="padding-bottom: ${heightPercentage};"</c:set>
+            <c:set var="styleAttr">style="padding-bottom: ${heightPercentage};"</c:set>
         </c:otherwise>
     </c:choose>
 
-    <div class="${cssWrapper}" ${paddingStyle}${' '}${attrWrapper}><%----%>
+    <div class="${cssWrapper}" ${styleAttr}${' '}${attrWrapper}><%----%>
     <c:if test="${not empty body}">
-        <mercury:nl />
+        <m:nl />
         ${body}
-        <mercury:nl />
+        <m:nl />
     </c:if>
     </div><%----%>
-    <mercury:nl />
 
 </c:when>
 <c:otherwise>

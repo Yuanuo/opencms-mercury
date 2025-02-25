@@ -37,6 +37,12 @@ var m_mapData = [];
 // API key for accessing the map data
 var m_apiKey;
 
+// Max Zoom to use
+const m_maxZoom = 18;
+const m_clusterMaxZoom = 15;
+const m_clusterRadius = 23;
+const m_clusterCircleRadius = 24;
+
 function getPuempel(color) {
 
   var strokeColor = tinycolor(color).darken(20);
@@ -61,7 +67,7 @@ function getClusterGraphic() {
     const strokeColor = tinycolor(color).darken(20);
     return {
         'circle-color': color,
-        'circle-radius': 20,
+        'circle-radius': m_clusterCircleRadius,
         'circle-stroke-width': 2,
         'circle-stroke-color': strokeColor.toString()
     }
@@ -101,7 +107,7 @@ function showSingleMap(mapData) {
             center: [parseFloat(mapData.centerLng), parseFloat(mapData.centerLat)],
             zoom: mapData.zoom,
             interactive: false,
-            maxZoom: 18,
+            maxZoom: m_maxZoom,
             attributionControl: false
         });
         const attributionControl = new mapgl.AttributionControl({compact:true});
@@ -173,7 +179,7 @@ function showSingleMapClustered(mapData, filterByGroup) {
         map = new mapgl.Map({
             container: mapData.id,
             style: m_style,
-            maxZoom: 18,
+            maxZoom: m_maxZoom,
             attributionControl: false
         });
         const attributionControl = new mapgl.AttributionControl({compact:true});
@@ -260,10 +266,11 @@ function showSingleMapClustered(mapData, filterByGroup) {
                         type: 'geojson',
                         data: map.geojson,
                         cluster: true,
-                        clusterMaxZoom: 15,
-                        clusterRadius: 25
+                        clusterMaxZoom: m_clusterMaxZoom,
+                        clusterRadius: m_clusterRadius
                     });
                 }
+
                 if (!map.getLayer("clusters")) {
                     map.addLayer({
                         id: "clusters",
@@ -290,21 +297,7 @@ function showSingleMapClustered(mapData, filterByGroup) {
                         });
                     });
                 }
-                if (!map.getLayer("cluster-count")) {
-                    map.addLayer({
-                        id: "cluster-count",
-                        type: "symbol",
-                        source: "localFeatures",
-                        filter: ["has", "point_count"],
-                        layout: {
-                            "text-field": "{point_count_abbreviated}",
-                            "text-size": 14
-                        },
-                        paint: {
-                            "text-color": getClusterGraphicTextColor().toString(),
-                        }
-                    });
-                }
+
                 for (let group in groups) {
                     if (!map.getLayer("unclustered-point-" + group)) {
                         map.addLayer({
@@ -313,10 +306,11 @@ function showSingleMapClustered(mapData, filterByGroup) {
                             source: "localFeatures",
                             filter: ["==", "group", group],
                             layout: {
+                                "icon-allow-overlap": true,
                                 "icon-image": "featureGraphic" + group,
                                 "icon-anchor": "bottom"
                             }
-                        });
+                        }, "clusters");
                         map.on("click", "unclustered-point-" + group, function (e) {
                             const coordinates = e.features[0].geometry.coordinates.slice();
                             const info = e.features[0].properties.info;
@@ -337,6 +331,24 @@ function showSingleMapClustered(mapData, filterByGroup) {
                         });
                     }
                 }
+
+                if (!map.getLayer("cluster-count")) {
+                    map.addLayer({
+                        id: "cluster-count",
+                        type: "symbol",
+                        source: "localFeatures",
+                        filter: ["has", "point_count"],
+                        layout: {
+                            "icon-allow-overlap": false,
+                            "text-field": "{point_count_abbreviated}",
+                            "text-size": 14
+                        },
+                        paint: {
+                            "text-color": getClusterGraphicTextColor().toString(),
+                        }
+                    });
+                }
+
                 if (!fitted && map.geojson.features && map.geojson.features.length > 0) {
                     map.fitBounds(bounds, {
                         padding: {top: 100, bottom: 100, left: 100, right: 100},
@@ -459,13 +471,21 @@ export function showMarkers(mapId, group){
     }
 }
 
-export function showGeoJson(mapId, geoJson, ajaxUrlMarkersInfo) {
+export function showGeoJson(mapId, geoJson, ajaxUrlMarkersInfo, count) {
 
-    if (DEBUG) console.info("OSM update markers for map with id: " + mapId);
+    count = count || 0;
+    if (DEBUG && (count == 0)) console.info("OsmMap.showGeoJson() update markers for map id: " + mapId);
     const map = m_maps[mapId];
-    if (!map) { // no cookie consent yet
+    if (!map || !map.isStyleLoaded()) {
+        if (DEBUG) console.info("OsmMap.showGeoJson() waiting (" + count + ") for map id: " + mapId);
+        if (count <= 10) {
+            setTimeout(function() {
+                showGeoJson(mapId, geoJson, ajaxUrlMarkersInfo, ++count);
+            }, 200);
+        }
         return;
     }
+    if (DEBUG && (count > 0)) console.info("OsmMap.showGeoJson() styles loaded, proceeding with map id: " + mapId);
     if (!map.hasImage("featureGraphic")) {
         const featureGraphic = getFeatureGraphic(mapId);
         featureGraphic.addEventListener("load", function() {
@@ -476,8 +496,8 @@ export function showGeoJson(mapId, geoJson, ajaxUrlMarkersInfo) {
         type: "geojson",
         data: geoJson,
         cluster: true,
-        clusterMaxZoom: 12,
-        clusterRadius: 25
+        clusterMaxZoom: m_clusterMaxZoom,
+        clusterRadius: m_clusterRadius
     });
     let centerPoint;
     for (let md of m_mapData) {
@@ -508,6 +528,7 @@ export function showGeoJson(mapId, geoJson, ajaxUrlMarkersInfo) {
         source: "features",
         filter: ["has", "point_count"],
         layout: {
+            "icon-allow-overlap": false,
             "text-field": "{point_count_abbreviated}",
             "text-size": 14
         },
@@ -521,6 +542,7 @@ export function showGeoJson(mapId, geoJson, ajaxUrlMarkersInfo) {
         source: "features",
         filter: ["!", ["has", "point_count"]],
         layout: {
+            "icon-allow-overlap": true,
             "icon-image": "featureGraphic",
             "icon-anchor": "bottom"
         }
@@ -638,7 +660,7 @@ export function init(jQuery, debug) {
                         }
                         mapData.id = $mapElement.attr("id");
                         mapData.showPlaceholder = Mercury.initPlaceholder($mapElement, showMap);
-                        if (DEBUG) console.info("OSM map found with id: " + mapData.id);
+                        if (DEBUG) console.info("OsmMap.init() map found with id: " + mapData.id);
                         m_mapData.push(mapData);
                         if (!mapData.showPlaceholder) {
                             $mapElement.removeClass('placeholder');

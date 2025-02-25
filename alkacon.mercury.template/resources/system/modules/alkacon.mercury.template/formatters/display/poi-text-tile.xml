@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<NewFormatters xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="opencms://system/modules/org.opencms.ade.config/schemas/formatters/new_formatter.xsd">
+  <NewFormatter language="en">
+    <NiceName><![CDATA[%(key.type.m-poi.formatter.teaser.text-tile)]]></NiceName>
+    <Type><![CDATA[m-poi]]></Type>
+    <Key><![CDATA[m/display/poi-text-tile]]></Key>
+    <Jsp>
+      <link type="WEAK">
+        <target><![CDATA[/system/modules/alkacon.mercury.template/formatters/display/poi.jsp]]></target>
+        <uuid>b53b55f1-a23e-11ed-b729-0242ac11002b</uuid>
+      </link>
+    </Jsp>
+    <Description><![CDATA[%(key.type.m-poi.description.formatter) %(key.type.general.description.teaser.text-tile) %(key.type.general.description.teaser.list-only)]]></Description>
+    <Rank><![CDATA[18000]]></Rank>
+    <Match>
+      <Types>
+        <ContainerType><![CDATA[tile]]></ContainerType>
+        <ContainerType><![CDATA[text-tile]]></ContainerType>
+        <ContainerType><![CDATA[poi]]></ContainerType>
+      </Types>
+    </Match>
+    <Display><![CDATA[teaser-text-tile]]></Display>
+    <AutoEnabled>false</AutoEnabled>
+    <SearchContent>true</SearchContent>
+    <StrictContainers>true</StrictContainers>
+    <IncludeSettings>
+      <link type="WEAK">
+        <target><![CDATA[/system/modules/alkacon.mercury.template/configuration/shared-settings.xml]]></target>
+        <uuid>77009936-87a5-42b3-86ff-90252ede0593</uuid>
+      </link>
+    </IncludeSettings>
+    <Setting>
+      <IncludeName><![CDATA[cssWrapper.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[listDisplay.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[textLength.tile]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[listEntryWrapper.tile]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[listWrapper.tile]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[hsize.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[dateFormat.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[cssWrapper2.tile]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[titleOption.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[visualOption.tile]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.sizeMobile.textTile]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[imageRatio.sizeDesktop.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[effect.tile]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[linkOption.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[detailLinkWin.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[buttonText.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[showImageCopyright.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[listEntryMinHeight.0]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[requiredCssWrapper.textTile]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[poiDisplayOption.listTeaser]]></IncludeName>
+    </Setting>
+  </NewFormatter>
+</NewFormatters>

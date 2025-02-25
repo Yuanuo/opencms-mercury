@@ -15,10 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+@include mercuryBanner(true);
+
 // Boostrap class prefix
-
 $prefix:                            'my-' !default; // prefix for the generated CSS variables
-
 $divide-precision:                  6 !default; // default precision for the Bs5 divide operation
 
 // Features - disable what is not needed to keep the generated CSS small
@@ -208,13 +208,14 @@ $font-weight-intro-headings:        get-font-weight($font-family-headings, $font
 $font-style-headings:               normal !default;
 $font-style-headings:               get-font-style($font-family-headings, $font-weight-headings, $font-style-headings);
 
+$font-replace-fa-twitter-icon:      true !default;
 
 // Font REM bases
 
 $font-rem-base-print-size:          8px !default;
 $font-rem-base-desktop-size:        10px !default;
 $font-rem-base-mobile-size:         12px !default;
-
+$font-rem-base-breakpoint:          lg !default;
 
 // Fonts used in the navigation
 
@@ -821,24 +822,24 @@ $policy-banner-save-hover-color:    $policy-banner-accept-hover-color !default;
 $policy-banner-button-min-width:    100px !default;
 $policy-banner-opacity:             0.95 !default;
 
-$togglebox-height:                  40px !default;
-$togglebox-width:                   200px !default;
+$togglebox-height:                  4rem !default;
+$togglebox-width:                   20rem !default;
 $togglebox-border-color:            $text-dark !default;
-$togglebox-border-size:             1px !default;
-$togglebox-slider-margin:           2px !default;
+$togglebox-border-size:             0.1rem !default;
+$togglebox-slider-margin:           0.2rem !default;
 $togglebox-disabled-color:          $disabled-color !default;
 $togglebox-slider-color:            $grey-light !default;
 
 $cookie-notice-bg-color:            var(--#{$prefix}highlight-color) !default;
 $cookie-notice-color:               var(--#{$prefix}highlight-fg-color) !default;
 $cookie-notice-alt-color:           $cookie-notice-color !default;
-$cookie-notice-font-size-mobile:    14px !default;
+$cookie-notice-font-size-mobile:    1.2rem !default;
 $cookie-notice-font-size-desktop:   $font-size-base !default;
 $cookie-notice-large-font-size:     125% !default;
 $cookie-notice-small-font-size:     85% !default;
-$cookie-notice-tiny-font-size:      12px !default;
-$cookie-notice-togglebox-width:     150px !default;
-$cookie-notice-togglebox-height:    20px !default;
+$cookie-notice-tiny-font-size:      1.2rem !default;
+$cookie-notice-togglebox-width:     15rem !default;
+$cookie-notice-togglebox-height:    2rem !default;
 
 $placeholder-bg-color:              var(--#{$prefix}highlight-color) !default;
 $placeholder-border-color:          var(--#{$prefix}highlight-border-color) !default;
@@ -847,21 +848,22 @@ $placeholder-border-color:          var(--#{$prefix}highlight-border-color) !def
 // POI accessible icons
 
 $acc-icon-size:                     3.5rem !default;
-
+$acc-font-size:                     $h3-font-size !default;
 
 // OSM maps / Google maps
 
 $map-border-radius:                 var(--#{$prefix}border-radius) !default;
-$map-text-size:                     1.4rem !default;
-$map-header-size:                   1.8rem !default;
+$map-text-size:                     14px !default; // the map marker css should not use rem, because on mobile devices the markers get to large otherwise
+$map-header-size:                   18px !default;
 $map-label-color:                   $main-theme !default;
 $map-center-color:                  $main-theme !default;
 $map-cluster-color:                 $main-theme-hover !default;
 $map-hide-buttons-if-not-visible:   false !default;
 $map-popup-color:                   $text-dark !default;
 $map-popup-bg:                      $white !default;
-$map-marker-margin:                 var(--#{$prefix}default-margin-verysmall) !default;
-
+$map-link-font-weight:              var(--#{$prefix}font-weight-bold) !default;
+$map-marker-padding:                5px !default; // map markers should NOT depend on default margins and not use rem
+$map-marker-spacer-y:               $map-marker-padding !default;
 
 // Map colors (for marker groups)
 
@@ -934,7 +936,7 @@ $sitemap-border-radius:             var(--#{$prefix}border-radius) !default;
 
 $color-facebook:                    #4267b2 !default;
 $color-youtube:                     #ff0000 !default;
-$color-twitter:                     #00acee !default;
+$color-x:                           #000000 !default;
 $color-github:                      #777777 !default;
 $color-xing:                        #026466 !default;
 $color-rss:                         #ee802f !default;
@@ -950,7 +952,7 @@ $color-slideshare:                  #e98325 !default;
 
 $color-pbg-default:                 $black !default;
 $color-pbg-facebook:                $color-facebook !default;
-$color-pbg-twitter:                 $color-twitter !default;
+$color-pbg-twitter:                 $color-x !default;
 
 
 // Social links / Shariff
@@ -979,7 +981,7 @@ $row-paddings: (
 $social-links:
     (facebook, $color-facebook),
     (youtube, $color-youtube),
-    (twitter, $color-twitter),
+    (twitter, $color-x),
     (github, $color-github),
     (xing, $color-xing),
     (rss, $color-rss),

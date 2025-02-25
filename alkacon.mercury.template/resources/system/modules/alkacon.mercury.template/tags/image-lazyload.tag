@@ -25,8 +25,13 @@
     Required for box size calculation." %>
 
 <%@ attribute name="lazyLoad" type="java.lang.Boolean" required="false"
-    description="Use lazy loading or not?
-    Default is 'true'." %>
+    description="Use lazy loading or not? Default is 'true'."%>
+
+<%@ attribute name="lazyLoadJs" type="java.lang.Boolean" required="false"
+    description="false (default): lazy loading using native browser support. true: lazy loading with JavaScript."%>
+
+<%@ attribute name="addPaddingBox" type="java.lang.Boolean" required="false"
+    description="Add a padding box (div with class 'presized') around the image? If 'true' the box will be added when needed. If 'false' no box will be added. Default is 'true'."%>
 
 <%@ attribute name="noScript" type="java.lang.Boolean" required="false"
     description="Generate noscript tags for lazy loading images or not?
@@ -57,22 +62,31 @@
 <%@ attribute name="zoomData" type="java.lang.String" required="false"
     description="Zoom data attribute added directly to the generated image tag." %>
 
+<%@ attribute name="debug" type="java.lang.Boolean" required="false"
+    description="Enables debug output. Default is 'false' if not provided." %>
+
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <c:set var="useNoScript" value="${empty noScript ? true : noScript}" />
+<c:set var="useJsLazyLoading" value="${false or lazyLoadJs}" />
 <c:set var="useLazyLoading" value="${empty lazyLoad ? true : lazyLoad}" />
 <c:set var="useSrcSet" value="${not empty srcSet}" />
+<c:set var="hasWidthHeight" value="${(width gt 0) and (height gt 0)}" />
+<c:set var="alt">${fn:replace(alt, '"', '\'')}</c:set>
+<c:set var="title">${fn:replace(title, '"', '\'')}</c:set>
+<c:set var="DEBUG" value="${false or debug}" />
+
 <c:set var="emptyImg" value="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
 
-<%-- ###### Set img tag options depending on use case ###### --%>
+<%-- Set img tag options depending on use case --%>
 <c:choose>
-    <c:when test="${useSrcSet and useLazyLoading}">
+    <c:when test="${useSrcSet and useJsLazyLoading}">
         <c:set var="attributes"><%--
         --%>src="${srcUrl}" <%-- Note: src Required for IE 10, because of no srcset support in IE 10.
         --%>srcset="${emptyImg}" <%--
@@ -80,44 +94,64 @@
         --%>data-srcset="${srcSet}"</c:set>
         <c:set var="cssImageLazy" value="lazyload" />
     </c:when>
-    <c:when test="${not useSrcSet and useLazyLoading}">
+    <c:when test="${not useSrcSet and useJsLazyLoading}">
         <c:set var="attributes"><%--
         --%>src="${emptyImg}" <%--
         --%>data-src="${srcUrl}"</c:set>
         <c:set var="cssImageLazy" value="lazyload" />
     </c:when>
-    <c:when test="${useSrcSet}">
+    <c:when test="${useSrcSet and not empty srcSetSizes}">
         <c:set var="attributes"><%--
-        --%>src="${srcUrl}" <%--
+        --%>src="${srcUrl}"<%--
+        --%>${useLazyLoading ? ' loading=\"lazy\"' : ''} <%--
         --%>sizes="${srcSetSizes}" <%--
         --%>srcset="${srcSet}"</c:set>
         <c:set var="useNoScript" value="${false}" />
     </c:when>
     <c:otherwise>
-        <c:set var="attributes">src="${srcUrl}"</c:set>
+        <c:set var="attributes"><%--
+        --%>src="${srcUrl}"<%--
+        --%>${useLazyLoading ? ' loading=\"lazy\"' : ''}</c:set>
         <c:set var="useNoScript" value="${false}" />
     </c:otherwise>
 </c:choose>
 
+<m:print comment="${true}" test="${DEBUG}">
+    image-lazyload:
+
+    useLazyLoading: ${useLazyLoading}
+    useJsLazyLoading: ${useJsLazyLoading}
+    useSrcSet: ${useSrcSet}
+    srcSetSizes: ${srcSetSizes}
+    empty srcSetSizes: ${empty srcSetSizes}
+    useNoScript: ${useNoScript}
+</m:print>
+
 <c:if test="${useNoScript}">
-    <%-- ###### Two image tags will be generated in case <noscript> is used, hide the first one with CSS ###### --%>
+    <%-- Two image tags will be generated in case <noscript> is used, hide the first one with CSS --%>
     <c:set var="cssImageLazy" value="${cssImageLazy} hide-noscript" />
 </c:if>
 
-<mercury:nl />
-<mercury:padding-box
-    cssWrapper="image-src-box${empty cssWrapper ? '' : ' '.concat(cssWrapper)}"
+<c:if test="${(addPaddingBox eq false) and hasWidthHeight}">
+    <c:set var="styleAttr">style="aspect-ratio: ${width} / ${height};"</c:set>
+    <c:set var="attrImage" value="${empty attrImage ? styleAttr : attrImage.concat(' ').concat(styleAttr)}" />
+</c:if>
+
+<m:nl />
+<m:padding-box
+    cssWrapper="${empty cssWrapper ? '' : cssWrapper.concat(' ')}image-src-box"
     attrWrapper="${attrWrapper}"
     heightPercentage="${heightPercentage}"
     width="${width}"
-    height="${height}">
+    height="${height}"
+    test="${addPaddingBox}">
 
     <img ${attributes}<%----%>
         <c:if test="${not empty width}">${' '}width="${width}"</c:if>
         <c:if test="${not empty height}">${' '}height="${height}"</c:if>
         <c:if test="${not empty cssImage or not empty cssImageLazy}">${' '}class="${cssImage}${empty cssImage or empty cssImageLazy ? '' : ' '}${cssImageLazy}"</c:if>
-        <c:if test="${true}">${' '}alt="${alt}"</c:if><%-- Always provide an alt, even if it's empty --%>
-        <c:if test="${not empty title and (title ne alt)}">${' '}title="${title}"</c:if>
+        <c:if test="${true}">${' '}alt="<m:out value="${alt}" lenientEscaping="${true}" />"</c:if><%-- Always provide an alt, even if it's empty --%>
+        <c:if test="${not empty title and (title ne alt)}">${' '}title="<m:out value="${title}" lenientEscaping="${true}" />"</c:if>
         <c:if test="${not empty attrImage}">${' '}${attrImage}</c:if>
         <c:if test="${not empty zoomData}">
             <fmt:setLocale value="${cms.locale}" />
@@ -131,21 +165,21 @@
 --%>><%----%>
 
     <c:if test="${useNoScript}">
-        <mercury:nl />
+        <m:nl />
         <noscript><%----%>
             <img src=${'\"'}${srcUrl}${'\"'}<%----%>
                 <c:if test="${not empty width}">${' '}width="${width}"</c:if>
                 <c:if test="${not empty height}">${' '}height="${height}"</c:if>
                 <c:if test="${not empty cssImage}">${' '}class="${cssImage}"</c:if>
-                <c:if test="${true}">${' '}alt="${alt}"</c:if><%--
+                <c:if test="${true}">${' '}alt="<m:out value="${alt}" lenientEscaping="${true}" />"</c:if><%--
         --%>><%----%>
         </noscript><%----%>
     </c:if>
 
     <c:if test="${not empty copyright}">
-        <div class="copyright image-copyright" aria-hidden="true"><%----%>
-            ${copyright}
-        </div><%----%>
+        <div class="copyright image-copyright" aria-hidden="true">
+            <m:out value="${copyright}" lenientEscaping="${true}" />
+        </div>
     </c:if>
 
-</mercury:padding-box>
+</m:padding-box>

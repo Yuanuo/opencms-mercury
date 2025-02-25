@@ -28,6 +28,9 @@
 
     <xsd:annotation>
         <xsd:appinfo>
+            <resourcebundles>
+                <propertybundle name="alkacon.mercury.template.messages" />
+            </resourcebundles>
             <FieldSettings>
                 <Setting>
                     <PropertyName>Webform</PropertyName>
@@ -48,20 +51,24 @@
                     <DisplayName><![CDATA[%(key.label.Booking.MailFrom)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Booking.MailFrom.help)]]></Description>
                     <Widget>string</Widget>
+                    <RuleRegex><![CDATA[(([A-Za-z0-9._%+-]+)@([A-Za-z0-9.-])+(\.[A-Za-z]{2,}))|(^ *$)]]></RuleRegex>
+                    <RuleType>warning</RuleType>
+                    <Error><![CDATA[%(key.msg.error.mail.invalid)]]></Error>
                     <Search>false</Search>
                 </Setting>
                 <Setting>
                     <PropertyName>MailFromName</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Booking.MailFromName)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Booking.MailFromName.help)]]></Description>
-                    <Widget>string</Widget>
-                    <Search>false</Search>
                 </Setting>
                 <Setting>
                     <PropertyName>MailTo</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Booking.MailTo)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Booking.MailTo.help)]]></Description>
                     <Widget>string</Widget>
+                    <RuleRegex><![CDATA[(([A-Za-z0-9._%+-]+)@([A-Za-z0-9.-])+(\.[A-Za-z]{2,}))|(^ *$)]]></RuleRegex>
+                    <RuleType>warning</RuleType>
+                    <Error><![CDATA[%(key.msg.error.mail.invalid)]]></Error>
                     <Search>false</Search>
                 </Setting>
                 <Setting>
@@ -87,11 +94,14 @@
                     <DisplayName>%(key.label.Booking.FinalRegistrationDate)</DisplayName>
                     <Widget>datetime</Widget>
                     <WidgetConfig>{fixedTime: "23:59"}</WidgetConfig>
+                    <Error><![CDATA[%(key.msg.error.dateformat.notime)]]></Error>
+                    <Search>false</Search>
                 </Setting>
                 <Setting>
                     <PropertyName>KeepDays</PropertyName>
                     <DisplayName>%(key.label.form.WebFormDatabaseConfiguration.KeepDays)</DisplayName>
                     <Description>%(key.label.form.WebFormDatabaseConfiguration.KeepDays.help)</Description>
+                    <Search>false</Search>
                 </Setting>
             </FieldSettings>
         </xsd:appinfo>

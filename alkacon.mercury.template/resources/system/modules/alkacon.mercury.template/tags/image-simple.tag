@@ -13,7 +13,7 @@
     description="Text used in the image 'alt' and 'title' attributes."%>
 
 <%@ attribute name="externalCopyright" type="java.lang.Boolean" required="false"
-    description="If 'true' the copyright information of the image does not need to be included becasue it will be provided in the external markup around the image.
+    description="If 'true' the copyright information of the image does not need to be included because it will be provided in the external markup around the image.
     If 'false' the copyright information will be appended to the 'title' attribute.
     Default is 'false' if not provided." %>
 
@@ -22,7 +22,7 @@
     Allowed valued are: '1-1', '4-3', '3-2', '16-9', '2-1' and '2,35-1'" %>
 
 <%@ attribute name="lazyLoad" type="java.lang.Boolean" required="false"
-    description="Use lazy loading or not?"%>
+    description="Use lazy loading or not? Default is 'true'."%>
 
 <%@ attribute name="noScript" type="java.lang.Boolean" required="false"
     description="Generate noscript tags for lazy loading images?"%>
@@ -41,7 +41,7 @@
     Default is 'false' if not provided." %>
 
 
-<%-- ####### These variables are actually set in the mercury:image-vars tag included ####### --%>
+<%-- ####### These variables are actually set in the m:image-vars tag included ####### --%>
 <%@ variable name-given="imageBean" declare="true" variable-class="org.opencms.jsp.util.CmsJspImageBean" %>
 <%@ variable name-given="imageLink" declare="true" %>
 <%@ variable name-given="imageUnscaledLink" declare="true" %>
@@ -58,10 +58,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
-<mercury:image-vars
+<m:image-vars
     image="${image}"
     ratio="${ratio}"
     title="${title}"
@@ -69,7 +69,7 @@
 
 <c:if test="${not empty imageBean}">
 
-    <mercury:image-srcset
+    <m:image-srcset
         imagebean="${imageBean}"
         alt="${empty imageDescription ? imageTitle : imageDescription}"
         sizes="${sizes}"
@@ -87,4 +87,4 @@
 <jsp:doBody/>
 <%-- ####### /JSP body inserted here ######## --%>
 
-</mercury:image-vars>
+</m:image-vars>

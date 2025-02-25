@@ -152,6 +152,7 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
     &.pac {
         // (p)iece (a)lign (c)entered
         .heading > .piece-heading,
+        > .heading + .link,
         > .visual > .subtitle,
         > .body + .link,
         > .body .link,
@@ -164,6 +165,7 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
         // (p)iece (a)lign (r)ight
         .heading > .piece-heading,
         .heading > .piece-heading-link,
+        > .heading + .link,
         > .visual > .subtitle,
         > .body + .link,
         > .body .link,
@@ -191,6 +193,11 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
             &:hover {
                 text-decoration: none;
             }
+        }
+        + .link {
+            // link may be a sibling to the heading
+            // add margin between body / text and link
+            margin-top: var(--#{$prefix}text-to-link-margin);
         }
         &:last-child {
             // if the heading is the last child of the piece, don't add the bottom margin
@@ -230,24 +237,23 @@ $piece-cols:   (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) !default; // supported column
         }
     }
 
-    // special adjustments for type-section content pieces that re not "boxed"
-    // NOTE: This is NOT done for 'paragraph' because contents with multiple paragraphs are not used like sections to create text pages
+    // special adjustments for type-section content pieces bottom margins
     &.element.type-section:not(.box) {
-        // margin adjustments
         &.only-heading {
             // if piece element has only a header, set margin the same height as normally used by the headers
             margin-bottom: var(--#{$prefix}headings-margin-bottom);
         }
-
+        // note .only-heading and .only-text will always be '.full' never '.flex'
         &.only-text,
-        &.phb:not(.pnm) {
-
-            // if a piece element that starts with text follows a text-only piece element, reduce top margin
+        &.phb:not(.pvl):not(.flex) {
+            // if a piece element is followed by a piece element that has no heading, reduce bottom margin
             // goal: make text from 2nd element apperar as if it belongs to first element
-            +.piece.element.type-section:not(.box) {
-                &.only-text,
-                &.pnh {
-                    margin-top: calc(var(--#{$prefix}piece-paragraph-margin-bottom) - var(--#{$prefix}element-margin));
+            &:has( + .piece.element.type-section.only-text:not(.box)),
+            &:has( + .piece.element.type-section.pnh:not(.box):not(.flex)) {
+                margin-bottom: var(--#{$prefix}piece-paragraph-margin-bottom);
+                // in case the piece has a link, the use text-to-link-margin instead of paragraph margin
+                &.phl {
+                    margin-bottom: var(--#{$prefix}text-to-link-margin);
                 }
             }
         }
@@ -332,6 +338,7 @@ html.keyboard-nav .piece {
 @include media-breakpoint-up($piece-desktop-breakpoint) {
 
     .piece {
+        --#{$prefix}piece-body-size: calc(var(--#{$prefix}piece-width) - var(--#{$prefix}piece-visual-size) - 1px);
 
         &.full.only-visual,
         &.phv {
@@ -433,7 +440,6 @@ html.keyboard-nav .piece {
                 --#{$prefix}piece-visual-size: #{get-col-size-var($piece-col-size, 'visual')};
             }
         }
-        --#{$prefix}piece-body-size: calc(var(--#{$prefix}piece-width) - var(--#{$prefix}piece-visual-size) - 1px);
 
         &.p-md-0 {
             // visual is hidden from md, but visible in xs, sm
@@ -481,6 +487,7 @@ a .intro-headline {
 //// only known usage: newsletterconfig-detail-formatter.jsp
 .element {
     .body-text {
+        @include use-hyphens-text;
         > * {
             // add margins for all elements in text piece
             margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
@@ -489,6 +496,5 @@ a .intro-headline {
                 margin-bottom: 0;
             }
         }
-        @include use-hyphens-text;
     }
 }

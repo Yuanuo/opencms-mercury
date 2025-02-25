@@ -5,7 +5,7 @@
     description="Displays a responsive image with optional animation effects." %>
 
 
-<%@ attribute name="image" type="org.opencms.jsp.util.CmsJspContentAccessValueWrapper" required="true"
+<%@ attribute name="image" type="java.lang.Object" required="true"
     description="The image to format. Must be a nested image content."%>
 
 <%@ attribute name="sizes" type="java.lang.String" required="false"
@@ -14,6 +14,15 @@
 <%@ attribute name="ratio" type="java.lang.String" required="false"
     description="Can be used to scale the image in a specific ratio.
     Example values are: '1-1', '4-3', '3-2', '16-9', '2-1', '2,35-1' or 3-1." %>
+
+<%@ attribute name="ratioLg" type="java.lang.String" required="false"
+    description="Image ratio for large screens." %>
+
+<%@ attribute name="lazyLoad" type="java.lang.Boolean" required="false"
+    description="Use lazy loading or not? Default is 'true'."%>
+
+<%@ attribute name="lazyLoadAutoSizes" type="java.lang.Boolean" required="false"
+    description="false (default): use lazy loading with 'sizes' being calculated from the bootstrap bean. true: use lazy loading and require 'sizes: auto' to work - this will (for now) use JavaScript instead of native browser support."%>
 
 <%@ attribute name="title" type="java.lang.String" required="false"
     description="Text used in the image 'alt' and 'title' attributes."%>
@@ -68,7 +77,7 @@
     Otherwise everything is ignored and just the body of the tag is returned. "%>
 
 
-<%-- ####### These variables are actually set in the mercury:image-vars tag included ####### --%>
+<%-- These variables are actually set in the m:image-vars tag included --%>
 <%@ variable name-given="imageBean" declare="true" variable-class="org.opencms.jsp.util.CmsJspImageBean" %>
 <%@ variable name-given="imageLink" declare="true" %>
 <%@ variable name-given="imageUnscaledLink" declare="true" %>
@@ -89,85 +98,143 @@
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
+<c:set var="test"           value="${empty test ? true : test}" />
 
-<mercury:image-vars
+<c:set var="ratioLg"        value="${(empty ratioLg) or ('desk' eq ratioLg) ? ratio : ratioLg}" />
+<c:set var="hideMobile"     value="${ratio eq 'no-img'}" />
+<c:set var="hideDesktop"    value="${ratioLg eq 'no-img'}" />
+
+<c:set var="test"           value="${test and not (hideDesktop and hideMobile)}" />
+
+<m:image-vars
     image="${image}"
-    ratio="${ratio}"
+    ratio="${hideMobile ? ratioLg : ratio}"
     title="${title}"
     ade="${empty ade ? false : ade}">
 
-<c:set var="test" value="${empty test ? true : test}" />
-<c:set var="setTitle" value="${empty setTitle ? true : setTitle}" />
+    <c:choose>
+        <c:when test="${not empty imageBean and test}">
 
-<c:choose>
-    <c:when test="${addEffectPiece}">
-        <c:set var="effectWrapper" value="effect-piece" />
-    </c:when>
-    <c:when test="${empty addEffectBox or addEffectBox}">
-        <c:set var="effectWrapper" value="effect-box" />
-    </c:when>
-</c:choose>
+            <c:set var="setTitle" value="${empty setTitle ? true : setTitle}" />
+            <c:set var="noTitleCopyright" value="${alt eq 'nocopy'}" />
+            <c:set var="alt" value="${noTitleCopyright ? null : alt}" />
+            <c:set var="imgAlt" value="${empty alt ? (empty imageDescription ? imageTitle : imageDescription) : alt}" />
+            <c:set var="imgTitle" value="${setTitle ? (showCopyright or noTitleCopyright ? (empty imageDescription ? imageTitle : imageDescription) : (empty imageDescription ? imageTitleCopyright : imageDescriptionCopyright)) : null}" />
 
-<c:choose>
+            <c:set var="adaptRatioToScreen" value="${ratio ne ratioLg}" />
+            <c:if test="${adaptRatioToScreen}">
+                <%-- Note: The 'template.piece.breakpoint' sitemap attribute is NOT used here on purpose.
+                    So far all use cases indicate treating the 'MD' size like a desktop (large) screen provides the best results. --%>
+                <c:set var="mobileGrid"     value="hidden-md hidden-lg hidden-xl hidden-xxl" />
+                <c:set var="mobileWrapper"  value="hidden-md-up " />
+                <c:set var="desktopGrid"    value="hidden-xs hidden-sm" />
+                <c:set var="desktopWrapper" value="hidden-xs-sm " />
+            </c:if>
+            <c:if test="${hideMobile or hideDesktop}">
+                <c:set var="hideWrapper"    value="${hideMobile ? desktopWrapper : (hideDesktop ? mobileWrapper : '')}" />
+            </c:if>
 
-<c:when test="${not empty imageBean and test}">
-    <c:if test="${showImageZoom}">
-        <c:set var="zoomData">
-            <mercury:image-zoomdata
-                src="${imageUrl}"
-                title="${imageTitle}"
-                alt="${empty imageDescription ? imageTitle : imageDescription}"
-                copyright="${imageCopyrightHtml}"
-                height="${imageHeight}"
-                width="${imageWidth}"
-                imageBean="${imageBean}"
-            />
-        </c:set>
-    </c:if>
-    <mercury:div css="${effectWrapper}${not empty effectWrapper and not empty cssWrapper ? ' ':''}${cssWrapper}" attr="${attrWrapper}" test="${not empty effectWrapper or not empty cssWrapper or not empty attrWrapper}">
-        <mercury:image-srcset
-            imagebean="${imageBean}"
-            sizes="${sizes}"
-            alt="${empty alt ? (empty imageDescription ? imageTitle : imageDescription) : alt}"
-            title="${setTitle ? (showCopyright ? (empty imageDescription ? imageTitle : imageDescription) : (empty imageDescription ? imageTitleCopyright : imageDescriptionCopyright)) : null}"
-            copyright="${showCopyright ? imageCopyrightHtml : null}"
-            cssImage="${empty effectWrapper ? '' : 'animated'}${not empty effectWrapper and not empty cssImage ? ' ' : ''}${cssImage}"
-            cssWrapper="${showImageZoom ? 'zoomer' : ''}"
-            attrImage="${attrImage}"
-            attrWrapper="${imageDndAttr}"
-            isSvg="${imageIsSvg}"
-            zoomData="${zoomData}"
-            noScript="${noScript}"
-        />
-        <%-- ####### JSP body inserted here ######## --%>
-        <jsp:doBody/>
-        <%-- ####### /JSP body inserted here ######## --%>
-    </mercury:div>
-    <mercury:nl />
-</c:when>
+            <c:choose>
+                <c:when test="${addEffectPiece}">
+                    <c:set var="imageWrapper" value="image-src-box presized use-ratio ${hideWrapper}${showImageZoom ? 'zoomer ' : ''}effect-piece" />
+                </c:when>
+                <c:otherwise>
+                    <c:set var="imageWrapper" value="image-src-box presized use-ratio ${hideWrapper}${showImageZoom ? 'zoomer ' : ''}effect-box" />
+                </c:otherwise>
+            </c:choose>
 
-<c:otherwise>
-    <c:if test="${cms.isEditMode and test}">
-        <%-- ###### No image: Output warning in offline version ###### --%>
-        <fmt:setLocale value="${cms.workplaceLocale}" />
-        <cms:bundle basename="alkacon.mercury.template.messages">
-            <mercury:alert type="warning">
-                <jsp:attribute name="head">
-                    <fmt:message key="msg.page.noImage" />
-                </jsp:attribute>
-                <jsp:attribute name="text">
-                    <fmt:message key="msg.page.noImage.hint" />
-                </jsp:attribute>
-            </mercury:alert>
-        </cms:bundle>
-    </c:if>
-    <%-- ####### JSP body inserted here ######## --%>
-    <jsp:doBody/>
-    <%-- ####### /JSP body inserted here ######## --%>
-</c:otherwise>
+            <c:if test="${showImageZoom}">
+                <%-- Use original image proportions (without ratio applied) for image zooming in case there are different mobile / desktop ratios, or the image is an SVG. --%>
+                <%-- Bitmap image and mobile / desktop ratio is the same, apply ratio for image zooming if not disabled in sitemap attribute. --%>
+                <c:set var="zoomFull" value="${imageIsSvg or (adaptRatioToScreen and (hideDesktop eq hideMobile)) or cms.sitemapConfig.attribute['template.imageZoom.full'].toBoolean}" />
+                <c:set var="zoomDataWrapper">
+                    <m:image-zoomdata
+                        src="${zoomFull ? imageUnscaledBean.srcUrl : imageUrl}"
+                        title="${imageTitle}"
+                        alt="${empty imageDescription ? imageTitle : imageDescription}"
+                        copyright="${imageCopyrightHtml}"
+                        height="${zoomFull ? imageUnscaledBean.scaler.height : imageHeight}"
+                        width="${zoomFull ? imageUnscaledBean.scaler.width : imageWidth}"
+                        imageBean="${imageBean}"
+                    />
+                </c:set>
+                <%-- Set the wrapper to the surrounding div, saving some bytes in page size --%>
+                <c:set var="attrWrapper" value="${empty attrWrapper ? zoomDataWrapper : attrWrapper.concat(' ').concat(zoomDataWrapper)}" />
+            </c:if>
 
-</c:choose>
+            <div class="${cssWrapper}${empty cssWrapper ? '':' '}${imageWrapper}"${empty attrWrapper ? '':' '}${attrWrapper}${empty imageDndAttr ? '':' '}${imageDndAttr}><%----%>
+                <c:if test="${not hideMobile}">
+                    <cms:addparams>
+                        <c:if test="${adaptRatioToScreen}">
+                            <cms:param name="cssgrid" value="${mobileGrid}" />
+                        </c:if>
+                        <m:image-srcset
+                            imagebean="${imageBean}"
+                            sizes="${sizes}"
+                            lazyLoad="${lazyLoad}"
+                            lazyLoadAutoSizes="${lazyLoadAutoSizes}"
+                            alt="${imgAlt}"
+                            title="${imgTitle}"
+                            cssImage="${mobileWrapper}animated${not empty cssImage ? ' ' : ''}${cssImage}"
+                            attrImage="${attrImage}"
+                            isSvg="${imageIsSvg}"
+                            addPaddingBox="${false}"
+                            noScript="${noScript}"
+                        />
+                    </cms:addparams>
+                </c:if>
+                <c:if test="${adaptRatioToScreen and not hideDesktop}">
+                    <cms:addparams>
+                        <cms:param name="cssgrid" value="${desktopGrid}" />
+                        <m:image-srcset
+                            imagebean="${ratioLg eq 'none' ? imageUnscaledBean : imageBean.scaleRatio[ratioLg]}"
+                            sizes="${sizes}"
+                            lazyLoad="${lazyLoad}"
+                            lazyLoadAutoSizes="${lazyLoadAutoSizes}"
+                            alt="${imgAlt}"
+                            title="${imgTitle}"
+                            cssImage="${desktopWrapper}animated${not empty cssImage ? ' ' : ''}${cssImage}"
+                            attrImage="${attrImage}"
+                            isSvg="${imageIsSvg}"
+                            addPaddingBox="${false}"
+                            noScript="${noScript}"
+                        />
+                    </cms:addparams>
+                </c:if>
+                <c:if test="${showCopyright and not empty imageCopyrightHtml}">
+                    <div class="copyright image-copyright" aria-hidden="true"><%----%>
+                        <m:out value="${imageCopyrightHtml}" lenientEscaping="${true}" />
+                    </div><%----%>
+                </c:if>
+                <%-- JSP body inserted here --%>
+                <jsp:doBody/>
+                <%-- /JSP body inserted here --%>
+            </div><%----%>
+            <m:nl />
+        </c:when>
 
-</mercury:image-vars>
+        <c:otherwise>
+            <c:if test="${cms.isEditMode and test}">
+                <%-- No image: Output warning in offline version --%>
+                <fmt:setLocale value="${cms.workplaceLocale}" />
+                <cms:bundle basename="alkacon.mercury.template.messages">
+                    <m:alert type="warning">
+                        <jsp:attribute name="head">
+                            <fmt:message key="msg.page.noImage" />
+                        </jsp:attribute>
+                        <jsp:attribute name="text">
+                            <fmt:message key="msg.page.noImage.hint" />
+                        </jsp:attribute>
+                    </m:alert>
+                </cms:bundle>
+            </c:if>
+            <%-- JSP body inserted here --%>
+            <jsp:doBody/>
+            <%-- /JSP body inserted here --%>
+        </c:otherwise>
+
+    </c:choose>
+
+</m:image-vars>

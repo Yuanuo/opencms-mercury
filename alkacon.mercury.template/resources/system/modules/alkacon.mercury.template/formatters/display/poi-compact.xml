@@ -36,7 +36,19 @@
       <IncludeName><![CDATA[listDisplay.default]]></IncludeName>
     </Setting>
     <Setting>
+      <IncludeName><![CDATA[textLength.compact]]></IncludeName>
+    </Setting>
+    <Setting>
       <IncludeName><![CDATA[hsize.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[dateFormat.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[titleOption.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[linkOption.listTeaser]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[showFacilities.false]]></IncludeName>
@@ -46,6 +58,12 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[linkOption.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[detailLinkWin.listTeaser]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[headingInBody.hidden]]></IncludeName>
     </Setting>
     <Setting>
       <IncludeName><![CDATA[buttonText.default]]></IncludeName>
@@ -61,6 +79,9 @@
     </Setting>
     <Setting>
       <IncludeName><![CDATA[listEntryWrapper.default]]></IncludeName>
+    </Setting>
+    <Setting>
+      <IncludeName><![CDATA[poiDisplayOption.listTeaser]]></IncludeName>
     </Setting>
   </NewFormatter>
 </NewFormatters>

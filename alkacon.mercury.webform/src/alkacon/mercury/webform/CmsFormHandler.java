@@ -62,6 +62,7 @@ import org.opencms.main.CmsException;
 import org.opencms.main.CmsLog;
 import org.opencms.main.OpenCms;
 import org.opencms.module.CmsModule;
+import org.opencms.staticexport.CmsLinkManager;
 import org.opencms.util.CmsDateUtil;
 import org.opencms.util.CmsMacroResolver;
 import org.opencms.util.CmsRequestUtil;
@@ -1336,8 +1337,14 @@ public class CmsFormHandler extends CmsJspActionElement {
         // set the necessary attributes to use in the string template
         String formUri = getCmsObject().getRequestContext().getUri();
         if (CmsJspStandardContextBean.getInstance(getRequest()).isDetailRequest()) {
-            formUri = CmsJspStandardContextBean.getInstance(getRequest()).getDetailContentSitePath();
+            CmsLinkManager linkManager = OpenCms.getLinkManager();
+            formUri = linkManager.substituteLinkForUnknownTarget(
+                getCmsObject(),
+                CmsJspStandardContextBean.getInstance(getRequest()).getDetailContentSitePath(),
+                null,
+                false);
         }
+
         sTemplate.setAttribute(
             I_CmsTemplateCheckPage.ATTR_FORM_URI,
             OpenCms.getLinkManager().substituteLink(getCmsObject(), formUri));
@@ -1691,7 +1698,12 @@ public class CmsFormHandler extends CmsJspActionElement {
         } else {
             formUri = getCmsObject().getRequestContext().getUri();
             if (CmsJspStandardContextBean.getInstance(getRequest()).isDetailRequest()) {
-                formUri = CmsJspStandardContextBean.getInstance(getRequest()).getDetailContentSitePath();
+                CmsLinkManager linkManager = OpenCms.getLinkManager();
+                formUri = linkManager.substituteLinkForUnknownTarget(
+                    getCmsObject(),
+                    CmsJspStandardContextBean.getInstance(getRequest()).getDetailContentSitePath(),
+                    null,
+                    false);
             }
         }
 

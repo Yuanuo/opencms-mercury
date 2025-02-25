@@ -34,70 +34,36 @@
 .facility-icons {
     // may also be used outsie poi, e.g. in a map
     line-height: 1;
-    margin-bottom: var(--#{$prefix}default-margin-small);
+    margin-top: var(--#{$prefix}paragraph-margin-bottom);
+    margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
     hyphens: initial;
+    --#{$prefix}acc-icon-size: #{$acc-icon-size};
+    --#{$prefix}acc-font-size: #{$acc-font-size};
+    --#{$prefix}acc-margin: var(--#{$prefix}ws-margin);
 
     .acc-icon {
         position: relative;
-        width: $acc-icon-size;
-        padding: 0 0 $acc-icon-size 0!important;
+        width: var(--#{$prefix}acc-icon-size);
+        padding: 0 0 var(--#{$prefix}acc-icon-size) 0!important;
         display: inline-block;
         color: var(--#{$prefix}main-theme-fg);
         background-color: var(--#{$prefix}main-theme);
         border-radius: var(--#{$prefix}border-radius);
-        margin-right: 10px;
-        font-size: $h3-font-size;
+        margin-right: var(--#{$prefix}acc-margin);
+        font-size: var(--#{$prefix}acc-font-size);
 
         &:last-of-type {
             margin-right: 0;
         }
 
-        .acc-inner {
+        .ico {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translateX(-50%) translateY(-50%);
-            display: flex;
-        }
-
-        .acc-wc {
-            &.acc-inner {
-                transform: translateX(-50%) translateY(-50%) scale(0.85);
-                top: 60%;
-                left: 38%;
-            }
-            &.acc-add {
-                position: absolute;
-                display: flex;
-                top: 55%;
-                left: 40%;
-                transform: translateX(-20%) translateY(-90%) scale(0.6);
-            }
-        }
-
-        .ico {
             font-weight: normal;
-        }
-
-        .acc-male {
-            position: relative;
-            margin: 0 1px 0 2px;
-            font-weight: normal;
-
-            &::after {
-                display: block;
-                content: "";
-                border-right: 1px solid var(--#{$prefix}main-theme-fg);
-                position: absolute;
-                height: 100%;
-                bottom: 0;
-                right: -2px;
-            }
-        }
-
-        .acc-female {
-            font-weight: normal;
-            transform: scale(0.85, 1);
+            margin-right: 0;
+            width: auto;
         }
     }
 }

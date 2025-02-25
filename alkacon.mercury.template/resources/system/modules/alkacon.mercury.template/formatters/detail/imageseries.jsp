@@ -9,18 +9,18 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <cms:secureparams />
-<mercury:init-messages reload="true">
+<m:init-messages reload="true">
 
 <cms:formatter var="content" val="value">
 
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
 
-<mercury:setting-defaults>
+<m:setting-defaults>
 
 <c:set var="imageSeriesCss"         value="${setting.imageSeriesCss.toString}" />
 <c:set var="imageSeriesSortOrder"   value="${setting.imageSeriesSortOrder.toString}" />
@@ -40,9 +40,9 @@
 <c:set var="datePrefix"             value="${fn:substringBefore(dateFormat, '|')}" />
 <c:set var="dateFormat"             value="${empty datePrefix ? dateFormat : fn:substringAfter(dateFormat, '|')}" />
 
-<c:set var="id"><mercury:idgen prefix='imgser' uuid='${cms.element.instanceId}' /></c:set>
+<c:set var="id"><m:idgen prefix='imgser' uuid='${cms.element.instanceId}' /></c:set>
 <c:set var="date">
-    <mercury:instancedate date="${value.Date.toInstanceDate}" format="${dateFormat}" />
+    <m:instancedate date="${value.Date.toInstanceDate}" format="${dateFormat}" />
 </c:set>
 
 <c:set var="showDate"               value="${not empty date}" />
@@ -58,9 +58,11 @@
 <c:set var="showText"               value="${setting.showText.toBoolean and text.isSet}" />
 <c:set var="detailPage"             value="${cms.detailRequest}" />
 
+<c:set var="useBrowserLazyLoad"     value="${true}" />
+
 <c:set var="titleMarkup">
-    <mercury:intro-headline intro="${showIntro ? value.Intro : null}" headline="${value.Title}" level="${hsize}" ade="${ade}" />
-    <mercury:heading text="${value.Preface}" level="${7}" css="sub-header" ade="${ade}" test="${showPreface}" />
+    <m:intro-headline intro="${showIntro ? value.Intro : null}" headline="${value.Title}" level="${hsize}" ade="${ade}" />
+    <m:heading text="${value.Preface}" level="${7}" css="sub-header" ade="${ade}" test="${showPreface}" />
 </c:set>
 
 <c:set var="showVisual"             value="${(not empty titleMarkup) or showDate or showImageCount}" />
@@ -93,30 +95,71 @@
     </c:otherwise>
 </c:choose>
 
-<c:set var="template"><%--
---%><div ${showMasonryList ? '%(tileAttrs)' : tileAttrs}><%--
-    --%><a class="zoom imageseries" href="%(src)" title="%(titleAttr)"><%--
-        --%><span class="content"><%--
-            --%><c:if test="${addBorderWrapper}"><span class="wrapper"></c:if><%--
-                --%><span ${overlayAttrs}><%--
-                    --%><img src="%(squareSrc)" <%--
-                        --%>srcset="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" <%--
-                        --%>data-srcset="%(tileSrcSet)" <%--
-                        --%>data-sizes="auto" <%--
-                        --%>alt="%(alt)"<%--
-                        --%>class="lazyload"><%--
-                    --%><span class="zoom-icon"><%--
-                        --%><mercury:icon icon="search" tag="span" /></span><%--
+<m:nl />
+<div class="detail-page type-imageseries${showVisual or showText ? '' : ' only-series'}${elementCss}${setCssWrapper123}"><%----%>
+<m:nl />
+
+<m:image-sizes
+    initBootstrapBean="${true}"
+    gridWrapper="${imageSeriesCss}"
+    gutter="${0}"
+    debug="${false}">
+    <%-- useGutter 0 will make source set images larger,
+         this is not 100% precise but the bootstrrap bean can not deal corretly with the reduced tile margin gutter in the series --%>
+    <c:choose>
+        <c:when test="${not bsLazyLoadJs}">
+            <c:set var="template"><%--
+            --%><div ${showMasonryList ? '%(tileAttrs)' : tileAttrs}><%--
+                --%><a class="zoom imageseries" href="%(src)" title="%(titleAttr)"><%--
+                    --%><span class="content"><%--
+                        --%><c:if test="${addBorderWrapper}"><span class="wrapper"></c:if><%--
+                            --%><span ${overlayAttrs}><%--
+                                --%><img src="%(squareSrc)" <%--
+                                    --%>srcset="%(tileSrcSet)" <%--
+                                    --%>sizes="${bbSrcSetSizes}" <%--
+                                    --%>loading="lazy" <%--
+                                    --%>alt="%(alt)"><%--
+                                --%><span class="zoom-icon"><%--
+                                    --%><m:icon icon="search" tag="span" /></span><%--
+                                --%></span><%--
+                                --%><c:if test="${showImageListCopyright}"><%--
+                                    --%><span class="copyright">%(copyright)</span><%--
+                                --%></c:if><%--
+                            --%></span><%--
+                        --%><c:if test="${addBorderWrapper}"></span></c:if><%--
                     --%></span><%--
-                    --%><c:if test="${showImageListCopyright}"><%--
-                        --%><span class="copyright">%(copyright)</span><%--
-                    --%></c:if><%--
-                --%></span><%--
-            --%><c:if test="${addBorderWrapper}"></span></c:if><%--
-        --%></span><%--
-    --%></a><%--
---%></div>
-</c:set>
+                --%></a><%--
+            --%></div>
+            </c:set>
+        </c:when>
+        <c:otherwise>
+            <c:set var="template"><%--
+            --%><div ${showMasonryList ? '%(tileAttrs)' : tileAttrs}><%--
+                --%><a class="zoom imageseries" href="%(src)" title="%(titleAttr)"><%--
+                    --%><span class="content"><%--
+                        --%><c:if test="${addBorderWrapper}"><span class="wrapper"></c:if><%--
+                            --%><span ${overlayAttrs}><%--
+                                --%><img src="%(squareSrc)" <%--
+                                    --%>srcset="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" <%--
+                                    --%>data-srcset="%(tileSrcSet)" <%--
+                                    --%>data-sizes="auto" <%--
+                                    --%>alt="%(alt)"<%--
+                                    --%>class="lazyload"><%--
+                                --%><span class="zoom-icon"><%--
+                                    --%><m:icon icon="search" tag="span" /></span><%--
+                                --%></span><%--
+                                --%><c:if test="${showImageListCopyright}"><%--
+                                    --%><span class="copyright">%(copyright)</span><%--
+                                --%></c:if><%--
+                            --%></span><%--
+                        --%><c:if test="${addBorderWrapper}"></span></c:if><%--
+                    --%></span><%--
+                --%></a><%--
+            --%></div>
+            </c:set>
+        </c:otherwise>
+</c:choose>
+</m:image-sizes>
 
 <%-- ###### Create the list of images to display ###### --%>
 <jsp:useBean id="imageList" class="java.util.ArrayList" />
@@ -179,10 +222,6 @@
     </cms:search>
 </c:if>
 
-<mercury:nl />
-<div class="detail-page type-imageseries${showVisual or showText ? '' : ' only-series'}${elementCss}${setCssWrapper123}"><%----%>
-<mercury:nl />
-
 <c:if test="${showVisual}">
     <div class="detail-visual pivot${showDate or showImageCount ? '' : ' no-info'}${setCssWrapperKeyPiece}"><%----%>
         <div class="heading"><%----%>
@@ -204,14 +243,14 @@
             </div><%----%>
         </c:if>
     </div><%----%>
-    <mercury:nl />
+    <m:nl />
 </c:if>
 
 <c:if test="${showText}">
     <div class="detail-content pivot${setCssWrapperParagraphs}" ${ade ? text.rdfaAttr : ''}><%----%>
         ${text}
     </div><%----%>
-    <mercury:nl />
+    <m:nl />
 </c:if>
 
 <c:choose>
@@ -226,13 +265,13 @@
             <cms:jsonvalue key="template" value="${cms:encode(template)}" />
         </cms:jsonobject>
         <div id="${id}" class="series${setCssWrapperExtra}" data-imageseries='${dataSeries.compact}'><%----%>
-        <mercury:nl />
+        <m:nl />
 
             <div class="images clearfix${rowCss}"></div><%----%>
 
             <div class="spinner"><%----%>
                 <div class="spinnerInnerBox"><%----%>
-                    <mercury:icon icon="spinner" tag="i" cssWrapper="spinner-icon" />
+                    <m:icon icon="spinner" tag="i" cssWrapper="spinner-icon" />
                 </div><%----%>
             </div><%----%>
 
@@ -241,11 +280,11 @@
             </button><%----%>
 
             <div class="imagedata"><%----%>
-                <ul><mercury:nl />
+                <ul><m:nl />
 
                     <c:forEach var="image" items="${imageBeans}" varStatus="status">
 
-                        <mercury:image-vars image="${image}" escapeCopyright="${true}">
+                        <m:image-vars image="${image}" escapeCopyright="${true}">
                             <c:if test="${not empty imageBean}">
 
                                 <c:set var="title" value="${showImageTitle ? imageTitle : ''}" />
@@ -319,54 +358,54 @@
                                     </c:if>
                                 </cms:jsonobject>
                                 <li data-image='${dataImage.compact}'></li><%----%>
-                                <mercury:nl />
+                                <m:nl />
                             </c:if>
-                        </mercury:image-vars>
+                        </m:image-vars>
 
                     </c:forEach>
                 </ul><%----%>
             </div><%----%>
         </div><%----%>
-        <mercury:nl />
-        <mercury:alert-online showJsWarning="${true}" >
+        <m:nl />
+        <m:alert-online showJsWarning="${true}" >
             <jsp:attribute name="text">
                 <fmt:message key="msg.page.noscript.imageseries" />
             </jsp:attribute>
-        </mercury:alert-online>
+        </m:alert-online>
     </c:when>
 
     <c:when test="${cms.isEditMode}">
         <%-- No images have been found --%>
         <fmt:setLocale value="${cms.workplaceLocale}" />
         <cms:bundle basename="alkacon.mercury.template.messages">
-            <mercury:alert type="warning">
+            <m:alert type="warning">
                 <jsp:attribute name="head">
                     <fmt:message key="msg.page.imageseries.noSource" />
                 </jsp:attribute>
                 <jsp:attribute name="text">
                     <fmt:message key="msg.page.imageseries.noSource.hint" />
                 </jsp:attribute>
-            </mercury:alert>
+            </m:alert>
         </cms:bundle>
     </c:when>
 
     <c:otherwise>
-        <mercury:alert-online>
+        <m:alert-online>
             <jsp:attribute name="head">
                 <fmt:message key="msg.page.imageseries.noSource" />
             </jsp:attribute>
-        </mercury:alert-online>
+        </m:alert-online>
     </c:otherwise>
 
 </c:choose>
 
-<mercury:container-attachment content="${content}" name="attachments" type="${containerType}" />
+<m:container-attachment content="${content}" name="attachments" type="${containerType}" />
 
 </div><%----%>
-<mercury:nl />
+<m:nl />
 
-</mercury:setting-defaults>
+</m:setting-defaults>
 
 </cms:bundle>
 </cms:formatter>
-</mercury:init-messages>
+</m:init-messages>

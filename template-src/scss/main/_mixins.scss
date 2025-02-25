@@ -31,6 +31,7 @@
         outline-width: 2px;
         outline-offset: -2px;
     }
+    box-shadow: none;
     z-index: $above-oc-z-index + 500000; // well above OpenCms edit points AND menu dropdowns
 }
 
@@ -260,7 +261,6 @@
     padding: 0;
     text-align: inherit;
     user-select: initial;
-
     font-family: inherit;
 
     @if ($btn-border-style != none) {
@@ -320,10 +320,10 @@
 // Font size REM rebasing, usually on the HTML element
 @mixin rem-base {
     @if ($font-rem-base-mobile-size != $font-rem-base-desktop-size) {
-        @include media-breakpoint-down(lg) {
+        @include media-breakpoint-down($font-rem-base-breakpoint) {
             font-size: $font-rem-base-mobile-size;  // font size for rem units in mobile
         }
-        @include media-breakpoint-up(lg) {
+        @include media-breakpoint-up($font-rem-base-breakpoint) {
             font-size: $font-rem-base-desktop-size;  // font size for rem units in desktop
         }
     } @else {
@@ -513,11 +513,6 @@
     color: var(--#{$prefix}body-color);
     font-family: var(--#{$prefix}btn-font-family);
 
-    &::before {
-        @include icon-font();
-        content: "\f02b"; // mercury:icon - fa-tag
-        padding-right: var(--#{$prefix}ws-margin);
-    }
     @if ($add-box) {
         padding: calc(0.5 * var(--#{$prefix}ws-margin)) var(--#{$prefix}ws-margin);
         border-radius: $list-category-radius;
@@ -529,6 +524,12 @@
                 transition: background-color 0.33s;
             }
         }
+    }
+
+    &::before {
+        content: "\f02b"; // mercury:icon - fa-tag
+        padding-right: var(--#{$prefix}ws-margin);
+        @include icon-font();
     }
 }
 
@@ -650,7 +651,7 @@
 
     $btn-bg-val: map-get-safe($bg-map, "btn-bg");
     @if ($btn-bg-val != null) {
-        --#{$prefix}btn-bg:                         #{map-get-safe($bg-map, "btn-bg")};
+        --#{$prefix}btn-bg:                         #{$btn-bg-val};
     } @else if ($set-default and $btn-use-border) {
         --#{$prefix}btn-bg:                         var(--#{$prefix}body-bg);
     } @else if ($set-default) {
@@ -660,7 +661,7 @@
     @if (map-has-key-safe($bg-map, "btn-fg")) {
         --#{$prefix}btn-fg:                         #{map-get-safe($bg-map, "btn-fg")};
     } @else if ($btn-bg-val != null) {
-        --#{$prefix}btn-fg:                         get-text-color($btn-bg-val);
+        --#{$prefix}btn-fg:                         #{get-text-color($btn-bg-val)};
     } @else if ($set-default and $btn-use-border) {
         --#{$prefix}btn-fg:                         var(--#{$prefix}link-color);
     } @else if ($set-default) {
@@ -682,7 +683,7 @@
     @if (map-has-key-safe($bg-map, "btn-hover-fg")) {
         --#{$prefix}btn-hover-fg:                   #{map-get-safe($bg-map, "btn-hover-fg")};
     } @else if ($btn-hover-bg-val != null) {
-        --#{$prefix}btn-hover-fg:                   get-text-color($btn-hover-bg-val);
+        --#{$prefix}btn-hover-fg:                   #{get-text-color($btn-hover-bg-val)};
     } @else if (map-has-key-safe($bg-map, "btn-fg")) {
         --#{$prefix}btn-hover-fg:                   var(--#{$prefix}btn-fg);
     } @else if ($set-default and $btn-use-border) {
@@ -774,6 +775,7 @@
     --#{$prefix}body-bg:                            #{$bg-color};
     --#{$prefix}body-bg-rgb:                        #{to-rgb($bg-color)};
     --#{$prefix}body-color:                         #{$fg-color};
+    --#{$prefix}body-color-rgb:                     #{to-rgb($fg-color)};
     --#{$prefix}link-color:                         #{$li-color};
     --#{$prefix}link-color-rgb:                     #{to-rgb($li-color)};
     --#{$prefix}link-hover-color:                   #{$li-hover-color};
@@ -809,4 +811,96 @@
 
     --#{$prefix}btn-bg: var(--#{$prefix}main-theme);
     --#{$prefix}btn-fg: var(--#{$prefix}main-theme-fg);
+}
+
+@mixin mercuryBanner($showLicense) {
+    @if ($showLicense) {
+    /*!
+     * The Mercury Template (https://mercury-template.opencms.org/) - Copyright Alkacon Software GmbH & Co. KG
+     * Licensed under the GNU Affero General Public License (https://www.gnu.org/licenses/).
+     *
+     */
+    } @else {
+    /*!
+     *
+     * The Mercury Template (https://mercury-template.opencms.org/) - Copyright Alkacon Software GmbH & Co. KG
+     *
+     */
+    }
+}
+
+@mixin contact-base {
+
+    @if $use-hyphens {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        hyphens: auto;
+    }
+
+    .fn.n,
+    .org,
+    .adr,
+    .title,
+    .pos,
+    .note.top,
+    .mail,
+    .facility-icons {
+        margin-top: var(--#{$prefix}contact-spacer-y);
+        margin-bottom: var(--#{$prefix}contact-spacer-y);
+    }
+
+    .contactlink,
+    .link,
+    .note.bottom,
+    .website,
+    .vcard {
+        margin-top: var(--#{$prefix}paragraph-margin-bottom);
+        margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
+    }
+
+    .org {
+        &:has(+ .pos) {
+            margin-bottom: 0;
+        }
+        + .pos {
+            margin-top: 0;
+        }
+    }
+
+    .fn.n {
+        --#{$prefix}piece-headings-margin-bottom: var(--#{$prefix}contact-spacer-y);
+        margin-top: 0;
+    }
+
+    .tablerow {
+        display: table-row;
+        hyphens: none;
+        overflow-wrap: normal;
+        word-break: normal;
+        margin-top: 0;
+        margin-bottom: 0;
+
+        > span {
+            padding-right: var(--#{$prefix}ws-margin);
+            display: table-cell;
+        }
+    }
+
+    .website,
+    .mail {
+        a {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+    }
+
+    .mail {
+        // make sure emails are NOT changed with "-" when line break is inserted
+        hyphenate-character: " ";
+        -webkit-hyphenate-character: " ";
+    }
+
+    > div:last-of-type {
+        margin-bottom: 0;
+    }
 }

@@ -598,6 +598,10 @@ const Mercury = function (jQ) {
                 $mediaBox.find(".content").removeClass().addClass("content-removed")
             }
             $element.remove();
+            let color = getThemeJSON("main-theme");
+            if (typeof color !== "undefined") {
+                template = template.replace("XXcolor-main-themeXX", color.substring(1));
+            }
             $p.append(decodeURIComponent(template));
             initFitVids();
         }
@@ -987,7 +991,7 @@ const Mercury = function (jQ) {
         }
 
         // main init function - called from jQuery(document).ready() - see below in this script
-        if (DEBUG) console.info("Mercury.init() - Modularized version");
+        if (DEBUG) console.info("Mercury.init() - Modularized version [24-09]");
         window.Mercury = Mercury;
 
         try {

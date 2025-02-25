@@ -54,8 +54,11 @@
     description="The heading level of the section heading." %>
 
 <%@ attribute name="imageRatio" type="java.lang.String" required="false"
-    description="Can be used to scale the image in a specific ratio,
+    description="Can be used to scale the image in a specific ratio.
     Example values are: '1-1', '4-3', '3-2', '16-9', '2-1', '2,35-1' or 3-1." %>
+
+<%@ attribute name="imageRatioLg" type="java.lang.String" required="false"
+    description="Image ratio for large screens." %>
 
 <%@ attribute name="cssWrapper" type="java.lang.String" required="false"
     description="'class' selectors to add to the generated div surrounding the section." %>
@@ -137,13 +140,15 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <c:set var="ade"                value="${empty ade ? cms.isEditMode : ade}" />
 <c:set var="linkHeading"        value="${empty linkOption or empty link ? false : (linkOption eq 'heading')}" />
 <c:set var="hsize"              value="${empty hsize ? 2 : (hsize < 1 ? (linkHeading ? 3 : hsize) : hsize)}" />
 <c:set var="showText"           value="${empty text and empty markupText ? false : (empty textOption ? true : (textOption ne 'none'))}" />
+<c:set var="sizeDesktop"        value="${imageRatioLg eq 'no-img' ? 0 : sizeDesktop}" />
+<c:set var="sizeMobile"         value="${imageRatio eq 'no-img' ? 0 : ((sizeDesktop == 0) and (sizeMobile == 99)  ? 12 : sizeMobile)}" />
 <c:set var="showVisualDesktop"  value="${empty image and empty markupVisual ? false : (empty sizeDesktop ? true : sizeDesktop != 0)}" />
 <c:set var="showVisualMobile"   value="${empty image and empty markupVisual ? false : (empty sizeMobile ? true : sizeMobile != 0)}" />
 <c:set var="showVisual"         value="${showVisualDesktop or showVisualMobile}" />
@@ -157,18 +162,18 @@
 
     <c:if test="${showVisual and empty markupVisual}">
         <%-- To set the visual css wrapper, the image orientation must be known. Also check if the image is from the icon folder. --%>
-        <mercury:image-vars
+        <m:image-vars
             image="${image}"
-            ratio="${imageRatio}"
+            ratio="${showVisualMobile ? imageRatio : imageRatioLg}"
             ade="${false}">
                 <c:set var="showVisual" value="${not empty imageBean}" />
                 <c:set var="isIconImage" value="${imageIsSvg and fn:startsWith(imageBean.resource.rootPath, '/system/modules/alkacon.mercury.theme/icons/')}" />
                 <c:set var="visualOrientation" value="${' '.concat(imageOrientation)}" />
-        </mercury:image-vars>
+        </m:image-vars>
     </c:if>
 
     <%-- pmv class: (p)iece (m)inimum (v)isual - set width to 32px for icons --%>
-    <mercury:piece
+    <m:piece
         cssWrapper="${cssWrapper}${isIconImage ? ' pmv' : ''}"
         attrWrapper="${attrWrapper}"
         pieceLayout="${pieceLayout}"
@@ -181,16 +186,16 @@
         attrVisual="${ade ? image.rdfaAttr : null}"
         cssVisual="rs_skip${visualOrientation}${not empty cssVisual ? ' '.concat(cssVisual) : null}"
         textAlignment="${textAlignment}"
-        attrBody="${ade and showLinkOption and (empty link or (link.exists and not link.isSet)) ? link.rdfaAttr : null}"
-        cssBody="${defaultText ? 'default' :_null}"
+        attrBody="${ade and showLinkOption and cms:isWrapper(link) and (empty link or (link.exists and not link.isSet)) ? link.rdfaAttr : null}"
+        cssBody="${defaultText ? 'default' : null}"
         attrText="${ade ? text.rdfaAttr : null}"
-        attrLink="${ade ? link.rdfaAttr : null}">
+        attrLink="${ade and cms:isWrapper(link) ? link.rdfaAttr : null}">
 
         <jsp:attribute name="heading">
             <c:if test="${showHeading}">
                 <c:set var="headingCss" value="piece-heading" />
                 <c:if test="${addHeadingId or addHeadingAnchorlink}">
-                    <c:set var="headingId"><mercury:translate-name name="${fn:trim(heading)}" />-${fn:substringBefore(cms.element.instanceId, '-')}</c:set>
+                    <c:set var="headingId"><m:translate-name name="${fn:trim(heading)}" />-${fn:substringBefore(cms.element.instanceId, '-')}</c:set>
                     <c:if test="${addHeadingAnchorlink}">
                         <c:set var="anchorLinkSuffix"><a class="anchor-link" href="#${headingId}"></a></c:set>
                         <c:set var="headingCss" value="piece-heading anchor-link-parent" />
@@ -198,7 +203,7 @@
                 </c:if>
                 <c:choose>
                     <c:when test="${linkHeading and not suppressLinks}">
-                        <mercury:heading
+                        <m:heading
                             level="${hsize}"
                             suffix="${anchorLinkSuffix}"
                             tabindex="${empty anchorLinkSuffix}"
@@ -206,14 +211,14 @@
                             css="${headingCss}"
                             id="${headingId}">
                             <jsp:attribute name="markupText">
-                                <mercury:link link="${link}" css="piece-heading-link" setTitle="true">
+                                <m:link link="${link}" css="piece-heading-link" setTitle="true">
                                     <c:out value="${heading}" />
-                                </mercury:link>
+                                </m:link>
                             </jsp:attribute>
-                        </mercury:heading>
+                        </m:heading>
                     </c:when>
                     <c:otherwise>
-                        <mercury:heading
+                        <m:heading
                             text="${heading}"
                             level="${hsize}"
                             suffix="${anchorLinkSuffix}"
@@ -233,14 +238,15 @@
                 <c:when test="${showVisual and empty markupVisual}">
                     <c:set var="showImageLink"  value="${empty showImageLink or suppressLinks ? false : showImageLink}" />
                     <c:set var="showImageZoom" value="${suppressLinks ? false : (empty showImageZoom ? true : showImageZoom)}" />
-                    <mercury:link
+                    <m:link
                         link="${link}"
                         test="${showImageLink}"
                         attr="${showLink or linkHeading ? 'tabindex=\"-1\"' : ''}"
                         setTitle="${true}" >
-                        <mercury:image-animated
+                        <m:image-animated
                             image="${image}"
                             ratio="${imageRatio}"
+                            ratioLg="${imageRatioLg}"
                             setTitle="${not showImageLink}"
                             showCopyright="${showImageCopyright}"
                             showImageZoom="${showImageZoom and not showImageLink}"
@@ -250,8 +256,8 @@
                                     <div class="subtitle"${showImageLink ? '' : ' aria-hidden=\"true\"'}>${imageTitle}</div><%----%>
                                 </c:if>
                             </c:set>
-                        </mercury:image-animated>
-                    </mercury:link>
+                        </m:image-animated>
+                    </m:link>
                     <c:out value="${imageSubtext}" escapeXml="false" />
                 </c:when>
                 <c:when test="${showVisual}">
@@ -291,16 +297,16 @@
                         <c:set var="linkCss" value="btn piece-btn" />
                     </c:otherwise>
                 </c:choose>
-                <mercury:link link="${link}" css="${linkCss}" createSpan="${suppressLinks}" />
+                <m:link link="${link}" css="${linkCss}" createSpan="${suppressLinks}" />
             </c:if>
         </jsp:attribute>
 
-    </mercury:piece>
+    </m:piece>
 </c:when>
 <c:when test="${cms.isEditMode and (empty emptyWarning or emptyWarning)}">
     <fmt:setLocale value="${cms.workplaceLocale}" />
     <cms:bundle basename="alkacon.mercury.template.messages">
-        <mercury:alert type="warning">
+        <m:alert type="warning">
             <jsp:attribute name="head">
                 <fmt:message key="msg.page.section.empty.head" />
             </jsp:attribute>
@@ -308,7 +314,7 @@
                 <div><fmt:message key="msg.page.section.empty.text" /></div>
                 <div class="small">${cms.element.sitePath}</div>
             </jsp:attribute>
-        </mercury:alert>
+        </m:alert>
     </cms:bundle>
 </c:when>
 </c:choose>

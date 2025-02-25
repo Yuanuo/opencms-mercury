@@ -20,12 +20,17 @@
     description="Markup used for the heading if an overlay is generated." %>
 
 <%@ attribute name="imageRatio" type="java.lang.String" required="true"
-    description="Can be used to scale the image in a specific ratio,
+    description="Can be used to scale the image in a specific ratio.
     Example values are: '1-1', '4-3', '3-2', '16-9', '2-1', '2,35-1' or 3-1." %>
 
+<%@ attribute name="imageRatioLg" type="java.lang.String" required="false"
+    description="Image ratio for large screens." %>
+
+<%@ attribute name="lazyLoad" type="java.lang.Boolean" required="false"
+    description="Use lazy loading or not? Default is 'false', because we assume a key visual is most likely 'above the fold'."%>
+
 <%@ attribute name="noScript" type="java.lang.Boolean" required="false"
-    description="Generate noscript tags for lazy loading images or not?
-    Default is 'true'." %>
+    description="Generate noscript tags for lazy loading images or not? Default is 'true'." %>
 
 <%@ attribute name="effect" type="java.lang.String" required="false"
     description="'class' atttributes to add to the key visual div for effects." %>
@@ -52,21 +57,24 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 <c:set var="effect" value="${(empty effect) or (effect eq 'none') ? '' : effect}" />
+<c:set var="lazyLoad" value="${empty lazyLoad or lazyLoad}" />
 
 <c:choose>
 <c:when test="${showOverlay and image.value.Image.isSet}">
-    <mercury:image-animated
+    <m:image-animated
         image="${image}"
+        lazyLoad="${lazyLoad}"
         cssWrapper="overlay ${effect} "
         addEffectPiece="${true}"
         ade="${ade}"
         showCopyright="${showImageCopyright}"
         showImageZoom="${showImageZoom}"
         noScript="${noScript}"
-        ratio="${imageRatio}" >
+        ratio="${imageRatio}"
+        ratioLg="${imageRatioLg}" >
 
         <div class="visual-darken"></div><%----%>
         <div class="visual-overlay"><%----%>
@@ -76,7 +84,7 @@
             <c:set var="visualSubtitle" value="${imageTitle}" />
         </c:if>
 
-    </mercury:image-animated>
+    </m:image-animated>
     <c:if test="${not empty visualSubtitle}">
         <div class="subtitle rs_skip" aria-hidden="true">${visualSubtitle}</div><%----%>
     </c:if>
@@ -87,20 +95,22 @@
             <jsp:invoke fragment="markupImage"/>
         </c:when>
         <c:otherwise>
-            <mercury:image-animated
+            <m:image-animated
                 image="${image}"
+                lazyLoad="${lazyLoad}"
                 cssWrapper="${effect}"
                 addEffectPiece="${true}"
                 ade="${ade}"
                 showCopyright="${showImageCopyright}"
                 showImageZoom="${showImageZoom}"
                 noScript="${noScript}"
-                ratio="${imageRatio}" >
+                ratio="${imageRatio}"
+                ratioLg="${imageRatioLg}" >
 
                 <c:if test="${showImageSubtitle and not empty imageTitle}">
                     <c:set var="visualSubtitle" value="${imageTitle}" />
                 </c:if>
-            </mercury:image-animated>
+            </m:image-animated>
         </c:otherwise>
     </c:choose>
     <c:if test="${not empty visualSubtitle}">

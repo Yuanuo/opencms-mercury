@@ -8,7 +8,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 <%@ attribute name="content" type="org.opencms.jsp.util.CmsJspContentAccessBean" required="true"
     description="The content element that is formatted." %>
@@ -24,6 +24,7 @@
 <%@ variable name-given="setEffect"         declare="true" %>
 <%@ variable name-given="setDateFormat"     declare="true" %>
 <%@ variable name-given="setRatio"          declare="true" %>
+<%@ variable name-given="setRatioLg"        declare="true" %>
 <%@ variable name-given="setTextLength"     declare="true" variable-class="java.lang.Integer" %>
 <%@ variable name-given="setHsize"          declare="true" variable-class="java.lang.Integer" %>
 <%@ variable name-given="setLinkNewWin"     declare="true" %>
@@ -43,6 +44,11 @@
 <%@ variable name-given="paragraph"         declare="true" %>
 <%@ variable name-given="linkToDetail"      declare="true" %>
 
+<%@ variable name-given="setElementPreMarkup" declare="true" %>
+<%@ variable name-given="settingDefaultsDebug" declare="true" %>
+
+<m:load-plugins group="setting-defaults"    type="jsp-nocache" />
+
 <c:set var="setting"                        value="${cms.element.setting}" />
 <c:set var="inList"                         value="${setting.nglist.toBoolean}" />
 <c:set var="setTeaserClass"                 value="${setting.teaserClass.isSetNotNone ? setting.teaserClass.toString : 'teaser'}" />
@@ -53,6 +59,7 @@
 <c:set var="setEffect"                      value="${setting.effect.isSetNotNone ? ' '.concat(setting.effect.toString) : null}" />
 <c:set var="setDateFormat"                  value="${setting.dateFormat.toString}" />
 <c:set var="setRatio"                       value="${setting.imageRatio.toString}"/>
+<c:set var="setRatioLg"                     value="${setting.imageRatioLg.toString}"/>
 <c:set var="setTextLength"                  value="${setting.textLength.toInteger}" />
 <c:set var="setHsize"                       value="${setting.hsize.toInteger}" />
 <c:set var="setDetailLinkWin"               value="${setting.detailLinkWin.isSetNotNone ? setting.detailLinkWin.toString : null}" />
@@ -60,12 +67,13 @@
 <c:set var="setShowCalendar"                value="${setting.showCalendar.toBoolean}" />
 <c:set var="setShowCopyright"               value="${setting.showImageCopyright.toBoolean}" />
 <c:set var="setPieceLayout"                 value="${inList ? setting.pieceLayoutList.toInteger : setting.pieceLayout.toInteger}" />
-<c:set var="setSizeDesktop"                 value="${setting.pieceSizeDesktop.toInteger}" />
-<c:set var="setSizeMobile"                  value="${setting.pieceSizeMobile.toInteger}" />
+<c:set var="setSizeDesktop"                 value="${setRatioLg eq 'no-img' ? 0 : setting.pieceSizeDesktop.toInteger}" />
+<c:set var="setSizeMobile"                  value="${setRatio eq 'no-img' ? 0 : ((setSizeDesktop == 0) and (setting.pieceSizeMobile.toInteger == 99) ? 12 : setting.pieceSizeMobile.toInteger)}" />
 <c:set var="setShowVisual"                  value="${setting.visualOption.toString ne 'none'}" />
 <c:set var="paramLinkOption"                value="${setting.paramLinkOption}" />
 <c:set var="setLinkOption"                  value="${paramLinkOption.isSet ? paramLinkOption.toString : setting.linkOption.isSet ? setting.linkOption.toString : cms.sitemapConfig.attribute['linkOption.default'].toString}" />
 <c:set var="setHeadingInBody"               value="${setting.headingInBody.toBoolean}" />
+<c:set var="setElementPreMarkup"            value="${setting.elementPreMarkup.toString}" />
 
 <c:set var="pageUri"                        value="${setting.pageUri.toString}" />
 <c:set var="listEntryWrapper"               value="${setting.listEntryWrapper.toString}" />

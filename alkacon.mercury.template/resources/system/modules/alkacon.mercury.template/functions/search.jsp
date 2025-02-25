@@ -8,23 +8,24 @@
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 <cms:secureparams replaceInvalid="bad_param" />
-<mercury:init-messages reload="true">
+<m:init-messages reload="true">
 
-<c:set var="id"><mercury:idgen prefix="" uuid="${cms.element.id}" /></c:set>
+<c:set var="id"><m:idgen prefix="" uuid="${cms.element.id}" /></c:set>
 
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
 
-<mercury:setting-defaults>
+<m:setting-defaults>
 
 <c:set var="searchSubsite"          value="${setting.searchscope.toString eq 'subsite'}" />
 <c:set var="searchForEmptyQuery"    value="${setting.searchForEmptyQuery.toBoolean}" />
 <c:set var="numFacetItems"          value="${empty setting.numFacetItems.toInteger ? 10 : setting.numFacetItems.toInteger}" />
 <c:set var="pageSize"               value="${empty setting.pageSize.toInteger ? 10 : setting.pageSize.toInteger}" />
 <c:set var="showTypeBadge"          value="${setting.showTypeBadge.useDefault('true').toBoolean}" />
+<c:set var="showTopBadge"           value="${setting.showTopBadge.useDefault('false').toBoolean}" />
 <c:set var="showExcerpt"            value="${setting.showExcerpt.useDefault('true').toBoolean}" />
 <c:set var="dateFormat"             value="${setting.dateFormat.useDefault('none').toString}" />
 <c:set var="datePrefix"             value="${fn:substringBefore(dateFormat, '|')}" />
@@ -43,7 +44,7 @@
     </c:when>
     <c:when test="${fn:startsWith(slotButton, 'icon:')}">
         <c:set var="icon" value="${fn:substringAfter(slotButton, 'icon:')}" />
-        <c:set var="slotButton"><mercury:icon icon="${icon}" tag="span" cssWrapper="icon-image" inline="${true}" /></c:set>
+        <c:set var="slotButton"><m:icon icon="${icon}" tag="span" cssWrapper="icon-image" inline="${true}" /></c:set>
     </c:when>
 </c:choose>
 
@@ -105,13 +106,15 @@
     <c:set var="typesRestriction">${typesRestriction}${status.first ? '' : ' OR '}${fn:trim(type)}</c:set>
 </c:forEach>
 
-<c:set var="returnFields">disptitle_${cms.locale}_sort,disptitle_sort,lastmodified,${cms.locale}_excerpt,id,path,mercury.detail.link_dprop</c:set>
+<c:set var="returnFields">disptitle_${cms.locale}_sort,disptitle_sort,lastmodified,${cms.locale}_excerpt,id,path,mercury.detail.link_dprop,description_${cms.locale},search.boost_mvs</c:set>
+<c:set var="boostPage" value="${20}" />
+<c:set var="boostKeywords" value="${boostPage}" />
 <c:set var="config">
     {
         "searchforemptyquery" : ${searchForEmptyQuery},
-        "querymodifier" :       "{!type=edismax qf=\"content_${cms.locale} Title_dprop Description_dprop\"}%(query)",
+        "querymodifier" :       "{!type=edismax qf=\"content_${cms.locale} Title_dprop Description_dprop Description.html_dprop keywords_${cms.locale} description_${cms.locale}\"}(%(query))",
         "escapequerychars" :    true,
-        "extrasolrparams" :     "fq=parent-folders:${searchscope}&fq=type:(${typesRestriction})&fq=con_locales:${cms.locale}&spellcheck.dictionary=${cms.locale}&fq=-filename:\"mega.menu\"&fl=${returnFields}",
+        "extrasolrparams" :     "bq=search.boost_mvs:always^${boostPage}&bq=(search.boost_mvs:keywords AND keywords_${cms.locale}:(%(query)))^${boostKeywords}&fq=parent-folders:${searchscope}&fq=type:(${typesRestriction})&fq=con_locales:${cms.locale}&spellcheck.dictionary=${cms.locale}&fq=-filename:\"mega.menu\"&fl=${returnFields},keywordMatch:if(gt(query({!edismax%20 qf=\"keywords_${cms.locale}\" v=\"%(query)\"},0),0.0),\"true\",\"false\")",
         "pagesize" :            ${pageSize},
         "pagenavlength" :       5,
         "sortoptions" :         [ { "label" : "<fmt:message key='msg.page.search.sort.score.desc'/>", "solrvalue" : "score desc" }
@@ -151,9 +154,9 @@
 <%-- short cut to access the controller for common search settings --%>
 <c:set var="common" value="${controllers.common}" />
 
-<mercury:nl/>
+<m:nl/>
 <div class="element type-search pivot${setCssWrapperAll}"><%----%>
-    <mercury:nl/>
+    <m:nl/>
 
     <%-- The search form --%>
     <%-- search action: link to the current page --%>
@@ -173,7 +176,7 @@
         <c:set var="hasSortOptions" value="${cms:getListSize(controllers.sorting.config.sortOptions) > 0}" />
         <c:set var="hasFacets" value="${(cms:getListSize(search.fieldFacets) > 0) or (not empty search.facetQuery)}" />
 
-        <mercury:nl/>
+        <m:nl/>
         <div class="search-result-row"><%----%>
 
             <%-- Search query --%>
@@ -188,12 +191,12 @@
                     </div><%----%>
                 </section><%----%>
             </div><%----%>
-            <mercury:nl/>
+            <m:nl/>
 
             <%-- Search facets --%>
             <c:if test="${hasFacets}">
                 <%-- Facets --%>
-                <mercury:nl/>
+                <m:nl/>
                 <div class="search-facets"><%----%>
                 <div class="type-list-filter"><%----%>
 
@@ -210,7 +213,7 @@
                             --%>${facetController.config.label}<%--
                          --%></button><%----%>
                             <div id="qf${id}" class="collapse show"><%----%>
-                                <mercury:nl/>
+                                <m:nl/>
                                 <c:forEach var="entry" items="${facetController.config.queryList}" varStatus="status">
                                     <c:if test="${not empty search.facetQuery[entry.query]}">
                                         <label class="checkbox"> <input type="checkbox" <%--
@@ -221,14 +224,14 @@
                                             --%><i></i><%--
                                             --%>${entry.label} (${search.facetQuery[entry.query]})<%--
                                         --%></label><%----%>
-                                        <mercury:nl/>
+                                        <m:nl/>
                                     </c:if>
                                 </c:forEach>
                             </div><%----%>
                         </div><%----%>
                     </c:if>
 
-                    <mercury:nl/>
+                    <m:nl/>
                     <c:set var="fieldFacetControllers" value="${controllers.fieldFacets}" />
                     <c:forEach var="facet" items="${search.fieldFacets}" varStatus="status">
                         <c:set var="facetController" value="${fieldFacetControllers.fieldFacetController[facet.name]}" />
@@ -244,9 +247,9 @@
                                 --%>data-bs-toggle="collapse"><%--
                                 --%>${facetController.config.label}<%--
                              --%></button><%----%>
-                                <mercury:nl/>
+                                <m:nl/>
                                 <div id="ff${id}_${status.index}" class="collapse show"><%----%>
-                                    <mercury:nl/>
+                                    <m:nl/>
                                     <c:forEach var="facetItem" items="${facet.values}">
                                         <c:choose>
                                             <c:when test='${facet.name eq "type"}'>
@@ -279,12 +282,12 @@
                                             --%><i></i><%--
                                             --%>${label} (${facetItem.count})<%--
                                     --%></label><%----%>
-                                        <mercury:nl/>
+                                        <m:nl/>
                                     </c:forEach>
 
                                     <%-- Show option to show more facet entries --%>
                                     <c:if test="${not empty facetController.config.limit && cms:getListSize(facet.values) ge facetController.config.limit}">
-                                        <mercury:nl/>
+                                        <m:nl/>
                                         <div class="show-more"><%----%>
                                             <c:choose>
                                             <c:when test="${facetController.state.useLimit}">
@@ -299,12 +302,12 @@
                                     </c:if>
                                 </div><%----%>
                             </div><%----%>
-                            <mercury:nl/>
+                            <m:nl/>
                         </c:if>
                     </c:forEach>
                 </div><%----%>
                 </div><%----%>
-                <mercury:nl/>
+                <m:nl/>
             </c:if>
 
             <c:if test="${hasSortOptions}">
@@ -314,17 +317,17 @@
                         <div class="select"><%----%>
                             <%-- Display select box with sort options where the currently chosen option is selected --%>
                             <select name="${sort.config.sortParam}" class="form-control" onchange="submitSearchForm()"><%----%>
-                            <mercury:nl/>
+                            <m:nl/>
                                 <c:forEach var="option" items="${sort.config.sortOptions}">
                                     <option value="${option.paramValue}" ${sort.state.checkSelected[option]?"selected":""}>${option.label}</option><%----%>
-                                    <mercury:nl/>
+                                    <m:nl/>
                                 </c:forEach>
                             </select><%----%>
                             <i></i><%----%>
                     </div><%----%>
                     </section>
                 </div>
-                <mercury:nl/>
+                <m:nl/>
             </c:if>
 
             <%-- Search results --%>
@@ -364,12 +367,12 @@
                                 <div class="search-suggestion"><%----%>
                                     <h3 tabindex="0"><fmt:message key="msg.page.search.didyoumean_0" /></h3><%----%>
                                     <ul><%----%>
-                                        <mercury:nl/>
+                                        <m:nl/>
                                         <c:forEach var="alternative" items="${suggestion.alternatives}" varStatus="status">
                                             <li><%----%>
                                                 <a href='<cms:link>${cms.requestContext.uri}?${search.stateParameters.newQuery[alternative]}</cms:link>'>${alternative} (${suggestion.alternativeFrequencies[status.index]})</a><%----%>
                                             </li><%----%>
-                                            <mercury:nl/>
+                                            <m:nl/>
                                         </c:forEach>
                                     </ul><%----%>
                                 </div>
@@ -402,7 +405,7 @@
                                 </fmt:message>
                             </div><%----%>
                         </div><%----%>
-                        <mercury:nl/>
+                        <m:nl/>
 
                         <%-- show search results --%>
                         <c:forEach var="searchResult" items="${search.searchResults}">
@@ -428,62 +431,81 @@
                                     </c:choose>
                                     <c:if test="${not empty typeName}">
                                         <c:set var="typeName">
-                                            <span class="search-badge">${typeName}</span>
+                                            <span class="search-badge badge-typ">${typeName}</span>
                                         </c:set>
                                     </c:if>
+                                </c:if>
+
+                                <%-- This feature has to be activated and the prepared setting shared setting 'showTopBadge.search' must be added to the function configuration. --%>
+                                <c:if test="${showTopBadge}">
+                                    <c:set var="boostValues" value='${searchResult.multiValuedFields["search.boost_mvs"]}' />
+                                    <c:choose>
+                                    <c:when test='${not empty boostValues && ((boostValues.contains("keywords") && (searchResult.fields["keywordMatch"] eq "true")) || boostValues.contains("always"))}'>
+                                        <c:set var="topBadge">
+                                            <span class="search-badge badge-top"><fmt:message key="msg.page.search.type.topresult" /></span>
+                                        </c:set>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="topBadge"></c:set>
+                                    </c:otherwise>
+                                    </c:choose>
                                 </c:if>
 
                                 <h4 class="search-result-heading"><%----%>
                                     <c:set var="resultLink" value="${empty searchResult.fields['mercury.detail.link_dprop'] ? searchResult.fields['path'] : searchResult.fields['mercury.detail.link_dprop']}" />
                                     <a href='<cms:link>${resultLink}</cms:link>'><%----%>
                                         <span class="result-title">${title}</span><%----%>
+                                        <c:out value="${showTopBadge ? topBadge : ''}" escapeXml="${false}" />
                                         <c:out value="${showTypeBadge ? typeName : ''}" escapeXml="${false}" />
                                     </a><%----%>
                                 </h4><%----%>
-                                <mercury:nl/>
+                                <m:nl/>
 
                                 <c:if test="${showDateLastModified}">
                                     <div class="search-result-date"><%----%>
                                         <c:out value="${empty datePrefix ? '' : datePrefix.concat(' ')}" />
-                                        <mercury:instancedate date="${cms.wrap[searchResult.dateFields['lastmodified']].toInstanceDate}" format="${dateFormat}"/>
+                                        <m:instancedate date="${cms.wrap[searchResult.dateFields['lastmodified']].toInstanceDate}" format="${dateFormat}"/>
                                     </div><%----%>
-                                    <mercury:nl/>
+                                    <m:nl/>
                                 </c:if>
 
                                 <c:if test="${showExcerpt}">
                                     <div class="search-result-text"><%----%>
-                                        <%-- if highlighting is returned - show it; otherwise show content_en (up to 250 characters) --%>
-                                        <c:choose>
-                                            <c:when test="${not empty search.highlighting and not empty common.state.query}">
-                                                <%-- To avoid destroying the HTML, if the highlighted snippet contains unbalanced tag, use the htmlConverter for cleaning the HTML. --%>
-                                                <c:set var="highlightSnippet" value='${
-                                                    search.highlighting
-                                                        [searchResult.fields["id"]]
-                                                        [search.controller.highlighting.config.hightlightField]
-                                                        [0]
-                                                    }'
-                                                />
-                                                <c:if test="${not empty highlightSnippet}">
-                                                    ${fn:replace(fn:replace(cms:stripHtml(highlightSnippet), '$$hl.begin$$', '<strong>'), '$$hl.end$$', '</strong>')}${' ...'}
-                                                </c:if>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <c:set var="localeContentField">${cms.locale}_excerpt</c:set>
-                                                <c:if test="${not empty searchResult.fields[localeContentField]}">
-                                                    ${cms:trimToSize(cms:stripHtml(searchResult.fields[localeContentField]), 250)}
-                                                </c:if>
-                                            </c:otherwise>
-                                        </c:choose>
+                                        <%-- if description is given, use it. --%>
+                                        <c:set var="localeDescriptionField">description_${cms.locale}</c:set>
+                                        <c:set var="excerpt">${searchResult.fields[localeDescriptionField]}</c:set>
+                                        <%-- otherwise if highlighting is returned - show it --%>
+                                        <c:if test="${empty excerpt and not empty search.highlighting and not empty common.state.query}">
+                                            <%-- To avoid destroying the HTML, if the highlighted snippet contains unbalanced tag, use the htmlConverter for cleaning the HTML. --%>
+                                            <c:set var="highlightSnippet" value='${
+                                                search.highlighting
+                                                    [searchResult.fields["id"]]
+                                                    [search.controller.highlighting.config.hightlightField]
+                                                    [0]
+                                                }'
+                                            />
+                                            <c:if test="${not empty highlightSnippet}">
+                                                <c:set var="excerpt">${fn:replace(fn:replace(cms:stripHtml(highlightSnippet), '$$hl.begin$$', '<strong>'), '$$hl.end$$', '</strong>')}${' ...'}</c:set>
+                                            </c:if>
+                                        </c:if>
+                                        <%-- otherwise show the excerpt (up to 250 characters) --%>
+                                        <c:if test="${empty excerpt}">
+                                            <c:set var="localeContentField">${cms.locale}_excerpt</c:set>
+                                            <c:if test="${not empty searchResult.fields[localeContentField]}">
+                                                <c:set var="excerpt">${cms:trimToSize(cms:stripHtml(searchResult.fields[localeContentField]), 250)}</c:set>
+                                            </c:if>
+                                        </c:if>
+                                        ${excerpt}
                                     </div><%----%>
-                                    <mercury:nl/>
+                                    <m:nl/>
                                 </c:if>
 
                             </div><%----%>
-                            <mercury:nl/>
+                            <m:nl/>
                         </c:forEach>
 
                         <c:set var="onclickAction"><cms:link>${cms.requestContext.uri}?$(LINK)</cms:link></c:set>
-                        <mercury:list-pagination
+                        <m:list-pagination
                             search="${search}"
                             singleStep="true"
                             onclickAction='window.location.href="${onclickAction}"'
@@ -491,11 +513,11 @@
                     </c:otherwise>
                 </c:choose>
             </div><%----%>
-            <mercury:nl />
+            <m:nl />
 
         </div><%----%>
     </form><%----%>
-    <mercury:nl />
+    <m:nl />
 
     <script type="text/javascript"><%--
     --%>var searchForm = document.forms["search-form"];<%--
@@ -503,12 +525,12 @@
         --%>searchForm.submit();<%--
     --%>}<%--
     --%></script><%----%>
-    <mercury:nl />
+    <m:nl />
 
 </div><%----%>
-<mercury:nl />
+<m:nl />
 
-</mercury:setting-defaults>
+</m:setting-defaults>
 
 </cms:bundle>
-</mercury:init-messages>
+</m:init-messages>

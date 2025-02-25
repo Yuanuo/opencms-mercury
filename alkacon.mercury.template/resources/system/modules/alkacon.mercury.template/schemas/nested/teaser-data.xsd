@@ -28,19 +28,21 @@
                     <DisplayName><![CDATA[%(key.label.Intro)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Intro.Teaser.help)]]></Description>
                     <Widget>string</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>TeaserTitle</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Title)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Title.Teaser.help)]]></Description>
                     <Widget>string</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>TeaserPreface</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Preface)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Preface.Teaser.help)]]></Description>
                     <Widget>textarea</Widget>
-                    <WidgetConfig>3|proportional</WidgetConfig>
+                    <WidgetConfig>3|proportional|%(attribute:stringConfigTypo)</WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>TeaserImage</PropertyName>

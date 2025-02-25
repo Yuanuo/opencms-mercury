@@ -8,7 +8,7 @@ $! ###### Main input form ###### !$
 
 $if(formconfig.formText)$
 $! --- show form header text --- !$
-$!  !$<div class="form-header">$formconfig.formText$</div>
+$!  !$<div class="form-text form-header">$formconfig.formText$</div>
 $endif$
 $if(waitlistmessage)$$waitlist_notification(waitlistmessage)$$endif$
 <form$!
@@ -38,7 +38,7 @@ $!  !$$fields$
 $if(formconfig.formMiddleText)$
 $! --- show form middle text --- !$
 $!  !$<fieldset>
-$!      !$$formconfig.formMiddleText$
+$!      !$<div class="form-text form-middle">$formconfig.formMiddleText$</div>
 $!  !$</fieldset>
 $endif$
 
@@ -46,7 +46,7 @@ $endif$
 
 $if(mandatorymessage)$
 $! --- show mandatory note --- !$
-$!  !$<section><div class="note">$mandatorymessage$</div></section>
+$!  !$<section><div class="form-text note">$mandatorymessage$</div></section>
 $endif$
 
 $! --- show submit, reset and previous button --- !$
@@ -73,7 +73,7 @@ $endif$
 
 $if(formconfig.formFooterText)$
 $! --- show form footer text --- !$
-$!  !$<div class="form-footer">$formconfig.formFooterText$</div>
+$!  !$<div class="form-text form-footer">$formconfig.formFooterText$</div>
 $endif$
 
 >>
@@ -216,7 +216,7 @@ $label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=man
 <div class="input$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! m:icon !$
 $!      !$$endif$
 $!  !$$endif$
 $!  !$<input type="password" name="$field.name$" id="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
@@ -309,7 +309,7 @@ $label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=man
 <div class="input$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! m:icon !$
 $!      !$$endif$
 $!  !$$endif$
 $!  !$<input type="text" id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
@@ -328,10 +328,10 @@ $label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=man
 <div class="input$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! m:icon !$
 $!      !$$endif$
 $!  !$$endif$
-$!  !$<input type="text" class="datepicker" data-datepicker="{}" id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
+$!  !$<input type="text" class="datepicker" data-datepicker='{$if(field.parameters.dateFormat)$"dateFormat": "$field.parameters.dateFormat$"$endif$}' id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
 </div>
 $if(errormessage)$
 $!  !$<div class="note note-error" tabindex="0">$errormessage$</div>
@@ -347,10 +347,10 @@ $label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=man
 <div class="input$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! m:icon !$
 $!      !$$endif$
 $!  !$$endif$
-$!  !$<input type="text" class="datepicker" data-datepicker='{"noCalendar":true,"enableTime":true}' id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
+$!  !$<input type="text" class="datepicker" data-datepicker='{"time_24hr": true, "noCalendar":true,"enableTime":true$if(field.parameters.dateFormat)$, "dateFormat": "$field.parameters.dateFormat$"$endif$}' id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
 </div>
 $if(errormessage)$
 $!  !$<div class="note note-error" tabindex="0">$errormessage$</div>
@@ -366,10 +366,10 @@ $label(field=field,formconfig=formconfig,errormessage=errormessage,mandatory=man
 <div class="input$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! m:icon !$
 $!      !$$endif$
 $!  !$$endif$
-$!  !$<input type="text" class="datepicker" data-datepicker='{"enableTime":true,"dateFormat":"Y-m-d H:i"}' id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
+$!  !$<input type="text" class="datepicker" data-datepicker='{"time_24hr": true, "enableTime":true$if(field.parameters.dateFormat)$, "dateFormat": "$field.parameters.dateFormat$"$endif$}' id="$field.name$" name="$field.name$" value="$field.valueEscaped$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$/>
 </div>
 $if(errormessage)$
 $!  !$<div class="note note-error" tabindex="0">$errormessage$</div>
@@ -385,7 +385,7 @@ $row_start(field=field)$
 <div class="textarea$if(errormessage)$ state-error$endif$">
 $!  !$$if(field.parameters)$
 $!      !$$if(field.parameters.icon)$
-$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! mercury:icon !$
+$!          !$<span class="icon-$if(field.parameters.position)$$field.parameters.position$$else$prepend$endif$ fa fa-$field.parameters.icon$"></span>$! m:icon !$
 $!      !$$endif$
 $!  !$$endif$
 $!  !$<textarea cols="50" rows="$if(field.parameters.rows)$$field.parameters.rows$$else$5$endif$" id="$field.name$" name="$field.name$"$if(field.parameters)$$if(field.parameters.placeholder)$ placeholder="$field.parameters.placeholder$"$endif$$endif$ $attributes$>$field.valueEscaped$</textarea>
@@ -538,7 +538,7 @@ $!  !$</footer>
 
 confirmationpage(formconfig,confirmtext,confirmfields) ::= <<
 $! ###### CONFIRMATION page of the form ###### !$
-$confirmtext$
+<div class="form-text form-confirm">$confirmtext$</div>
 <table class="webform-input table table-responsive table-bordered table-striped matomo-goal">
 $confirmfields:{$!
     !$<tr>$!

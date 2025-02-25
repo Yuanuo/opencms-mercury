@@ -8,14 +8,14 @@
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="mercury" tagdir="/WEB-INF/tags/mercury" %>
+<%@ taglib prefix="m" tagdir="/WEB-INF/tags/mercury" %>
 
 
 <fmt:setLocale value="${cms.locale}" />
 <cms:bundle basename="alkacon.mercury.template.messages">
 
-<mercury:content-properties>
-<mercury:template-parts containerName="mercury-page">
+<m:content-properties>
+<m:template-parts containerName="mercury-page">
 
 <jsp:attribute name="top">
 
@@ -29,50 +29,78 @@
 <%-- Special CSS in case JavaScript is disabled --%>
 <noscript><style>html.noscript .hide-noscript { display: none !important; }</style></noscript>
 <script>document.documentElement.classList.remove("noscript");document.documentElement.classList.add("hasscript");</script>
-<script><%-- Static JavaScript that provides a 'mercury.ready()' method for additional scripts
---%>mercury=function(){var n=function(){var n=[];return{ready:function(t){n.push(t)},load:function(t){n.push(t)},getInitFunctions:function(){return n}}}(),t=function(t){if("function"!=typeof t)return n;n.ready(t)};return t.getInitFunctions=function(){return n.getInitFunctions()},t.load=function(n){this(n)},t.ready=function(n){this(n)},t}();<%--
---%>var __isOnline=${cms.isOnlineProject},<%--
---%>__scriptPath="<cms:link>%(link.weak:/system/modules/alkacon.mercury.theme/js/mercury.js:2cf5d884-fea8-11e8-aee0-0242ac11002b)</cms:link>"<%--
---%></script>
+<%-- Static JavaScript that provides a 'mercury.ready()' method for additional scripts --%>
+<m:print script="${true}">
+<script>
+mercury = function(){
+    var n=function(){
+        var n=[];
+        return{
+            ready: function(t){
+                n.push(t)
+            },
+            getInitFunctions: function(){
+                return n
+            }
+        }
+    }(),
+    t=function(t){
+        if("function"!=typeof t) return n;
+        n.ready(t)
+    };
+    return t.getInitFunctions=function(){
+        return n.getInitFunctions()
+    },
+    t.ready=function(n){
+        this(n)
+    },
+    t
+}();
+var __isOnline=${cms.isOnlineProject},
+    __scriptPath="<cms:link>%(link.weak:/system/modules/alkacon.mercury.theme/js/mercury.js:2cf5d884-fea8-11e8-aee0-0242ac11002b)</cms:link>"
+</script>
+</m:print>
 
 <%-- Load the main JavaScript in async mode --%>
-<script async src="<mercury:link-resource resource='%(link.weak:/system/modules/alkacon.mercury.theme/js/mercury.js:2cf5d884-fea8-11e8-aee0-0242ac11002b)'/>"></script>
+<script async src="<m:link-resource resource='%(link.weak:/system/modules/alkacon.mercury.theme/js/mercury.js:2cf5d884-fea8-11e8-aee0-0242ac11002b)'/>"></script>
 
-<mercury:meta-canonical renderMetaTags="${true}" >
-    <mercury:meta-info canonicalURL="${canonicalURL}" contentPropertiesSearch="${contentPropertiesSearchDetail}" />
-</mercury:meta-canonical>
+<m:meta-canonical renderMetaTags="${true}" >
+    <m:meta-info canonicalURL="${canonicalURL}" contentPropertiesSearch="${contentPropertiesSearchDetail}" />
+</m:meta-canonical>
 
 <cms:enable-ade />
 
-<mercury:load-plugins group="css" />
-<mercury:load-plugins group="js-sync" />
-<mercury:load-plugins group="js-async" />
-<mercury:load-plugins group="js-defer" />
-<mercury:load-plugins group="template-head-includes" type="jsp" />
+<m:load-plugins group="js-async" />
+<m:load-plugins group="js-defer" />
+<m:load-plugins group="template-head-includes" type="jsp" />
 
 <c:choose>
     <c:when test="${empty cms.plugins['custom-css']}">
         <%-- Use default CSS configuration --%>
-        <mercury:load-icons>
+        <m:load-icons>
             <c:set var="cssTheme" value="${empty contentPropertiesSearch['mercury.theme'] ? '/system/modules/alkacon.mercury.theme/css/theme-standard.min.css' : contentPropertiesSearch['mercury.theme']}" />
-            <link href="<mercury:link-resource resource='${cssTheme}'/>" rel="stylesheet"><%----%>
-            <mercury:nl />
-        </mercury:load-icons>
+            <link rel="stylesheet" href="<m:link-resource resource='${cssTheme}'/>"><%----%>
+            <m:nl />
+        </m:load-icons>
     </c:when>
     <c:otherwise>
         <%-- Use custom CSS plugin --%>
-        <mercury:load-plugins group="custom-css" type="jsp" />
+        <m:load-plugins group="custom-css" type="jsp" />
     </c:otherwise>
 </c:choose>
 
-<%-- Include additional CSS / JS if allowed --%>
+<%-- Include CSS from plugins after main Mercury CSS --%>
+<m:load-plugins group="css" />
+<m:load-plugins group="css-inline" />
+
+<%-- Include additional CSS / JS from Mercury template modifications (if allowed) --%>
 <c:if test="${allowTemplateMods}">
-    <mercury:load-resource path="${contentPropertiesSearch['mercury.extra.css']}" defaultPath="${cms.subSitePath}" name="custom.css">
-        <link href="<mercury:link-resource resource='${resourcePath}'/>" rel="stylesheet"><mercury:nl />
-    </mercury:load-resource>
-    <mercury:load-resource path="${contentPropertiesSearch['mercury.extra.js']}" defaultPath="${cms.subSitePath}" name="custom.js">
-        <script src="<mercury:link-resource resource='${resourcePath}'/>" defer></script><mercury:nl />
-    </mercury:load-resource>
+    <m:load-resource path="${contentPropertiesSearch['mercury.extra.css']}" defaultPath="${cms.subSitePath}" name="custom.css">
+        <link rel="stylesheet" href="<m:link-resource resource='${resourcePath}'/>"><m:nl />
+    </m:load-resource>
+    <m:load-resource path="${contentPropertiesSearch['mercury.extra.js']}" defaultPath="${cms.subSitePath}" name="custom.js">
+        <script src="<m:link-resource resource='${resourcePath}'/>" defer></script><m:nl />
+    </m:load-resource>
 </c:if>
 
 <c:choose>
@@ -83,13 +111,13 @@
             <c:set var="faviconPath">/system/modules/alkacon.mercury.theme/img/favicon.png</c:set>
         </c:if>
         <c:set var="favIconImage" value="${cms.vfs.readResource[faviconPath].toImage.scaleRatio['1-1']}" />
-        <link rel="apple-touch-icon" sizes="180x180" href="${favIconImage.scaleWidth[180]}"><mercury:nl />
-        <link rel="icon" type="image/png" sizes="32x32" href="${favIconImage.scaleWidth[32]}"><mercury:nl />
-        <link rel="icon" type="image/png" sizes="16x16" href="${favIconImage.scaleWidth[16]}"><mercury:nl />
+        <link rel="apple-touch-icon" sizes="180x180" href="${favIconImage.scaleWidth[180]}"><m:nl />
+        <link rel="icon" type="image/png" sizes="32x32" href="${favIconImage.scaleWidth[32]}"><m:nl />
+        <link rel="icon" type="image/png" sizes="16x16" href="${favIconImage.scaleWidth[16]}"><m:nl />
     </c:when>
     <c:otherwise>
         <%-- Use custom favicon plugin --%>
-        <mercury:load-plugins group="custom-favicon" type="jsp" />
+        <m:load-plugins group="custom-favicon" type="jsp" />
     </c:otherwise>
 </c:choose>
 
@@ -116,7 +144,7 @@
             <cms:param name="cssgutterbase" value="${cssgutter}" />
 
             <c:set var="message"><fmt:message key="msg.page.layout.topContainer" /></c:set>
-            <mercury:container-box
+            <m:container-box
                 label="${message}"
                 boxType="container-box"
                 type="area"
@@ -124,11 +152,11 @@
             />
 
         </cms:container>
-        <mercury:nl/>
+        <m:nl/>
     </c:when>
     <c:otherwise>
         <%-- Use custom main container plugin --%>
-        <mercury:load-plugins group="custom-page-container" type="jsp" />
+        <m:load-plugins group="custom-page-container" type="jsp" />
     </c:otherwise>
 </c:choose>
 </jsp:attribute>
@@ -136,26 +164,26 @@
 
 <jsp:attribute name="bottom">
 <%-- Page information transfers OpenCms state information to JavaScript --%>
-<mercury:pageinfo contentPropertiesSearch="${contentPropertiesSearch}" />
+<m:pageinfo contentPropertiesSearch="${contentPropertiesSearch}" />
 
 <%-- Load custom body plugins --%>
-<mercury:load-plugins group="custom-body" type="jsp" />
+<m:load-plugins group="custom-body" type="jsp" />
 
 <%-- Include custom foot if allowed --%>
 <c:if test="${allowTemplateIncludes}">
-     <mercury:load-resource path="${contentPropertiesSearch['mercury.extra.foot']}">
-         <cms:include file="${resourcePath}" cacheable="false" /><mercury:nl />
-     </mercury:load-resource>
+     <m:load-resource path="${contentPropertiesSearch['mercury.extra.foot']}">
+         <cms:include file="${resourcePath}" cacheable="false" /><m:nl />
+     </m:load-resource>
 </c:if>
 
 <%-- Privacy policy banner markup --%>
-<mercury:privacy-policy-banner contentUri="${contentUri}" contentPropertiesSearch="${contentPropertiesSearch}" />
+<m:privacy-policy-banner contentUri="${contentUri}" contentPropertiesSearch="${contentPropertiesSearch}" />
 
 </body>
 </html>
 </jsp:attribute>
 
-</mercury:template-parts>
-</mercury:content-properties>
+</m:template-parts>
+</m:content-properties>
 
 </cms:bundle>

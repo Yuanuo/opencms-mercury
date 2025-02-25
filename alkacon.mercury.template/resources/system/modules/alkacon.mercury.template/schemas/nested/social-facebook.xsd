@@ -30,13 +30,14 @@
                     <DisplayName><![CDATA[%(key.label.Title)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Title.help)]]></Description>
                     <Widget>string</Widget>
+                    <WidgetConfig><![CDATA[%(attribute:stringConfigTypo)]]></WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>Description</PropertyName>
                     <DisplayName><![CDATA[%(key.label.Description)]]></DisplayName>
                     <Description><![CDATA[%(key.label.Description.help)]]></Description>
                     <Widget>textarea</Widget>
-                    <WidgetConfig>5|proportional</WidgetConfig>
+                    <WidgetConfig>5|proportional|%(attribute:stringConfigTypo)</WidgetConfig>
                 </Setting>
                 <Setting>
                     <PropertyName>Image</PropertyName>

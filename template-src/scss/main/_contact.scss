@@ -20,31 +20,17 @@
  */
 
 .type-contact {
-    --#{$prefix}contact-spacer-x: #{$contact-spacer-x};
+
     --#{$prefix}contact-spacer-y: #{$contact-spacer-y};
 
-    @if $use-hyphens {
-        overflow-wrap: anywhere;
-        word-break: break-word;
-        hyphens: auto;
-    }
+    @include contact-base;
 
-    .fn,
-    .org,
-    .adr,
-    .title,
-    .pos,
-    .note,
-    .mail,
-    .vcard {
-        margin-top: var(--#{$prefix}contact-spacer-y);
-        margin-bottom: var(--#{$prefix}contact-spacer-y);
-    }
-
-    .mail {
-        // make sure emails are NOT changed with "-" when line break is inserted
-        hyphenate-character: " ";
-        -webkit-hyphenate-character: " ";
+    .tablerow {
+        > span {
+            &.icon-label {
+                white-space: nowrap;
+            }
+        }
     }
 
     > * > .image-src-box {
@@ -66,89 +52,22 @@
         }
     }
 
-    &.compact {
-        .fn.n,
-        .org,
-        .pos {
-            @extend .default-font;
-        }
-
-        .fn.n {
-            font-weight: $font-weight-bold;
-        }
-
-        .fn,
-        .org,
-        .adr,
-        .title,
-        .pos,
-        .note,
-        .contactlink:not(.btn),
-        .mail {
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-
-        .vcard {
-            margin-bottom: 0;
-        }
-    }
-
-    .fn {
-        margin-top: 0;
-    }
-
     .title {
         font-style: italic;
     }
 
-    .tablerow {
-        display: table-row;
-        hyphens: none;
-        overflow-wrap: normal;
-        word-break: normal;
-
-        > span {
-            padding-right: var(--#{$prefix}contact-spacer-x);
-            display: table-cell;
-
-            &.icon-label {
-                white-space: nowrap;
-            }
-        }
-
-        &.website,
-        &.mail {
-            a {
-                overflow-wrap: anywhere;
-                word-break: break-word;
-            }
-        }
-    }
-
     .only-icon {
-        padding-left: var(--#{$prefix}contact-spacer-x);
+        padding-left: var(--#{$prefix}ws-margin);
     }
 
     .ico,
     .fa {
-       margin-right: var(--#{$prefix}contact-spacer-x);
-       width: calc(4 * var(--#{$prefix}contact-spacer-x));
+       margin-right: var(--#{$prefix}ws-margin);
+       width: calc(4 * var(--#{$prefix}ws-margin));
     }
 
     .img-responsive {
         width: 100%;
-    }
-
-    .note {
-        > * {
-            // add margins for all elements in text piece
-            margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
-            &:last-child {
-                // last element in text must not add margin
-                margin-bottom: 0;
-            }
-        }
     }
 
     .suborg-list {
@@ -162,6 +81,60 @@
         > .visual {
             margin-left: 0;
             margin-right: 0;
+        }
+    }
+
+    &.compact {
+        .fn.n,
+        .org,
+        .pos {
+            @extend .default-font;
+        }
+
+        .fn.n {
+            font-weight: $font-weight-bold;
+            &:has( + .pos) {
+                margin-bottom: 0;
+            }
+            + .pos {
+                margin-top: 0;
+            }
+        }
+
+        .fn.n,
+        .org,
+        .pos,
+        .title,
+        .mail,
+        .facility-icons {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .note.bottom,
+        .contactlink,
+        .link,
+        .website,
+        .vcard {
+            margin-top: var(--#{$prefix}contact-spacer-y);
+            margin-bottom: var(--#{$prefix}contact-spacer-y);
+        }
+
+        .note {
+            > * {
+                margin-bottom:  var(--#{$prefix}contact-spacer-y);
+            }
+        }
+    }
+
+    .note {
+        > * {
+            // add margins for all elements in text piece
+            margin-bottom: var(--#{$prefix}paragraph-margin-bottom);
+            &:last-child {
+                // last element in text must not add margin
+                margin-bottom: 0;
+            }
         }
     }
 
